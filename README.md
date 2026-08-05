@@ -7,9 +7,19 @@ no build step, no dependencies.
 
 ---
 
+## Quick Access
+
+| | Tool | Link |
+|---|---|---|
+| 📡 | **Ka-Band Link Budget · High-MCS & DPD/Shaper** | [ka_link_budget.html](https://jimchakra.github.io/6G-NTN/ka_link_budget.html) |
+| 🛰️ | **Ka-Band GNSS-Free Acquisition · M1–M5 Framework** | [ka_pnt_acquisition.html](https://jimchakra.github.io/6G-NTN/ka_pnt_acquisition.html) |
+| 🔬 | **5G gNB / 6G aNB RAN DU Architecture & HW Acceleration Study** | [6g_du_rd_ai.html](https://jimchakra.github.io/6G-NTN/6g_du_rd_ai.html) |
+
+---
+
 ## Tools
 
-### 1. `ka_link_budget.html` — Ka-Band Link Budget · High-MCS & DPD/Shaper
+### 1. [`ka_link_budget.html`](https://jimchakra.github.io/6G-NTN/ka_link_budget.html) — Ka-Band Link Budget · High-MCS & DPD/Shaper
 
 **Topic:** Can a Ka-band LEO satellite phased array reach 256-QAM or 1024-QAM,
 and what does DPD cost vs. save?
@@ -57,7 +67,7 @@ power comparison.
 
 ---
 
-### 2. `ka_pnt_acquisition.html` — Ka-Band GNSS-Free Acquisition · M1–M5 Framework
+### 2. [`ka_pnt_acquisition.html`](https://jimchakra.github.io/6G-NTN/ka_pnt_acquisition.html) — Ka-Band GNSS-Free Acquisition · M1–M5 Framework
 
 **Topic:** How does a Ka-band LEO terminal acquire a satellite and achieve
 positioning without GPS, and what does each approach cost in waveform overhead?
@@ -109,7 +119,7 @@ PTRS carrier-phase ranging.
 
 ---
 
-### 3. `6g_du_rd_ai.html` — 5G gNB / 6G aNB RAN DU Architecture & HW Acceleration Study
+### 3. [`6g_du_rd_ai.html`](https://jimchakra.github.io/6G-NTN/6g_du_rd_ai.html) — 5G gNB / 6G aNB RAN DU Architecture & HW Acceleration Study
 
 **Topic:** What hardware acceleration does a 5G/6G RAN Distributed Unit
 actually need, sized correctly through simulation?
@@ -188,9 +198,9 @@ and what production hardware actually needs.
 
 | File | Size | Topic | Interactive? |
 |---|---|---|---|
-| `ka_link_budget.html` | ~36 KB | Ka LEO link budget, DPD/Shaper, MCS, PA power | ✓ Live sliders, presets |
-| `ka_pnt_acquisition.html` | ~43 KB | GNSS-free acquisition, M1–M5, CW simulation | ✓ Live simulation, canvas |
-| `6g_du_rd_ai.html` | ~390 KB | 5G/6G DU HW acceleration, SimPy Monte Carlo | ✓ Interactive simulator |
+| [`ka_link_budget.html`](https://jimchakra.github.io/6G-NTN/ka_link_budget.html) | ~36 KB | Ka LEO link budget, DPD/Shaper, MCS, PA power | ✓ Live sliders, presets |
+| [`ka_pnt_acquisition.html`](https://jimchakra.github.io/6G-NTN/ka_pnt_acquisition.html) | ~43 KB | GNSS-free acquisition, M1–M5, CW simulation | ✓ Live simulation, canvas |
+| [`6g_du_rd_ai.html`](https://jimchakra.github.io/6G-NTN/6g_du_rd_ai.html) | ~390 KB | 5G/6G DU HW acceleration, SimPy Monte Carlo | ✓ Interactive simulator |
 
 All tools are fully self-contained HTML — open in any modern browser, no server required.
 
