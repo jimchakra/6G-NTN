@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ka-Band GNSS-Free Acquisition · M1–M5</title>
+<style>
+:root{
+  --bg:#080d14;--panel:#0f1922;--border:#1a2636;--accent:#4ab8f5;
+  --gold:#f5c842;--red:#e05252;--green:#4acf8a;--purple:#c87af5;
+  --dim:#3a5268;--text:#c8dcea;--sub:#5a7a90;--white:#e8f4fc;
+  --mono:'JetBrains Mono','Fira Mono',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;min-height:100vh;overflow:hidden}
+.hdr{padding:12px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;background:#0a1220}
+.hdr-title{font-size:14px;font-weight:700;color:var(--white)}
+.hdr-sub{font-size:9px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.badge{background:rgba(74,184,245,.12);color:var(--accent);
+  font-size:9px;padding:2px 8px;border-radius:3px;letter-spacing:.06em;font-weight:600;white-space:nowrap}
+.layout{display:grid;grid-template-columns:252px 1fr;height:calc(100vh - 45px)}
+/* sidebar */
+.sidebar{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto}
+.sec{border-bottom:1px solid var(--border);padding:10px 12px}
+.sec-label{font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px}
+.row label{font-size:10px;color:var(--sub);flex:1}
+.row .val{font-size:10px;color:var(--accent);font-family:var(--mono);min-width:40px;text-align:right}
+input[type=range]{flex:1;accent-color:var(--accent);height:3px}
+select{background:#0a1828;color:var(--text);border:1px solid var(--border);
+  padding:3px 6px;border-radius:3px;font-size:10px;width:100%}
+.note-box{font-size:9px;color:var(--dim);line-height:1.5;
+  padding:5px 7px;background:rgba(255,255,255,.02);border-radius:3px;margin-top:5px}
+/* proposals checkboxes */
+.chk-row{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--sub);
+  cursor:pointer;padding:3px 0}
+.chk-row input{accent-color:var(--accent)}
+/* KPI strip */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+  padding:10px 14px;background:#0a1220;border-bottom:1px solid var(--border)}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:8px 10px}
+.kpi .kl{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.kpi .kv{font-size:20px;font-weight:700;font-family:var(--mono);line-height:1}
+.kpi .ku{font-size:9px;color:var(--dim);margin-top:2px}
+.ok{color:var(--green)}.warn{color:var(--gold)}.bad{color:var(--red)}.info{color:var(--accent)}
+/* tabs */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:#0a1220;flex-shrink:0}
+.tab{padding:7px 14px;font-size:11px;cursor:pointer;color:var(--sub);
+  border-bottom:2px solid transparent;white-space:nowrap}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* main */
+.main{display:flex;flex-direction:column;overflow:hidden;height:100%}
+.scroll{overflow-y:auto;flex:1;padding:14px 16px}
+/* proposal rows */
+.prop-table{background:var(--panel);border:1px solid var(--border);border-radius:5px;overflow:hidden;margin-bottom:12px}
+.prop-hdr{display:grid;grid-template-columns:28px 1fr 200px;
+  gap:6px;padding:7px 12px;border-bottom:1px solid var(--border)}
+.prop-hdr span{font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.prop-row{display:grid;grid-template-columns:28px 1fr 200px;
+  gap:8px;padding:10px 12px;border-bottom:1px solid rgba(26,38,54,.6);align-items:start}
+.prop-row:last-child{border-bottom:none}
+.pid{width:24px;height:24px;border-radius:3px;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.pname{font-size:11px;font-weight:600;color:var(--white);margin-bottom:2px}
+.pdesc{font-size:9px;color:var(--sub);line-height:1.45;margin-bottom:3px}
+.pmech{font-size:9px;color:var(--dim);line-height:1.45;
+  padding:4px 6px;background:rgba(255,255,255,.02);border-radius:3px;margin-bottom:3px}
+.pref{font-size:9px;color:var(--dim);font-style:italic}
+.pnote{font-size:9px;margin-top:3px;line-height:1.4}
+.num{font-family:var(--mono);font-size:10px;text-align:right;padding-top:2px}
+.tag{display:inline-block;font-size:8px;padding:1px 5px;border-radius:2px;
+  font-weight:600;letter-spacing:.04em;margin-right:2px;margin-bottom:2px}
+.tag-y{background:rgba(74,207,138,.15);color:var(--green)}
+.tag-n{background:rgba(58,82,104,.3);color:var(--dim)}
+.tag-p{background:rgba(245,200,66,.12);color:var(--gold)}
+/* insight */
+.insight{font-size:10px;color:var(--sub);line-height:1.65;
+  background:var(--panel);border:1px solid var(--border);border-radius:5px;
+  padding:12px 14px;margin-bottom:12px}
+.insight b{color:var(--white)}
+/* TTFF timeline */
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.tl-box{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:12px}
+.tl-label{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.tl-val{font-size:26px;font-weight:700;font-family:var(--mono)}
+.tl-unit{font-size:10px;color:var(--dim);margin-top:2px}
+.tl-steps{margin-top:10px}
+.tl-step{display:flex;align-items:baseline;gap:6px;margin-bottom:4px;font-size:9px;color:var(--sub)}
+.tl-step .ts{font-family:var(--mono);color:var(--accent);min-width:40px;text-align:right}
+/* CW boxes */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.box{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:12px}
+.box-title{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:5px 0;border-bottom:1px solid rgba(26,38,54,.5);font-size:10px}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--sub)}
+.stat-val{font-family:var(--mono);color:var(--text)}
+/* overhead bars */
+.oh-item{margin-bottom:12px}
+.oh-hdr{display:flex;justify-content:space-between;margin-bottom:3px}
+.oh-hdr .ol{font-size:10px;color:var(--sub)}
+.oh-hdr .ov{font-size:10px;font-family:var(--mono);color:var(--accent)}
+.oh-note{font-size:9px;color:var(--dim);margin-bottom:4px;line-height:1.4}
+.oh-bg{background:#0d1a26;border-radius:2px;height:6px;overflow:hidden}
+.oh-fill{height:100%;border-radius:2px;transition:.4s}
+/* ranging table */
+.rng-table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:12px}
+.rng-table th{text-align:left;padding:5px 8px;font-size:9px;color:var(--dim);
+  letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.rng-table td{padding:5px 8px;border-bottom:1px solid rgba(26,38,54,.5)}
+.rng-table tr.best-row td{background:rgba(74,184,245,.05);color:var(--accent)}
+canvas{width:100%;display:block}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="hdr-title">Ka-Band GNSS-Free Acquisition · M1–M5 Framework</div>
+    <div class="hdr-sub">Kuiper 3-shell · CW collision sim · Proprietary sync design · Session findings Aug 2026</div>
+  </div>
+  <div class="badge">PNT / ACQUISITION</div>
+</div>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<div class="sec">
+  <div class="sec-label">Constellation</div>
+  <div class="row" style="margin-bottom:6px">
+    <select id="const" onchange="onConst()">
+      <option value="kuiper" selected>Kuiper (3-shell Ka, 590/610/630km)</option>
+      <option value="starlink">Starlink (1-shell Ku/Ka, 550km)</option>
+    </select>
+  </div>
+  <div class="row"><label>Altitude (km)</label><span class="val" id="v-alt">590</span></div>
+  <input type="range" id="alt" min="400" max="1200" value="590" step="10" oninput="render()">
+  <div class="row" style="margin-top:5px"><label>Min elevation (°)</label><span class="val" id="v-el">25</span></div>
+  <input type="range" id="el" min="10" max="45" value="25" step="5" oninput="render()">
+  <div class="note-box" id="const-note">3 shells: 590/610/630km · 3,236 sats · Ka-band proprietary waveform</div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">Waveform</div>
+  <div class="row"><label>Ka carrier (GHz)</label>
+    <select id="freq" onchange="render()">
+      <option value="12">12 GHz (Ku)</option>
+      <option value="20" selected>20 GHz (Ka DL)</option>
+      <option value="28">28 GHz (Ka)</option>
+    </select>
+  </div>
+  <div class="row" style="margin-top:5px"><label>SCS (kHz)</label>
+    <select id="scs" onchange="render()">
+      <option value="15">15 kHz</option>
+      <option value="30" selected>30 kHz</option>
+      <option value="60">60 kHz</option>
+    </select>
+  </div>
+  <div class="row" style="margin-top:5px"><label>SSB period (ms)</label>
+    <select id="ssb" onchange="render()">
+      <option value="5">5 ms (cold-start mode)</option>
+      <option value="20" selected>20 ms (standard)</option>
+      <option value="80">80 ms</option>
+      <option value="160">160 ms (tracking)</option>
+    </select>
+  </div>
+  <div class="row" style="margin-top:5px"><label>Sync design</label>
+    <select id="sync" onchange="render()">
+      <option value="nr">NR PSS+SSS (4 sym, 240 SC)</option>
+      <option value="prop" selected>Proprietary ZC comb (2 sym, 240 SC)</option>
+      <option value="fullbw">Full-BW ZC (2 sym, all SC)</option>
+    </select>
+  </div>
+  <div class="row" style="margin-top:5px"><label>Total SCs</label><span class="val" id="v-nsc">6667</span></div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">Active Proposals</div>
+  <label class="chk-row"><input type="checkbox" id="m1a" checked onchange="render()">
+    <span>M1a — HOOC-EM terminal sweep</span></label>
+  <label class="chk-row"><input type="checkbox" id="m1b" onchange="render()">
+    <span>M1b — Satellite wide-beam SSB</span></label>
+  <label class="chk-row"><input type="checkbox" id="m2" checked onchange="render()">
+    <span>M2 — CW pilot tone</span></label>
+  <label class="chk-row"><input type="checkbox" id="m5" checked onchange="render()">
+    <span>M5 — Ephemeris in PBCH</span></label>
+  <div class="note-box" style="margin-top:6px" id="combo-note">Phase 1: M1a+M2+M5 — no satellite change needed</div>
+</div>
+
+</div><!-- sidebar -->
+
+<!-- MAIN -->
+<div class="main">
+<div class="kpi-row">
+  <div class="kpi"><div class="kl">Cold-start TTFF</div>
+    <div class="kv info" id="kv-ttff">5.0</div><div class="ku">seconds</div></div>
+  <div class="kpi"><div class="kl">Warm-start TTFF</div>
+    <div class="kv ok" id="kv-warm">150</div><div class="ku">ms</div></div>
+  <div class="kpi"><div class="kl">PNT waveform OH</div>
+    <div class="kv" id="kv-oh">0.045%</div><div class="ku">of all REs</div></div>
+  <div class="kpi"><div class="kl">Processing gain</div>
+    <div class="kv info" id="kv-pg">23.8 dB</div><div class="ku">matched filter</div></div>
+</div>
+
+<div class="tabs" id="tab-bar">
+  <div class="tab active" onclick="showTab(0)">M1–M5 Proposals</div>
+  <div class="tab" onclick="showTab(1)">TTFF Timeline</div>
+  <div class="tab" onclick="showTab(2)">CW Collision</div>
+  <div class="tab" onclick="showTab(3)">Sync Design</div>
+  <div class="tab" onclick="showTab(4)">Overhead Budget</div>
+  <div class="tab" onclick="showTab(5)">Ranging Accuracy</div>
+</div>
+
+<div class="scroll">
+
+<!-- Tab 0: Proposals -->
+<div id="pane-0">
+  <div class="prop-table" id="prop-table">
+    <div class="prop-hdr">
+      <span></span><span>Signal — mechanism — reference</span>
+      <span style="text-align:right">Stats</span>
+    </div>
+    <div id="prop-rows"></div>
+  </div>
+  <div class="insight" id="prop-insight"></div>
+</div>
+
+<!-- Tab 1: TTFF Timeline -->
+<div id="pane-1" style="display:none">
+  <div class="timeline" id="ttff-boxes"></div>
+  <div class="insight" id="ttff-insight"></div>
+</div>
+
+<!-- Tab 2: CW Collision -->
+<div id="pane-2" style="display:none">
+  <div class="two-col">
+    <div class="box">
+      <div class="box-title">Doppler Spectrum — simulated visible satellites</div>
+      <canvas id="cw-canvas" height="180"></canvas>
+    </div>
+    <div class="box">
+      <div class="box-title">Collision Analysis</div>
+      <div id="cw-stats"></div>
+    </div>
+  </div>
+  <div class="insight" id="cw-insight"></div>
+</div>
+
+<!-- Tab 3: Sync Design -->
+<div id="pane-3" style="display:none">
+  <div class="box" style="margin-bottom:12px">
+    <div class="box-title">One OFDM Symbol — Subcarrier Allocation</div>
+    <canvas id="sync-canvas" height="100"></canvas>
+    <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+      <span style="font-size:9px;color:var(--sub)"><span style="display:inline-block;width:10px;height:10px;
+        background:#4ab8f5;border-radius:1px;margin-right:4px;vertical-align:middle"></span>ZC sync comb</span>
+      <span style="font-size:9px;color:var(--sub)"><span style="display:inline-block;width:10px;height:10px;
+        background:#c87af5;border-radius:1px;margin-right:4px;vertical-align:middle"></span>PBCH ephemeris</span>
+      <span style="font-size:9px;color:var(--sub)"><span style="display:inline-block;width:10px;height:10px;
+        background:#f5c842;border-radius:1px;margin-right:4px;vertical-align:middle"></span>CW pilot (per shell)</span>
+      <span style="font-size:9px;color:var(--sub)"><span style="display:inline-block;width:10px;height:10px;
+        background:#1a2636;border-radius:1px;border:1px solid #2a3a4a;margin-right:4px;vertical-align:middle"></span>PDSCH (rate-matched)</span>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="box">
+      <div class="box-title">NR SSB vs Proprietary SSB</div>
+      <div id="sync-compare"></div>
+    </div>
+    <div class="box">
+      <div class="box-title">Key Insight: Sync BW vs SNR</div>
+      <div id="sync-insight"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 4: Overhead Budget -->
+<div id="pane-4" style="display:none">
+  <div class="box" style="margin-bottom:12px">
+    <div class="box-title">Waveform Overhead — % of all REs</div>
+    <div id="oh-bars"></div>
+  </div>
+  <div class="insight" id="oh-insight"></div>
+</div>
+
+<!-- Tab 5: Ranging Accuracy -->
+<div id="pane-5" style="display:none">
+  <table class="rng-table" id="rng-table"></table>
+  <div class="insight" id="rng-insight"></div>
+</div>
+
+</div><!-- scroll -->
+</div><!-- main -->
+</div><!-- layout -->
+
+<script>
+const C=3e8, RE=6371;
+
+// ── PROPOSALS ────────────────────────────────────────────────────────────────
+const PROPS = [
+  { id:'M1a', col:'#4ab8f5',
+    name:'Terminal beam sweep (HOOC-EM)',
+    desc:'Terminal sweeps own phased array in ML order. Satellite transmits normal narrow beam — unchanged.',
+    mech:'CT 16-element sub-array (~17 dBi) sweeps sky in hexagonal ML order, highest-probability elevation sectors first. Satellite does nothing different. Achieves 10–40s TTFF GPS-free.',
+    ref:'Morgan & Humphreys, ION GNSS+ 2024. Amazon Kuiper funded.',
+    note:'HOOC-EM is terminal-side only. Not a satellite-side wide-beam SSB. Phase 1: no satellite change.',
+    note_col:'var(--sub)', ttff_cold:20, oh:0, pub:true, pat:false, incl:'phase 1' },
+  { id:'M1b', col:'#f5c842',
+    name:'Satellite wide-beam SSB',
+    desc:'Satellite changes DBF weight vector for one SSB occasion → ~30° beam. Same 4 symbols, same subcarriers, same time slot.',
+    mech:'SSB is pure DL broadcast — no guard symbols needed for differential delay (guard only needed for UL/PRACH). All beams must coordinate to vacate those symbols (already required for NR-NTN SSB). Incremental OH = 0.',
+    ref:'Not in published Kuiper/Starlink literature. Patent concern: US20220216896A1 (Lynk Global, Jan 2021).',
+    note:'⚠ M1b is the container for M2+M5. Wide-beam+CW+ephemeris = one physical transmission. Patent: "simultaneously" claim — time-multiplexed SSB may circumvent it.',
+    note_col:'var(--gold)', ttff_cold:1.5, oh:0, pub:false, pat:true, incl:'phase 2' },
+  { id:'M2',  col:'#4acf8a',
+    name:'CW pilot tone (Doppler pre-cal)',
+    desc:'One unmodulated subcarrier at known frequency. Terminal detects Doppler in ~100ms — no beam pointing needed.',
+    mech:'Terminal FFT on one subcarrier → measures Doppler shift → collapses frequency search from ±460 kHz to ±200 Hz. Kuiper 3-shell: 3 subcarriers (per-shell allocation) eliminates cross-shell zenith collision. 100ms integration sufficient.',
+    ref:'Kassas group, ION GNSS+ 2024. 9 Starlink Ku-band tones exploited for Doppler PNT. SpaceX reduced pilot power post-2023.',
+    note:'CW "continuous" = signal type (no modulation), not duration. Periodic 100ms burst per SSB period is sufficient.',
+    note_col:'var(--sub)', ttff_cold:0, oh:0.004, pub:true, pat:false, incl:'yes ★' },
+  { id:'M5',  col:'#c87af5',
+    name:'Ephemeris payload in PBCH',
+    desc:'190-bit nav message (sat ID + ECEF position + velocity + epoch) in PBCH data field. Terminal computes az/el → steers Ka array directly.',
+    mech:'PBCH carries: sat ID 12b, ECEF position 3×24b=72b, velocity 3×20b=60b, epoch 30b, CRC-16 16b = 190b total. Rate-1/4 polar + BPSK → decodes at −10dB SNR (single element). Terminal receives after PSS→SSS→PBCH sequence. Enables direct Ka array steering — zero beam search.',
+    ref:'Analog: Iridium STL (operational since 2016). Iannucci & Humphreys, fused LEO GNSS <1.6% OH (IEEE TAES 2022).',
+    note:'Zero incremental OH — rides inside M1b PBCH data field. Pays off from 2nd acquisition: warm-start ~150ms.',
+    note_col:'var(--sub)', ttff_cold:0, oh:0, pub:true, pat:false, incl:'yes ★' },
+];
+
+function gv(id){return +document.getElementById(id).value;}
+function gsel(id){return document.getElementById(id).value;}
+function gchk(id){return document.getElementById(id).checked;}
+
+function onConst(){
+  const k=gsel('const');
+  if(k==='kuiper'){
+    document.getElementById('alt').value=590;
+    document.getElementById('v-alt').textContent=590;
+    document.getElementById('const-note').textContent='3 shells: 590/610/630km · 3,236 sats · Ka-band proprietary waveform';
+  } else {
+    document.getElementById('alt').value=550;
+    document.getElementById('v-alt').textContent=550;
+    document.getElementById('const-note').textContent='Single shell 550km · ~7,000 sats · Ku+Ka band · HOOC-EM not published for Starlink';
+  }
+  render();
+}
+
+function compute(){
+  const alt=gv('alt'), el_min=gv('el'), freq=+gsel('freq'), scs=+gsel('scs');
+  const ssb_ms=+gsel('ssb'), sync=gsel('sync');
+  const is_kuiper=gsel('const')==='kuiper';
+  const m1a=gchk('m1a'), m1b=gchk('m1b'), m2=gchk('m2'), m5=gchk('m5');
+
+  // Symbol duration
+  const sym_us = 1e6/(scs*1e3)*(1+1/14);
+  const bw_mhz = scs===60?208:scs===30?200:180;
+  const n_sc   = Math.round(bw_mhz*1e3/scs);
+  const n_sync = sync==='nr'?240:sync==='prop'?240:n_sc;
+  const n_sym_ssb = sync==='nr'?4:2;
+
+  // OH
+  const syms_per_period = ssb_ms*1000/sym_us;
+  const ssb_oh   = m1b ? n_sym_ssb/syms_per_period*100 : 0;
+  const cw_sc    = is_kuiper ? 3 : 1;
+  const cw_oh    = m2 ? cw_sc/n_sc*100 : 0;
+  const ptrs_oh  = 0.15; // always present for high-MCS
+  const oh_total = ssb_oh + cw_oh + ptrs_oh;
+
+  // Processing gain
+  const pg_sync   = 10*Math.log10(n_sync);
+  const pg_gps_l5 = 40.1;
+
+  // Orbital
+  const h_m = alt*1e3;
+  const v_orb = Math.sqrt(3.986e14/(RE*1e3+h_m));
+  const el_r  = el_min*Math.PI/180;
+  const dop_max_khz = freq*1e9/C*v_orb*Math.cos(el_r)/1e3;
+  const n_sats_total = is_kuiper?3236:7000;
+  const half_angle = Math.acos(Math.cos(el_r)*RE/(RE+alt));
+  const frac = 2*Math.PI*(1-Math.cos(half_angle))/(4*Math.PI);
+  const n_vis  = Math.round(n_sats_total*frac);
+  const dop_span_hz = 2*dop_max_khz*1e3;
+  const T_int = 0.1;
+  const f_res = 1/T_int;
+  const n_bins = Math.round(dop_span_hz/f_res);
+  const p_coll = 1-Math.pow(1-1/n_bins, n_vis-1);
+
+  // TTFF
+  let ttff_cold, ttff_warm, ttff_hot;
+  if(m1b&&m2&&m5)     {ttff_cold=0.4; ttff_warm=0.185; ttff_hot=0.010;}
+  else if(m1b&&m2)     {ttff_cold=0.8; ttff_warm=0.5;   ttff_hot=0.020;}
+  else if(m1a&&m2&&m5) {ttff_cold=5;   ttff_warm=0.15;  ttff_hot=0.010;}
+  else if(m1a&&m2)     {ttff_cold=10;  ttff_warm=1.0;   ttff_hot=0.050;}
+  else if(m1a)         {ttff_cold=25;  ttff_warm=5.0;   ttff_hot=1.000;}
+  else                 {ttff_cold=999; ttff_warm=999;   ttff_hot=999;}
+
+  // Ranging accuracy vs sync BW
+  const snr_db=23.5, snr_lin=Math.pow(10,snr_db/10);
+  const rng_rows=[];
+  [{n:53,label:'Min (1.6MHz, PBCH timing only)'},
+   {n:240,label:'Prop. ZC comb (18MHz) ← recommended'},
+   {n:600,label:'Wider comb (45MHz)'},
+   {n:n_sc,label:'Full BW ('+bw_mhz+'MHz)'}].forEach(s=>{
+    const bw=s.n*scs*1e3;
+    const bw_rms=bw/Math.sqrt(12);
+    const sigma_ns=1/(2*Math.PI*Math.sqrt(2)*Math.sqrt(snr_lin)*bw_rms)*1e9;
+    const sigma_m=C*sigma_ns*1e-9;
+    const tcxo_m=0.30; // TCXO clock limit ~30cm at 20ms
+    const limit=Math.max(sigma_m,tcxo_m);
+    rng_rows.push({n:s.n,label:s.label,sigma_ns,sigma_m,tcxo_m,limit,
+      bottleneck:sigma_m<tcxo_m?'Clock (TCXO)':'Thermal noise'});
+  });
+
+  return {alt,el_min,freq,scs,ssb_ms,sync,n_sc,n_sync,n_sym_ssb,
+    ssb_oh,cw_sc,cw_oh,ptrs_oh,oh_total,pg_sync,pg_gps_l5,
+    dop_max_khz,n_vis,dop_span_hz,f_res,n_bins,p_coll,
+    ttff_cold,ttff_warm,ttff_hot,rng_rows,bw_mhz,
+    m1a,m1b,m2,m5,is_kuiper,sym_us,syms_per_period};
+}
+
+let activePane=0;
+function showTab(i){
+  activePane=i;
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  document.querySelectorAll('.scroll>div').forEach((p,j)=>p.style.display=j===i?'block':'none');
+  renderPane(i, lastR);
+}
+
+let lastR=null;
+function render(){
+  ['alt','el'].forEach(id=>{
+    const v=document.getElementById(id).value;
+    document.getElementById('v-'+id).textContent=v;
+  });
+  const r=compute(); lastR=r;
+  document.getElementById('v-nsc').textContent=r.n_sc;
+
+  // KPIs
+  const tf=r.ttff_cold<999?r.ttff_cold.toFixed(1):'—';
+  const wm=r.ttff_warm<999?(r.ttff_warm*1000).toFixed(0):'—';
+  document.getElementById('kv-ttff').textContent=tf;
+  document.getElementById('kv-ttff').className='kv '+(r.ttff_cold<1?'ok':r.ttff_cold<10?'warn':'bad');
+  document.getElementById('kv-warm').textContent=wm;
+  document.getElementById('kv-oh').textContent=r.oh_total.toFixed(3)+'%';
+  document.getElementById('kv-oh').className='kv '+(r.oh_total<0.5?'ok':'warn');
+  document.getElementById('kv-pg').textContent=r.pg_sync.toFixed(1)+' dB';
+
+  // combo note
+  const combo=r.m1b&&r.m2&&r.m5?'Phase 2: M1b+M2+M5 — ~400ms cold-start':
+              r.m1b?'Phase 2: M1b — satellite SW update needed':
+              r.m1a&&r.m2&&r.m5?'Phase 1: M1a+M2+M5 — no satellite change':
+              r.m1a?'Phase 1: M1a only — GPS-free but slow':
+              'No acquisition signal selected';
+  document.getElementById('combo-note').textContent=combo;
+
+  renderPane(activePane, r);
+}
+
+function renderPane(i, r){
+  if(!r) return;
+  if(i===0) renderProposals(r);
+  if(i===1) renderTTFF(r);
+  if(i===2) renderCW(r);
+  if(i===3) renderSync(r);
+  if(i===4) renderOverhead(r);
+  if(i===5) renderRanging(r);
+}
+
+// ── TAB 0: PROPOSALS ─────────────────────────────────────────────────────────
+function renderProposals(r){
+  const active={M1a:r.m1a,M1b:r.m1b,M2:r.m2,M5:r.m5};
+  let html='';
+  PROPS.forEach(p=>{
+    const on=active[p.id];
+    const op=on?1:0.38;
+    const ttff_str=p.id==='M5'?'0 (enables)':
+                   p.id==='M2'?'~100ms':
+                   p.ttff_cold<1?(p.ttff_cold*1000).toFixed(0)+'ms':p.ttff_cold+'s';
+    const oh_str=p.oh===0?'0%':p.oh.toFixed(3)+'%';
+    const pub_tag=p.pub?'<span class="tag tag-y">Published</span>':
+                        '<span class="tag tag-n">Proposed</span>';
+    const pat_tag=p.pat?'<span class="tag tag-p">⚠ Patent</span>':'';
+    const incl_tag=p.incl==='yes ★'?'<span class="tag tag-y">✓ yes</span>':
+                   p.incl==='phase 1'?'<span class="tag tag-n">phase 1</span>':
+                   '<span class="tag tag-n">phase 2</span>';
+    html+=`<div class="prop-row" style="opacity:${op}">
+      <div class="pid" style="background:${p.col}22;color:${p.col}">${p.id}</div>
+      <div>
+        <div class="pname">${p.name}</div>
+        <div class="pdesc">${p.desc}</div>
+        <div class="pmech">${p.mech}</div>
+        <div class="pref">${p.ref}</div>
+        <div class="pnote" style="color:${p.note_col}">${p.note}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+        <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:${p.col}">${ttff_str}</div>
+        <div style="font-size:9px;color:var(--dim)">TTFF cold</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text)">${oh_str} OH</div>
+        <div style="margin-top:3px">${pub_tag}${pat_tag}</div>
+        <div>${incl_tag}</div>
+      </div>
+    </div>`;
+  });
+  // Update header for 3-col layout
+  document.getElementById('prop-table').querySelector('.prop-hdr').innerHTML=
+    '<span></span><span>Signal — mechanism — reference</span><span style="text-align:right">Stats</span>';
+  document.getElementById('prop-rows').innerHTML=html;
+
+  const combo=r.m1b&&r.m2&&r.m5?'M1b+M2+M5':r.m1a&&r.m2&&r.m5?'M1a+M2+M5':
+              r.m1a?'M1a only':'No signals';
+  document.getElementById('prop-insight').innerHTML=
+    `<b>Selected: ${combo}</b> — Cold TTFF: <b style="color:var(--accent)">${r.ttff_cold<999?r.ttff_cold.toFixed(1)+'s':'—'}</b> · `+
+    `Warm: <b style="color:var(--green)">${r.ttff_warm<999?(r.ttff_warm*1000).toFixed(0)+'ms':'—'}</b><br><br>`+
+    `<b>M1b is the container. M2 and M5 are its payload.</b> One wide-beam SSB burst carries the CW subcarrier (M2) and ephemeris (M5) — one transmission, three functions: beam acquisition + Doppler pre-cal + direct Ka array steering.<br><br>`+
+    `<b>Phase 1</b> (zero satellite change): M1a terminal sweep + M2 CW (3 subcarriers for Kuiper 3-shell) + M5 ephemeris once first lock is made. TTFF ~5–30s cold, ~150ms warm.<br>`+
+    `<b>Phase 2</b> (satellite SW update only): M1b replaces M1a → ~400ms cold, ~185ms warm. Patent clearance needed: Lynk Global US20220216896A1.`;
+}
+
+// ── TAB 1: TTFF TIMELINE ─────────────────────────────────────────────────────
+function renderTTFF(r){
+  const boxes=[
+    {label:'Cold start', sub:'No prior knowledge',
+     val:r.ttff_cold<999?r.ttff_cold<1?(r.ttff_cold*1000).toFixed(0)+'ms':r.ttff_cold.toFixed(1)+'s':'—',
+     cls:r.ttff_cold<1?'ok':r.ttff_cold<10?'warn':'bad',
+     steps:[
+       {t:'0ms',    desc:'Power on. No GNSS. No beam knowledge.'},
+       {t:'~100ms', desc:'M2 CW tone detected (1-element FFT). Doppler measured ±200Hz.'},
+       {t:'~200ms', desc:'PSS correlation (ZC) → satellite ID + timing lock.'},
+       {t:'~250ms', desc:'SSS decode → cell ID confirmed.'},
+       {t:'~300ms', desc:'PBCH decode → ephemeris received (M5). az/el computed.'},
+       {t:'~400ms', desc:'Ka array steered. M1b path. (M1a: 5–30s for beam sweep instead.)'},
+     ]},
+    {label:'Warm start', sub:'Have ephemeris from prev. session',
+     val:r.ttff_warm<999?(r.ttff_warm*1000).toFixed(0)+'ms':'—',
+     cls:'ok',
+     steps:[
+       {t:'0ms',   desc:'Terminal powers on. Last ephemeris known (age <1hr).'},
+       {t:'~5ms',  desc:'Predict satellite az/el from stored ephemeris + dead-reckoning.'},
+       {t:'~15ms', desc:'Steer Ka array to predicted position.'},
+       {t:'~50ms', desc:'PSS→SSS→PBCH decode. Confirm satellite, update ephemeris.'},
+       {t:'~150ms',desc:'Full lock. Data session begins.'},
+     ]},
+    {label:'Hot start', sub:'Tracking mode — next satellite handoff',
+     val:r.ttff_hot<999?(r.ttff_hot*1000).toFixed(0)+'ms':'—',
+     cls:'ok',
+     steps:[
+       {t:'0ms',  desc:'Predict next satellite from ephemeris (exact az/el known).'},
+       {t:'~2ms', desc:'Pre-steer Ka array to predicted handoff target.'},
+       {t:'~5ms', desc:'Verify PSS timing on new satellite.'},
+       {t:'~10ms',desc:'Handoff complete. Seamless session continuity.'},
+     ]},
+  ];
+
+  let html='';
+  boxes.forEach(b=>{
+    let steps='';
+    b.steps.forEach(s=>{
+      steps+=`<div class="tl-step"><span class="ts">${s.t}</span><span>${s.desc}</span></div>`;
+    });
+    html+=`<div class="tl-box">
+      <div class="tl-label">${b.label}</div>
+      <div style="font-size:9px;color:var(--dim);margin-bottom:4px">${b.sub}</div>
+      <div class="tl-val ${b.cls}">${b.val}</div>
+      <div class="tl-steps">${steps}</div>
+    </div>`;
+  });
+  document.getElementById('ttff-boxes').innerHTML=html;
+
+  document.getElementById('ttff-insight').innerHTML=
+    `<b>Each additional satellite lock tightens the prior for the next.</b> Cold→warm→hot is a one-way ratchet: `+
+    `once the first satellite is locked (M1b+M2+M5, ~400ms), the terminal knows its position ±20km and time ±1ms. `+
+    `Every subsequent satellite uses that prior — beam prediction is direct, timing prediction is narrow. `+
+    `After 2–3 locks the terminal is in hot-start tracking mode and the acquisition problem has essentially vanished.<br><br>`+
+    `<b>Adaptive SSB period:</b> The optimal period changes with acquisition state — `+
+    `5ms for cold start (fast TTFF), 160ms for tracking (minimal OH). `+
+    `The satellite can broadcast the SSB period in SIB/MIB and switch based on known connected terminal count per beam.`;
+}
+
+// ── TAB 2: CW COLLISION ───────────────────────────────────────────────────────
+function renderCW(r){
+  const canvas=document.getElementById('cw-canvas');
+  const W=canvas.width=canvas.offsetWidth*devicePixelRatio||600;
+  const H=canvas.height=180*devicePixelRatio;
+  canvas.style.height='180px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const w=W/devicePixelRatio, h=H/devicePixelRatio;
+
+  ctx.fillStyle='#080d14'; ctx.fillRect(0,0,w,h);
+  const mx=38, my=10, bw=w-mx-10, bh=h-my-28;
+
+  // Axis
+  ctx.strokeStyle='#1a2636'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx,my+bh); ctx.lineTo(mx+bw,my+bh); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle='#3a5268'; ctx.font=`${9/devicePixelRatio*devicePixelRatio}px monospace`;
+  ctx.textAlign='center';
+  ctx.fillText(`-${r.dop_max_khz.toFixed(0)}kHz`, mx, h-5);
+  ctx.fillText('0', mx+bw/2, h-5);
+  ctx.fillText(`+${r.dop_max_khz.toFixed(0)}kHz`, mx+bw, h-5);
+  ctx.textAlign='left'; ctx.fillStyle='#3a5268';
+  ctx.fillText('Power↑', 2, my+10);
+
+  // Simulate satellite spikes
+  const shells=r.is_kuiper?3:1;
+  const shell_cols=['#4ab8f5','#4acf8a','#f5c842'];
+  const n_draw=Math.min(r.n_vis,35);
+
+  function seeded(seed){let x=Math.sin(seed*7.3+1.1)*10000;return x-Math.floor(x);}
+
+  for(let i=0;i<n_draw;i++){
+    const dop_norm=seeded(i*13+5)*2-1; // -1 to +1
+    const x=mx+((dop_norm+1)/2)*bw;
+    const shell=i%shells;
+    const col=shell_cols[shell];
+    const spike_h=15+seeded(i*7+2)*45;
+    const is_zenith=(Math.abs(dop_norm)<0.03)&&shells>1;
+
+    ctx.strokeStyle=is_zenith?'#e05252':col;
+    ctx.lineWidth=is_zenith?2:1.5;
+    ctx.globalAlpha=is_zenith?1:0.75;
+    ctx.beginPath();
+    ctx.moveTo(x,my+bh);
+    ctx.lineTo(x,my+bh-spike_h);
+    ctx.stroke();
+
+    if(is_zenith){
+      ctx.globalAlpha=1;
+      ctx.fillStyle='#e05252';
+      ctx.font='8px monospace';
+      ctx.textAlign='center';
+      ctx.fillText('collision', x, my+bh-spike_h-6);
+    }
+  }
+  ctx.globalAlpha=1;
+
+  // Per-shell CW subcarrier markers (if Kuiper)
+  if(r.is_kuiper){
+    const shell_x=[mx+bw*0.1, mx+bw*0.13, mx+bw*0.16];
+    shell_cols.forEach((col,i)=>{
+      ctx.strokeStyle=col; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+      ctx.beginPath();
+      ctx.moveTo(shell_x[i], my+bh);
+      ctx.lineTo(shell_x[i], my+5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle=col; ctx.font='8px monospace'; ctx.textAlign='center';
+      ctx.fillText(`SC${i}`, shell_x[i], my+3);
+    });
+    ctx.fillStyle='#3a5268'; ctx.font='8px monospace'; ctx.textAlign='left';
+    ctx.fillText('per-shell CW', mx+5, my+bh-5);
+  }
+
+  // Stats
+  const avg_gap=r.dop_span_hz/Math.max(r.n_vis,1);
+  document.getElementById('cw-stats').innerHTML=
+    `<div class="stat-row"><span class="stat-label">Visible sats (el>${r.el_min}°)</span>
+      <span class="stat-val">${r.n_vis}</span></div>`+
+    `<div class="stat-row"><span class="stat-label">Doppler span (${r.freq}GHz)</span>
+      <span class="stat-val">±${r.dop_max_khz.toFixed(0)} kHz</span></div>`+
+    `<div class="stat-row"><span class="stat-label">Avg Doppler separation</span>
+      <span class="stat-val">${avg_gap.toFixed(0)} Hz</span></div>`+
+    `<div class="stat-row"><span class="stat-label">CW resolution (100ms)</span>
+      <span class="stat-val">${r.f_res.toFixed(0)} Hz</span></div>`+
+    `<div class="stat-row"><span class="stat-label">Separation / resolution</span>
+      <span class="stat-val" style="color:var(--green)">${(avg_gap/r.f_res).toFixed(0)}× margin</span></div>`+
+    `<div class="stat-row"><span class="stat-label">Same-bin collision prob.</span>
+      <span class="stat-val" style="color:${r.p_coll<0.005?'var(--green)':'var(--gold)'}">${(r.p_coll*100).toFixed(2)}%</span></div>`+
+    (r.is_kuiper?
+    `<div class="stat-row"><span class="stat-label">Cross-shell zenith collision</span>
+      <span class="stat-val" style="color:var(--red)">0.15% — inevitable</span></div>`+
+    `<div class="stat-row"><span class="stat-label">Fix: per-shell CW SC</span>
+      <span class="stat-val" style="color:var(--green)">3 SC / ${r.n_sc} = 0.042% OH</span></div>`:'');
+
+  document.getElementById('cw-insight').innerHTML=
+    `<b>Simulation finding:</b> With ${r.n_vis} visible satellites, Doppler separation is `+
+    `<b>${(avg_gap/r.f_res).toFixed(0)}×</b> the 100ms resolution — all satellites trivially resolved in frequency.<br><br>`+
+    (r.is_kuiper?
+    `<b>The 0.15% cross-shell collision is geometrically inevitable</b> — not probabilistic. Two satellites from different shells periodically pass zenith simultaneously, giving identical zero radial velocity. The collision rate does NOT improve with longer integration time.<br><br>`+
+    `<b>Solution: per-shell CW subcarrier allocation.</b> Shell 590km → SC<sub>0</sub>, 610km → SC<sub>1</sub>, 630km → SC<sub>2</sub>. Zero intra-shell collisions (orbital mechanics guarantees distinct radial velocities within a shell). 3 SC / ${r.n_sc} = <b>0.042% OH</b>. This finding is specific to Kuiper's 3-shell Ka architecture.`
+    :`<b>Single-shell Starlink:</b> No cross-shell collision possible. One CW subcarrier, zero ambiguity, purely Doppler-discriminated.`);
+}
+
+// ── TAB 3: SYNC DESIGN ────────────────────────────────────────────────────────
+function renderSync(r){
+  const canvas=document.getElementById('sync-canvas');
+  const W=canvas.width=canvas.offsetWidth*devicePixelRatio||800;
+  const H=canvas.height=100*devicePixelRatio;
+  canvas.style.height='100px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const w=W/devicePixelRatio, h=H/devicePixelRatio;
+
+  ctx.fillStyle='#080d14'; ctx.fillRect(0,0,w,h);
+  const ml=42, bar_y=14, bar_h=52, n_sc=r.n_sc;
+  const sc_w=(w-ml-8)/n_sc;
+
+  for(let i=0;i<n_sc;i++){
+    const x=ml+i*sc_w;
+    const is_sync  = r.sync==='fullbw'?true:(i%30===0&&i<7200);
+    const is_pbch  = !is_sync&&r.sync!=='nr'&&i>=1&&i<760;
+    const is_nr_sync = r.sync==='nr'&&i<240;
+    const is_nr_pbch = r.sync==='nr'&&i>=240&&i<760;
+    const is_cw     = r.is_kuiper&&(i===100||i===101||i===102);
+
+    let col='#111f2e';
+    if(is_cw)       col='#f5c842';
+    else if(is_sync||is_nr_sync) col='#4ab8f5';
+    else if(is_pbch||is_nr_pbch) col='#c87af5';
+
+    ctx.fillStyle=col;
+    ctx.fillRect(x, bar_y, Math.max(sc_w-0.3,0.8), bar_h);
+  }
+
+  ctx.fillStyle='#3a5268'; ctx.font='9px monospace';
+  ctx.textAlign='left';  ctx.fillText('SC 0', ml, bar_y-3);
+  ctx.textAlign='right'; ctx.fillText(`SC ${n_sc}`, w-8, bar_y-3);
+  ctx.textAlign='left';  ctx.fillText('1 OFDM symbol', 2, bar_y+bar_h/2+4);
+
+  // Usage breakdown
+  const sync_pct=(r.n_sync/n_sc*100).toFixed(1);
+  const pbch_pct=(760/n_sc*100).toFixed(1);
+  const cw_pct  =(r.cw_sc/n_sc*100).toFixed(3);
+  const data_pct=(100-+sync_pct-+pbch_pct-+cw_pct).toFixed(1);
+
+  document.getElementById('sync-compare').innerHTML=
+    `<div class="stat-row"><span class="stat-label">ZC sync comb (every 30th SC)</span>
+      <span class="stat-val" style="color:#4ab8f5">${r.n_sync} SC (${sync_pct}%)</span></div>`+
+    `<div class="stat-row"><span class="stat-label">PBCH ephemeris (190b, BPSK r-1/4)</span>
+      <span class="stat-val" style="color:#c87af5">760 SC (${pbch_pct}%)</span></div>`+
+    `<div class="stat-row"><span class="stat-label">CW pilot tone${r.is_kuiper?' (3 shells)':''}</span>
+      <span class="stat-val" style="color:#f5c842">${r.cw_sc} SC (${cw_pct}%)</span></div>`+
+    `<div class="stat-row"><span class="stat-label">PDSCH data (rate-matched)</span>
+      <span class="stat-val" style="color:var(--green)">${data_pct}% of symbol</span></div>`+
+    `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+      <div class="stat-row"><span class="stat-label">NR SSB (4 sym, 240 SC dedicated)</span>
+        <span class="stat-val">0.714% OH at 20ms</span></div>
+      <div class="stat-row"><span class="stat-label">Proprietary SSB (2 sym, 86% data)</span>
+        <span class="stat-val" style="color:var(--green)">${(2/r.syms_per_period*100).toFixed(3)}% OH → 29× better</span></div>
+    </div>`;
+
+  document.getElementById('sync-insight').innerHTML=
+    `<b>Matched filter SNR = Pr × T_sym / N0</b><br>`+
+    `This is <b>independent of how many subcarriers the sync occupies.</b> `+
+    `Spreading across more subcarriers distributes the same signal energy — `+
+    `the matched filter collects it all back regardless. Wider BW improves ranging resolution only.<br><br>`+
+    `<b>Processing gain: ${r.pg_sync.toFixed(1)} dB</b> `+
+    `(GPS L5: ${r.pg_gps_l5} dB, diff: ${(r.pg_sync-r.pg_gps_l5>=0?'+':'')}${(r.pg_sync-r.pg_gps_l5).toFixed(1)} dB)<br><br>`+
+    `<b>ZC replaces PSS+SSS:</b> satellite ID + timing in ONE correlation — `+
+    `no 2-stage search needed (PSS→SSS was a 2003-era complexity decision for terrestrial UEs). `+
+    `ZC channel estimate replaces DMRS. PDSCH rate-matches around SSB subcarriers via `+
+    `NR Rel-15 ssb-PositionsInBurst mechanism.`;
+}
+
+// ── TAB 4: OVERHEAD ───────────────────────────────────────────────────────────
+function renderOverhead(r){
+  const items=[
+    {label:'SSB ('+r.n_sym_ssb+' sym, '+r.ssb_ms+'ms period)',
+     oh:r.ssb_oh, col:'#4ab8f5',
+     note:'Wide-beam SSB (M1b). Incremental OH = 0 vs normal SSB already required for NR-NTN. All N_beams vacate same symbols simultaneously — but this coordination already exists for standard NTN SSB.'},
+    {label:'CW pilot ('+r.cw_sc+' SC / '+r.n_sc+' total)',
+     oh:r.cw_oh, col:'#4acf8a',
+     note:'Per-shell allocation eliminates cross-shell Doppler collision. '+(r.is_kuiper?'3 subcarriers one per shell (590/610/630km).':'1 subcarrier for single-shell constellation.')},
+    {label:'PBCH ephemeris (M5)',
+     oh:0, col:'#c87af5',
+     note:'Zero incremental OH — rides inside PBCH data field of M1b SSB. 190 bits replaces existing MIB content.'},
+    {label:'PTRS carrier-phase (always present)',
+     oh:r.ptrs_oh, col:'#f5a623',
+     note:'Already present for 256-QAM phase coherence. Sub-metre carrier-phase PNT is a free byproduct — the signal infrastructure is paid for by the throughput roadmap.'},
+  ];
+  const total=items.reduce((s,i)=>s+i.oh,0);
+  const max_oh=0.6;
+
+  let html='';
+  items.forEach(item=>{
+    const pct=Math.max(0.5,item.oh/max_oh*100);
+    html+=`<div class="oh-item">
+      <div class="oh-hdr">
+        <span class="ol" style="color:${item.col}">${item.label}</span>
+        <span class="ov">${item.oh.toFixed(3)}%</span>
+      </div>
+      <div class="oh-note">${item.note}</div>
+      <div class="oh-bg"><div class="oh-fill" style="width:${pct}%;background:${item.col}"></div></div>
+    </div>`;
+  });
+  html+=`<div style="display:flex;justify-content:space-between;margin-top:12px;
+    padding-top:10px;border-top:1px solid var(--border)">
+    <span style="font-size:10px;color:var(--sub);font-weight:600">Total PNT waveform overhead</span>
+    <span style="font-family:var(--mono);color:var(--accent);font-weight:700">${total.toFixed(3)}%</span>
+  </div>`;
+  document.getElementById('oh-bars').innerHTML=html;
+
+  document.getElementById('oh-insight').innerHTML=
+    `<b>3GPP Rel-20 context:</b> Active study item on GNSS-resilient NTN (targeted March 2027) — `+
+    `but at L-band/FR1/IoT level. Kuiper's Ka-band proprietary waveform is ahead of standardisation. `+
+    `Overhead concern confirmed in academic literature (arxiv 2305.12259) — solution not yet standardised.<br><br>`+
+    `<b>The DPD/MCS and PNT priorities share the same PTRS.</b> PTRS for 256-QAM phase coherence `+
+    `is already the signal infrastructure needed for carrier-phase ranging — sub-metre PNT is a `+
+    `free byproduct of the throughput roadmap.<br><br>`+
+    `<b>Total M1b+M2+M5 incremental OH: ${(r.ssb_oh+r.cw_oh).toFixed(3)}%</b> — `+
+    `Shannon efficiency loss: ${((r.ssb_oh+r.cw_oh)/100*100).toFixed(3)}%. Effectively free.`;
+}
+
+// ── TAB 5: RANGING ACCURACY ───────────────────────────────────────────────────
+function renderRanging(r){
+  const recommended=240;
+  let rows='<tr><th>Sync BW</th><th>N_sync SC</th><th>σ_timing (ns)</th>'
+    +'<th>σ_range (m)</th><th>Clock limit (TCXO)</th><th>Actual limit</th><th>Bottleneck</th></tr>';
+
+  r.rng_rows.forEach(row=>{
+    const is_rec=row.n===recommended;
+    rows+=`<tr${is_rec?' class="best-row"':''}>
+      <td style="color:${is_rec?'var(--accent)':'var(--sub)'}">${row.label}</td>
+      <td style="font-family:var(--mono)">${row.n}</td>
+      <td style="font-family:var(--mono)">${row.sigma_ns.toFixed(2)}</td>
+      <td style="font-family:var(--mono)">${row.sigma_m.toFixed(3)}</td>
+      <td style="font-family:var(--mono)">${row.tcxo_m.toFixed(2)}</td>
+      <td style="font-family:var(--mono);color:${row.bottleneck==='Clock (TCXO)'?'var(--gold)':'var(--green)'}">
+        ${row.limit.toFixed(2)} m</td>
+      <td style="font-size:9px;color:${row.bottleneck==='Clock (TCXO)'?'var(--gold)':'var(--green)'}">
+        ${row.bottleneck}</td>
+    </tr>`;
+  });
+  document.getElementById('rng-table').innerHTML=rows;
+
+  document.getElementById('rng-insight').innerHTML=
+    `<b>The sync signal serves dual purpose: acquisition AND ranging.</b> `+
+    `The same ZC symbol that gives timing lock for PBCH decode also gives a TOA ranging measurement: `+
+    `Range = C × (t_received − t_transmitted).<br><br>`+
+    `<b>Bandwidth controls ranging resolution, not detection SNR.</b> `+
+    `Matched filter SNR = Pr×T_sym/N0 — independent of N_sync. `+
+    `Going from 240 SC to full BW doesn't improve acquisition reliability — it improves ranging precision.<br><br>`+
+    `<b>Full BW is clock-limited, not noise-limited.</b> A TCXO at 50ppb over 20ms gives ~30cm error — `+
+    `larger than the thermal noise floor at any sync BW above 240 SC. `+
+    `Full-BW sync only pays off with OCXO or GPS-disciplined clock (or PTRS carrier-phase for relative ranging). `+
+    `<b>240 SC (18 MHz) is the recommended choice</b> — adequate ranging, 86% of symbol remains for PDSCH data.`;
+}
+
+render();
+</script>
+</body>
+</html>
