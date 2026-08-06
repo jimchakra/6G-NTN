@@ -2,302 +2,344 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>5G gNB / 6G aNB RAN DU — Architecture & HW Acceleration Study</title>
 <style>
 :root{
-  --bg:#f7f6f2;--bg2:#ffffff;--bg3:#f0ede6;--bd:#d8d3c8;--bd2:#c4bdb0;
-  --tx:#0d0b09;--dim:#3a3630;--dim2:#6b6560;
+  --bg:#f7f6f2;--bg2:#ffffff;--bg3:#f0ede6;--bd:#b8b0a4;--bd2:#a09890;
+  --tx:#000000;--dim:#111111;--dim2:#333333;
   --blue:#1a3d6b;--green:#1a4d35;--amber:#8a3d04;--red:#7a1525;--purple:#3d2558;
   --teal:#0d4f4f;
   --mono:'JetBrains Mono','Fira Code','Courier New',monospace;
-  --sans:'Georgia','Times New Roman',serif;
-  --ui:'Helvetica Neue','Arial',sans-serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --ui:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--tx);font-family:var(--ui);font-size:15px;
-  line-height:1.75;-webkit-font-smoothing:antialiased}
+body{background:#f7f6f2;color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;
+  line-height:1.70;-webkit-font-smoothing:antialiased}
 .page{max-width:920px;margin:0 auto;padding:0 32px}
 @media(max-width:720px){.page{padding:0 14px}}
 
 /* ── Nav ── */
-.topnav{position:sticky;top:0;background:rgba(12,15,24,.92);
-  backdrop-filter:blur(8px);border-bottom:1px solid var(--bd);
+.topnav{position:sticky;top:0;background:rgba(248,247,244,.95);
+  backdrop-filter:blur(8px);border-bottom:1px solid #b8b0a4;
   z-index:100;padding:0 32px}
 .topnav-inner{max-width:920px;margin:0 auto;display:flex;gap:0;overflow-x:auto}
-.tnav{padding:10px 14px;font-size:12px;color:var(--dim);cursor:pointer;
+.tnav{padding:10px 14px;font-size:12px;color:#333333;cursor:pointer;font-weight:500;
   border-bottom:2px solid transparent;white-space:nowrap;transition:all .12s}
-.tnav:hover{color:var(--tx)}
-.tnav.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tnav:hover{color:#000000}
+.tnav.on{color:#1a3d6b;border-bottom-color:#1a3d6b}
 
 /* ── Hero ── */
-.hero{padding:48px 0 32px;border-bottom:1px solid var(--bd)}
-.chip{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--blue);background:rgba(79,142,247,.1);
+.hero{padding:48px 0 32px;border-bottom:1px solid #b8b0a4}
+.chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:#1a3d6b;background:rgba(79,142,247,.1);
   border:1px solid rgba(79,142,247,.2);border-radius:4px;padding:3px 9px;margin-bottom:14px}
 .hero h1{font-size:26px;font-weight:700;color:#0d0b09;line-height:1.2;
   letter-spacing:-.02em;margin-bottom:8px}
-.hero-sub{font-size:14px;color:var(--dim);max-width:640px;line-height:1.6}
+.hero-sub{font-size:15px;color:#111111;max-width:640px;line-height:1.6}
 
 /* ── Section ── */
 .sec{padding:32px 0 0;scroll-margin-top:48px}
-.sec-lbl{font-size:11px;font-weight:700;color:var(--tx);text-transform:uppercase;
-  letter-spacing:.10em;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.sec-lbl{font-size:10px;font-weight:700;color:#1a3d6b;text-transform:uppercase;
+  letter-spacing:.10em;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #1a3d6b}
 
 /* ── Finding cards ── */
 .kf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:32px}
 @media(max-width:600px){.kf-grid{grid-template-columns:1fr}}
-.kf{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;
+.kf{background:#ffffff;border:1px solid #b8b0a4;border-top:3px solid #1a3d6b;border-radius:8px;
   padding:14px 16px;border-left:2.5px solid}
-.kf.g{border-left-color:var(--green)}.kf.b{border-left-color:var(--blue)}
-.kf.r{border-left-color:var(--red)}.kf.a{border-left-color:var(--amber)}
-.kf.p{border-left-color:var(--purple)}
-.kf-n{font-size:10px;color:var(--blue);font-family:var(--mono);margin-bottom:4px;font-weight:700}
-.kf-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:5px;line-height:1.4}
-.kf p{font-size:12px;color:var(--dim);line-height:1.6;margin:0}
-.num{font-family:var(--mono);color:var(--green);font-weight:700}
-.numr{font-family:var(--mono);color:var(--red);font-weight:700}
-.numa{font-family:var(--mono);color:var(--amber);font-weight:700}
-.nump{font-family:var(--mono);color:var(--purple);font-weight:700}
+.kf.g{border-left-color:#1a4d35}.kf.b{border-left-color:#1a3d6b}
+.kf.r{border-left-color:#7a1525}.kf.a{border-left-color:#7a3d04}
+.kf.p{border-left-color:#3d2558}
+.kf-n{font-weight:600;color:#111111;font-size:10px;color:#1a3d6b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;margin-bottom:4px;font-weight:700}
+.kf-t{font-size:14px;font-weight:600;color:#000000;margin-bottom:5px;line-height:1.4}
+.kf p{font-size:13px;color:#111111;line-height:1.6;margin:0;font-weight:450}
+.num{font-weight:600;color:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#1a4d35;font-weight:700}
+.numr{font-weight:600;color:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#7a1525;font-weight:700}
+.numa{font-weight:600;color:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#7a3d04;font-weight:700}
+.nump{font-weight:600;color:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#3d2558;font-weight:700}
 
 /* ── Company-A DU100 reference panel ── */
 .x100-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
 @media(max-width:600px){.x100-grid{grid-template-columns:1fr}}
-.x100-panel{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:16px}
-.x100-title{font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.x100-panel{background:#ffffff;border:1px solid #b8b0a4;border-radius:8px;padding:16px}
+.x100-title{font-size:11px;font-weight:700;color:#7a3d04;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #b8b0a4}
 .x100-row{display:flex;justify-content:space-between;align-items:baseline;
-  padding:3px 0;border-bottom:1px solid var(--bd)}
+  padding:3px 0;border-bottom:1px solid #b8b0a4}
 .x100-row:last-child{border-bottom:none}
-.x100-key{font-size:11px;color:var(--dim)}
-.x100-val{font-size:11px;font-family:var(--mono);color:var(--tx);text-align:right}
-.x100-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;
+.x100-key{font-size:12px;color:#111111;font-weight:500}
+.x100-val{font-size:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;color:#111111;text-align:right}
+.x100-tag{display:inline-block;font-size:11px;padding:1px 5px;border-radius:3px;
   margin:2px 0;background:rgba(245,165,42,.1);border:1px solid rgba(245,165,42,.25);
-  color:var(--amber)}
-.nvidia-tag{background:rgba(62,207,142,.1);border-color:rgba(62,207,142,.25);color:var(--green)}
+  color:#7a3d04}
+.nvidia-tag{background:rgba(62,207,142,.1);border-color:rgba(62,207,142,.25);color:#1a4d35}
 .compare-table{width:100%;border-collapse:collapse;font-size:11px;margin:12px 0}
-.compare-table th{text-align:left;padding:7px 10px;background:var(--bg2);
-  color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  border-bottom:1px solid var(--bd)}
-.compare-table td{padding:8px 10px;border-bottom:1px solid var(--bd);
-  color:var(--dim);vertical-align:top;font-size:12px}
+.compare-table th{text-align:left;padding:7px 10px;background:#ffffff;
+  color:#111111;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:1px solid #b8b0a4}
+.compare-table td{padding:8px 10px;border-bottom:1px solid #b8b0a4;
+  color:#111111;vertical-align:top;font-size:12px;font-weight:450}
 .compare-table tr:last-child td{border-bottom:none}
 .compare-table tr:hover td{background:rgba(255,255,255,.015)}
-.cg{color:var(--green)!important;font-weight:600}
-.cw{color:var(--amber)!important}
-.cr{color:var(--red)!important}
-.cb{color:var(--blue)!important;font-family:var(--mono)}
+.cg{color:#1a4d35!important;font-weight:600}
+.cw{color:#7a3d04!important}
+.cr{color:#7a1525!important}
+.cb{color:#1a3d6b!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
 
 /* ── Simulator ── */
 .sc-tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
-.sc-tab{padding:5px 12px;border-radius:6px;border:1px solid var(--bd);
-  background:var(--bg2);color:var(--dim);cursor:pointer;font-size:12px;
+.sc-tab{padding:5px 12px;border-radius:6px;border:1px solid #b8b0a4;
+  background:#ffffff;color:#111111;cursor:pointer;font-size:12px;
   font-weight:500;line-height:1.4;transition:all .12s}
-.sc-tab:hover{border-color:var(--bd2);color:var(--tx)}
-.sc-tab.on{background:rgba(79,142,247,.12);border-color:var(--blue);color:var(--blue)}
-.sc-stab{padding:5px 12px;border-radius:6px;border:1px solid var(--bd);
-  background:var(--bg2);color:var(--dim);cursor:pointer;font-size:12px;
+.sc-tab:hover{border-color:#a09890;color:#000000}
+.sc-tab.on{background:rgba(79,142,247,.12);border-color:#1a3d6b;color:#1a3d6b}
+.sc-stab{padding:5px 12px;border-radius:6px;border:1px solid #b8b0a4;
+  background:#ffffff;color:#111111;cursor:pointer;font-size:12px;
   font-weight:500;transition:all .15s;text-align:center;line-height:1.3}
-.sc-stab.on{background:rgba(79,142,247,.12);border-color:var(--blue);color:var(--blue)}
+.sc-stab.on{background:rgba(79,142,247,.12);border-color:#1a3d6b;color:#1a3d6b}
 .sim-cols{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:start}
 @media(max-width:600px){.sim-cols{grid-template-columns:1fr}}
-.kpanel{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:13px}
-.kp-lbl{font-size:10px;font-weight:700;color:var(--tx);text-transform:uppercase;
+.kpanel{background:#ffffff;border:1px solid #b8b0a4;border-radius:10px;padding:13px}
+.kp-lbl{font-size:10px;font-weight:700;color:#000000;text-transform:uppercase;
   letter-spacing:.08em;margin-bottom:9px}
-.kp-sec{font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;
-  letter-spacing:.06em;margin:9px 0 5px;padding-top:7px;border-top:1px solid var(--bd)}
+.kp-sec{font-size:10px;font-weight:700;color:#3d2558;text-transform:uppercase;
+  letter-spacing:.06em;margin:9px 0 5px;padding-top:7px;border-top:1px solid #b8b0a4}
 .krow{display:flex;align-items:center;justify-content:space-between;
   padding:4px 3px;border-radius:4px;cursor:pointer;transition:background .1s}
-.krow:hover{background:var(--bg3)}
+.krow:hover{background:#f0ede6}
 .kl{display:flex;align-items:center;gap:6px}
 .kico{width:20px;height:20px;border-radius:3px;display:flex;align-items:center;
   justify-content:center;font-size:10px;flex-shrink:0}
-.klbl{font-size:11px;color:var(--tx);line-height:1.3}
-.ktype{font-size:10px;color:var(--dim)}
-.tog{width:28px;height:16px;border-radius:8px;border:1px solid var(--bd2);
-  background:var(--bg);position:relative;flex-shrink:0;transition:all .15s}
-.tog.on{background:var(--blue);border-color:var(--blue)}
+.klbl{font-size:11px;color:#000000;line-height:1.3}
+.ktype{font-size:10px;color:#111111}
+.tog{width:28px;height:16px;border-radius:8px;border:1px solid #a09890;
+  background:#f7f6f2;position:relative;flex-shrink:0;transition:all .15s}
+.tog.on{background:#1a3d6b;border-color:#1a3d6b}
 .tog::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;
   border-radius:50%;background:#fff;opacity:.35;transition:all .15s}
 .tog.on::after{left:14px;opacity:1}
 .preset-row{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:9px;
-  padding-top:9px;border-top:1px solid var(--bd)}
-.pbtn{text-align:center;padding:4px;border-radius:4px;border:1px solid var(--bd);
-  background:var(--bg3);color:var(--dim);cursor:pointer;font-size:9px;transition:all .1s}
-.pbtn:hover{border-color:var(--bd2);color:var(--tx)}
-.tl-lbl-row{font-size:10px;font-weight:700;color:var(--tx);text-transform:uppercase;
+  padding-top:9px;border-top:1px solid #b8b0a4}
+.pbtn{text-align:center;padding:4px;border-radius:4px;border:1px solid #b8b0a4;
+  background:#f0ede6;color:#111111;cursor:pointer;font-size:11px;transition:all .1s}
+.pbtn:hover{border-color:#a09890;color:#000000}
+.tl-lbl-row{font-size:10px;font-weight:700;color:#000000;text-transform:uppercase;
   letter-spacing:.08em;margin-bottom:5px}
 .tl-row{display:flex;align-items:center;margin-bottom:7px;gap:7px}
-.tl-lbl{width:120px;font-size:11px;color:var(--dim);flex-shrink:0;line-height:1.3}
-.tl-lbl small{font-size:9px;color:var(--dim);display:block}
-.tl-track{flex:1;height:20px;background:var(--bg2);border-radius:4px;
-  position:relative;border:1px solid var(--bd)}
+.tl-lbl{width:120px;font-size:11px;color:#111111;flex-shrink:0;line-height:1.3}
+.tl-lbl small{font-size:11px;color:#111111;display:block}
+.tl-track{flex:1;height:20px;background:#ffffff;border-radius:4px;
+  position:relative;border:1px solid #b8b0a4}
 .tl-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1);
   display:flex;align-items:center;padding:0 6px;min-width:2px;overflow:hidden}
-.tl-fill span{font-size:9px;font-weight:600;color:rgba(255,255,255,.9);white-space:nowrap}
+.tl-fill span{font-size:11px;font-weight:600;color:rgba(255,255,255,.9);white-space:nowrap}
 .tl-dl{position:absolute;top:-3px;bottom:-3px;width:2px;
   background:rgba(255,255,255,.22);border-radius:1px;z-index:4}
-.tl-val{position:absolute;right:-80px;top:2px;font-size:9px;color:var(--dim);white-space:nowrap}
+.tl-val{position:absolute;right:-80px;top:2px;font-size:11px;color:#111111;white-space:nowrap}
 .status-row{display:flex;gap:6px;margin:10px 0 7px;flex-wrap:wrap}
 .badge{padding:4px 11px;border-radius:5px;font-size:12px;font-weight:600;border:1px solid}
-.badge.warn{background:rgba(245,165,42,.12);border-color:var(--amber);color:var(--amber)}
-.pass{background:rgba(62,207,142,.1);border-color:rgba(62,207,142,.3);color:var(--green)}
-.fail{background:rgba(232,85,85,.1);border-color:rgba(232,85,85,.3);color:var(--red)}
-.insight{background:var(--bg2);border:1px solid var(--bd);border-left:2px solid var(--blue);
-  border-radius:7px;padding:10px 12px;font-size:12px;color:var(--dim);line-height:1.6}
-.insight strong{color:var(--blue);display:block;margin-bottom:2px}
-.dci-note{font-size:11px;color:var(--dim);margin:5px 0 12px;
-  padding:6px 9px;background:var(--bg2);border-radius:5px;border:1px solid var(--bd)}
+.badge.warn{background:rgba(245,165,42,.12);border-color:#7a3d04;color:#7a3d04}
+.pass{background:rgba(62,207,142,.1);border-color:rgba(62,207,142,.3);color:#1a4d35}
+.fail{background:rgba(232,85,85,.1);border-color:rgba(232,85,85,.3);color:#7a1525}
+.insight{background:#ffffff;border:1px solid #b8b0a4;border-left:3px solid #1a3d6b;
+  border-radius:7px;padding:10px 12px;font-size:13px;color:#111111;line-height:1.6}
+.insight strong{color:#1a3d6b;display:block;margin-bottom:2px}
+.dci-note{font-size:12px;color:#111111;margin:5px 0 12px;
+  padding:6px 9px;background:#ffffff;border-radius:5px;border:1px solid #b8b0a4}
 .impact-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:12px}
-.ic{background:var(--bg2);border:1px solid var(--bd);border-radius:6px;
+.ic{background:#ffffff;border:1px solid #b8b0a4;border-radius:6px;
   padding:6px;text-align:center;cursor:pointer;transition:all .1s}
-.ic:hover{border-color:var(--bd2)}.ic.active{border-color:var(--blue)}
-.ic-v{font-family:var(--mono);font-size:13px;font-weight:700;margin-bottom:2px}
-.ic-l{font-size:10px;color:var(--dim);line-height:1.3}
-.ic-d{font-size:10px;color:var(--dim);margin-top:1px}
+.ic:hover{border-color:#a09890}.ic.active{border-color:#1a3d6b}
+.ic-v{font-weight:600;color:#111111;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:500;font-size:13px;font-weight:700;margin-bottom:2px}
+.ic-l{font-size:10px;color:#111111;line-height:1.3}
+.ic-d{font-size:10px;color:#111111;margin-top:1px}
 /* ROI chart */
-.roi-wrap{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;
+.roi-wrap{background:#ffffff;border:1px solid #b8b0a4;border-radius:8px;
   padding:14px;margin:14px 0;overflow-x:auto}
-.roi-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--dim)}
+.roi-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:#111111}
 /* Power projection */
 .pwr-bar-wrap{margin:8px 0}
 .pwr-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.pwr-bar-lbl{width:110px;font-size:10px;color:var(--dim);text-align:right;flex-shrink:0;line-height:1.3}
-.pwr-bar-track{flex:1;height:20px;background:var(--bg2);border-radius:3px;
-  border:1px solid var(--bd);display:flex;overflow:hidden;position:relative}
+.pwr-bar-lbl{width:110px;font-size:10px;color:#111111;text-align:right;flex-shrink:0;line-height:1.3}
+.pwr-bar-track{flex:1;height:20px;background:#ffffff;border-radius:3px;
+  border:1px solid #b8b0a4;display:flex;overflow:hidden;position:relative}
 .pwr-seg{height:100%;display:flex;align-items:center;justify-content:center;
   font-size:8px;font-weight:700;color:rgba(255,255,255,.85);
   transition:width .35s cubic-bezier(.4,0,.2,1);overflow:hidden;white-space:nowrap}
 .pwr-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
 @media(max-width:600px){.pwr-cards{grid-template-columns:1fr}}
-.pwr-card{background:var(--bg3);border:1px solid var(--bd);border-radius:7px;
+.pwr-card{background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;
   padding:10px 12px;text-align:center}
-.pwr-val{font-family:var(--mono);font-size:18px;font-weight:800;margin-bottom:2px}
-.pwr-lbl{font-size:9px;color:var(--dim);line-height:1.4}
+.pwr-val{font-weight:600;color:#111111;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-weight:500;font-size:18px;font-weight:800;margin-bottom:2px}
+.pwr-lbl{font-size:11px;color:#111111;line-height:1.4}
 .tco-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;
-  background:var(--bg3);border:1px solid var(--bd);border-radius:7px;
+  background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;
   padding:10px 12px;margin-top:8px}
-.tco-input{background:var(--bg2);border:1px solid var(--bd2);color:var(--tx);
-  font-size:11px;font-family:var(--mono);padding:4px 8px;border-radius:4px;
+.tco-input{background:#ffffff;border:1px solid #a09890;color:#000000;
+  font-size:11px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;padding:4px 8px;border-radius:4px;
   width:90px;text-align:right}
-.tco-input:focus{outline:none;border-color:var(--green)}
-.tco-result{font-family:var(--mono);font-size:13px;font-weight:700;
-  color:var(--green);margin-left:auto}
+.tco-input:focus{outline:none;border-color:#1a4d35}
+.tco-result{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;font-weight:700;
+  color:#1a4d35;margin-left:auto}
 .pwr-knob-table{width:100%;border-collapse:collapse;font-size:10px;margin:8px 0}
-.pwr-knob-table th{text-align:left;padding:4px 8px;color:var(--dim);
-  font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.06em;
-  border-bottom:1px solid var(--bd)}
-.pwr-knob-table td{padding:4px 8px;border-bottom:1px solid var(--bd);
-  color:var(--dim);font-size:10px}
+.pwr-knob-table th{text-align:left;padding:4px 8px;color:#111111;
+  font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid #b8b0a4}
+.pwr-knob-table td{padding:4px 8px;border-bottom:1px solid #b8b0a4;
+  color:#111111;font-size:11px;font-weight:500}
 .pwr-knob-table tr:last-child td{border-bottom:none}
-.pwr-note{font-size:9px;color:var(--dim);line-height:1.5;margin-top:6px;
+.pwr-note{font-size:11px;color:#111111;line-height:1.5;margin-top:6px;
   font-style:italic}
 .roi-leg{display:flex;align-items:center;gap:4px}
 .roi-dot{width:10px;height:10px;border-radius:50%}
 /* GPU budget bar */
 .gpu-bar-wrap{margin:14px 0}
 .gpu-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.gpu-bar-lbl{width:106px;font-size:11px;color:var(--dim);text-align:right;flex-shrink:0}
-.gpu-bar-track{flex:1;height:18px;background:var(--bg2);border-radius:3px;
-  border:1px solid var(--bd);display:flex;overflow:hidden}
+.gpu-bar-lbl{width:106px;font-size:11px;color:#111111;text-align:right;flex-shrink:0}
+.gpu-bar-track{flex:1;height:18px;background:#ffffff;border-radius:3px;
+  border:1px solid #b8b0a4;display:flex;overflow:hidden}
 .gpu-seg{height:100%;display:flex;align-items:center;justify-content:center;
   font-size:8px;font-weight:700;color:rgba(255,255,255,.85);
   transition:width .35s cubic-bezier(.4,0,.2,1);overflow:hidden;white-space:nowrap}
 /* ChEst caveat toggle */
 .caveat-toggle{display:flex;align-items:center;gap:10px;
-  background:var(--bg3);border:1px solid var(--bd);border-radius:6px;
-  padding:8px 12px;margin:8px 0;font-size:11px;color:var(--dim);cursor:pointer}
-.caveat-toggle:hover{border-color:var(--bd2);color:var(--tx)}
+  background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;
+  padding:8px 12px;margin:8px 0;font-size:11px;color:#111111;cursor:pointer}
+.caveat-toggle:hover{border-color:#a09890;color:#000000}
 .caveat-label{flex:1}
 .caveat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;
-  background:var(--red);transition:background .15s}
-.caveat-dot.on{background:var(--green)}
+  background:#7a1525;transition:background .15s}
+.caveat-dot.on{background:#1a4d35}
 
 /* ── Deep dive ── */
 .dd-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;
-  padding:12px 0;border-top:1px solid var(--bd);margin-top:32px;user-select:none}
-.dd-toggle h3{font-size:14px;font-weight:600;color:var(--tx);flex:1}
-.dd-toggle:hover h3{color:var(--tx)}
+  padding:12px 0;border-top:1px solid #b8b0a4;margin-top:32px;user-select:none}
+.dd-toggle h3{font-size:14px;font-weight:600;color:#000000;flex:1}
+.dd-toggle:hover h3{color:#000000}
 .dd-body{display:none;padding-top:16px}
 .dd-body.open{display:block}
 
 /* ── Appendix ── */
 .app-section{margin-top:28px}
-.app-title{font-size:11px;font-weight:700;color:var(--tx);text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.app-title{font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #b8b0a4}
 
 /* HARQ timeline chart */
-.chart-wrap{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;
+.chart-wrap{background:#ffffff;border:1px solid #b8b0a4;border-radius:8px;
   padding:16px;margin:12px 0;overflow-x:auto}
-.chart-title{font-size:10px;font-weight:700;color:var(--tx);margin-bottom:12px}
+.chart-title{font-size:10px;font-weight:700;color:#000000;margin-bottom:12px}
 .chart-toggle{display:flex;gap:6px;margin-bottom:12px}
-.ctog{font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid var(--bd);
-  color:var(--dim);cursor:pointer;transition:all .1s}
-.ctog:hover{border-color:var(--bd2);color:var(--tx)}
-.ctog.on{background:rgba(79,142,247,.12);border-color:var(--blue);color:var(--blue)}
+.ctog{font-size:10px;padding:4px 9px;border-radius:4px;border:1px solid #b8b0a4;
+  color:#111111;cursor:pointer;transition:all .1s}
+.ctog:hover{border-color:#a09890;color:#000000}
+.ctog.on{background:rgba(79,142,247,.12);border-color:#1a3d6b;color:#1a3d6b}
 
 /* Methodology callout */
-.method-box{background:var(--bg2);border:1px solid var(--bd2);border-radius:8px;
+.method-box{background:#ffffff;border:1px solid #a09890;border-radius:8px;
   padding:16px;margin:12px 0;font-size:11px;line-height:1.7}
-.method-box h4{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:8px}
+.method-box h4{font-size:11px;font-weight:700;color:#7a3d04;margin-bottom:8px}
 .method-row{display:flex;gap:8px;margin-bottom:6px;align-items:baseline}
-.method-src{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+.method-src{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
   min-width:80px;flex-shrink:0}
-.src-hard{color:var(--green)}.src-derived{color:var(--blue)}
-.src-lit{color:var(--amber)}.src-est{color:var(--red)}
-.method-desc{font-size:11px;color:var(--dim)}
+.src-hard{color:#1a4d35}.src-derived{color:#1a3d6b}
+.src-lit{color:#7a3d04}.src-est{color:#7a1525}
+.method-desc{font-size:13px;color:#111111 !important;font-weight:500;line-height:1.6}
 
 /* Tables */
 .tbl{width:100%;border-collapse:collapse;font-size:11px;margin:12px 0 18px}
-.tbl th{text-align:left;padding:7px 10px;background:var(--bg2);color:var(--dim);
+.tbl th{text-align:left;padding:7px 10px;background:#ffffff;color:#111111;
   font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  border-bottom:1px solid var(--bd)}
-.tbl td{padding:7px 10px;border-bottom:1px solid var(--bd);
-  color:var(--dim);vertical-align:top;font-size:12px}
+  border-bottom:1px solid #b8b0a4}
+.tbl td{padding:7px 10px;border-bottom:1px solid #b8b0a4;
+  color:#111111;vertical-align:top;font-size:12px;font-weight:450}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:rgba(255,255,255,.015)}
-.tg{color:var(--green)!important;font-weight:600}
-.tw{color:var(--amber)!important}
-.tr{color:var(--red)!important}
-.tb{color:var(--blue)!important;font-family:var(--mono)}
-pre.code{background:var(--bg2);border:1px solid var(--bd);border-radius:7px;
-  padding:13px 15px;font-family:var(--mono);font-size:11px;line-height:1.65;
-  color:#3a3630;overflow-x:auto;margin:10px 0 15px}
-.dd-sec{font-size:11px;font-weight:700;color:var(--tx);text-transform:uppercase;
-  letter-spacing:.08em;margin:22px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--bd)}
+.tg{color:#1a4d35!important;font-weight:600}
+.tw{color:#7a3d04!important}
+.tr{color:#7a1525!important}
+.tb{color:#1a3d6b!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+pre.code{background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;
+  padding:13px 15px;font-family:'SF Mono','Fira Code','Consolas','Courier New',monospace;font-weight:600;font-size:14px;line-height:1.7;
+  color:#000000 !important;overflow-x:auto;margin:10px 0 15px}
+.dd-sec{font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
+  letter-spacing:.08em;margin:22px 0 8px;padding-bottom:5px;border-bottom:1px solid #b8b0a4}
 .al{border-radius:7px;padding:10px 12px;margin:10px 0;font-size:11px;
   line-height:1.6;border-left:2px solid}
-.al-b{background:rgba(79,142,247,.06);border-color:var(--blue);color:#1a3d6b}
-.al-b strong{color:var(--blue)}
-.al-g{background:rgba(62,207,142,.06);border-color:var(--green);color:#6abf98}
-.al-g strong{color:var(--green)}
-.al-a{background:rgba(245,165,42,.06);border-color:var(--amber);color:#7a5520}
-.al-a strong{color:var(--amber)}
+.al-b{background:rgba(79,142,247,.06);border-color:#1a3d6b;color:#1a3d6b}
+.al-b strong{color:#1a3d6b}
+.al-g{background:rgba(62,207,142,.06);border-color:#1a4d35;color:#6abf98}
+.al-g strong{color:#1a4d35}
+.al-a{background:rgba(245,165,42,.06);border-color:#7a3d04;color:#7a5520}
+.al-a strong{color:#7a3d04}
 
 /* ── Resource contention simulation section ── */
 .sim-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin-bottom:12px}
-.sim-card{background:var(--bg3);border:1px solid var(--bd);border-radius:7px;
+.sim-card{background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;
   padding:10px 12px;border-left:3px solid}
-.sim-card-val{font-size:18px;font-weight:800;font-family:var(--mono);margin-bottom:2px}
-.sim-card-lbl{font-size:9px;color:var(--dim);line-height:1.4}
-.sim-card-sub{font-size:9px;font-weight:700;margin-top:3px}
+.sim-card-val{font-size:18px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;margin-bottom:2px}
+.sim-card-lbl{font-size:11px;color:#111111;line-height:1.4}
+.sim-card-sub{font-size:11px;font-weight:700;margin-top:3px}
 .sim-res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:12px}
-.sim-res-card{background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:10px}
+.sim-res-card{background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;padding:10px}
 .sim-res-title{font-size:10px;font-weight:700;margin-bottom:2px}
-.sim-res-meta{font-size:9px;color:var(--dim);margin-bottom:6px}
+.sim-res-meta{font-size:11px;color:#111111;margin-bottom:6px}
 canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 .sim-gantt-ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;
-  margin-bottom:10px;font-size:10px;color:var(--dim)}
+  margin-bottom:10px;font-size:10px;color:#111111}
 .sim-leg-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.sim-leg-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)}
+.sim-leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#111111}
 .sim-leg-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.sim-abox{border-radius:7px;padding:10px 12px;margin-bottom:8px;font-size:11px;
-  color:var(--dim);line-height:1.65;border:1px solid;border-left-width:2px}
-.sim-abox strong{color:var(--tx)}
-.sim-abox.good{border-color:var(--green);background:rgba(62,207,142,.05)}
-.sim-abox.info{border-color:var(--blue);background:rgba(79,142,247,.05)}
-.sim-abox.warn{border-color:var(--amber);background:rgba(245,165,42,.05)}
+.sim-abox{border-radius:7px;padding:10px 12px;margin-bottom:8px;font-size:12px;
+  color:#111111;line-height:1.65;border:1px solid;border-left-width:2px}
+.sim-abox strong{color:#000000}
+.sim-abox.good{border-color:#1a4d35;background:rgba(62,207,142,.05)}
+.sim-abox.info{border-color:#1a3d6b;background:rgba(79,142,247,.05)}
+.sim-abox.warn{border-color:#7a3d04;background:rgba(245,165,42,.05)}
+
+/* ── CONTRAST ENFORCEMENT: nuclear * rule ── */
+* { color: #111111 !important; }
+
+/* Nav bar: dark text on light frosted glass bg */
+.tnav { color: #1a1a1a !important; font-weight: 500 !important; }
+.tnav.active { color: #1a3d6b !important; font-weight: 700 !important; border-bottom-color: #1a3d6b !important; }
+
+/* Section labels */
+.sec-lbl { color: #1a3d6b !important; font-weight: 700 !important; }
+
+/* Key finding cards */
+.kf-n { color: #1a3d6b !important; font-weight: 700 !important; }
+.kf-t { color: #111111 !important; font-weight: 700 !important; }
+.kf p { color: #1a1a1a !important; font-size: 13px !important; }
+
+/* Tables */
+table td, table th { color: #111111 !important; font-size: 12px !important; }
+.tbl td, .tbl th { color: #111111 !important; font-size: 12px !important; }
+.compare-table td, .compare-table th { color: #111111 !important; font-size: 12px !important; }
+
+/* Small sub-labels inside table cells */
+.tbl td small, td small, td .sub { color: #444444 !important; }
+
+/* Insight and analysis boxes */
+.insight, .sim-abox { color: #1a1a1a !important; font-size: 13px !important; }
+
+/* Hero */
+.hero-sub { color: #222222 !important; font-size: 15px !important; }
+
+/* Chips and tags */
+.chip { color: #111111 !important; }
+
+/* Preserve colored elements */
+.blue { color: #1a3d6b !important; }
+.green { color: #1a4d35 !important; }
+.amber { color: #7a3d04 !important; }
+.red { color: #7a1525 !important; }
+a { color: #1a3d6b !important; }
+pre.code, pre.code * { color: #1a1a1a !important; }
 </style>
 </head>
 <body>
@@ -305,6 +347,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 <!-- ── Nav ── -->
 <nav class="topnav">
   <div class="topnav-inner">
+    <div class="tnav" onclick="navTo('codesign')">Co-Design Flow</div>
     <div class="tnav on" onclick="navTo('methodology')">Methodology</div>
     <div class="tnav" onclick="navTo('envelope')">① Envelope</div>
     <div class="tnav" onclick="navTo('findings')">Key Findings</div>
@@ -332,55 +375,186 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
 <!-- Acronym definitions -->
 <div style="display:flex;gap:16px;flex-wrap:wrap;padding:10px 28px 0;margin-bottom:-4px">
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">HRT</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>Hard Real Time
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">HRT</strong>
+    <span style="color:#111111;margin:0 4px">·</span>Hard Real Time
   </div>
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">HRTC</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>Hard Real Time Critical
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">HRTC</strong>
+    <span style="color:#111111;margin:0 4px">·</span>Hard Real Time Critical
   </div>
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">PRE</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>Pre-computable (soft deadline, runs 1–2 slots ahead)
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">PRE</strong>
+    <span style="color:#111111;margin:0 4px">·</span>Pre-computable (soft deadline, runs 1–2 slots ahead)
   </div>
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">aNB</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>aNodeB — 6G base station (3GPP official, March 2026)
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">aNB</strong>
+    <span style="color:#111111;margin:0 4px">·</span>aNodeB — 6G base station (3GPP official, March 2026)
   </div>
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">gNB</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>gNodeB — 5G NR base station (TS 38.xxx)
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">gNB</strong>
+    <span style="color:#111111;margin:0 4px">·</span>gNodeB — 5G NR base station (TS 38.xxx)
   </div>
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">MatAccel</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>Programmable vector engine, 8-16 complex MAC/cycle. Paired 1:1 with RISC. Used for ChEst/MMSE/MIMOEQ/W-matrix. NOT the LDPC engine (separate HW).
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">MatAccel</strong>
+    <span style="color:#111111;margin:0 4px">·</span>Programmable vector engine, 8-16 complex MAC/cycle. Paired 1:1 with RISC. Used for ChEst/MMSE/MIMOEQ/W-matrix. NOT the LDPC engine (separate HW).
   </div>
-  <div style="font-size:9px;color:var(--dim);background:var(--bg2);
-    border:1px solid var(--bd);border-radius:4px;padding:4px 10px;
-    font-family:var(--mono);letter-spacing:.04em">
-    <strong style="color:var(--dim)">LDPC eng</strong>
-    <span style="color:var(--dim);margin:0 4px">·</span>Hardwired belief propagation. Z=384 min-sum units/cycle. ~100 cyc/iter (BG1, incl. pipeline). ~0.5-0.8µs/CB. Completely separate from MatAccel.
+  <div style="font-size:12px;color:#111111;background:#ffffff;
+    border:1px solid #b8b0a4;border-radius:4px;padding:6px 10px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:400;letter-spacing:0">
+    <strong style="color:#111111;font-family:\'SF Mono\',monospace;font-weight:700">LDPC eng</strong>
+    <span style="color:#111111;margin:0 4px">·</span>Hardwired belief propagation. Z=384 min-sum units/cycle. ~100 cyc/iter (BG1, incl. pipeline). ~0.5-0.8µs/CB. Completely separate from MatAccel.
   </div>
 </div>
 
 <!-- ══════════════════ KEY FINDINGS ══════════════════ -->
+<div id="codesign" style="max-width:1080px;margin:0 auto;padding:40px 32px 32px">
+
+<div style="font-size:10px;font-weight:700;color:#1a3d6b;text-transform:uppercase;
+  letter-spacing:.1em;margin-bottom:8px;padding:4px 10px;background:#e8f0fe;
+  border-radius:4px;display:inline-block">
+  Principal Architect · Silicon Co-Design Methodology
+</div>
+
+<h2 style="font-size:26px;font-weight:800;color:#111111;margin:10px 0 10px">
+  Concurrent RTL / FW / DV from a single micro-arch source of truth
+</h2>
+<p style="font-size:14px;color:#222;margin-bottom:24px;line-height:1.75;max-width:760px">
+  The simulation below is the first stage of a three-level flow I have led multiple times.
+  The goal: silicon that arrives with working firmware and closed DV —
+  not a chip that triggers 6–18 months of post-silicon discovery.
+</p>
+
+<!-- Traditional flow -->
+<div style="background:#fff;border:1px solid #d0d8e4;border-radius:6px;overflow:hidden;margin-bottom:14px">
+  <div style="padding:9px 16px;background:#fff5f5;border-bottom:1px solid #f0d0d0">
+    <div style="font-size:9px;font-weight:700;color:#7a1525;text-transform:uppercase;letter-spacing:.08em">The traditional flow — the dead zone</div>
+  </div>
+  <div style="padding:14px 18px">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:12px;font-size:12px">
+      <span style="background:#f0ede6;border:1px solid #c4bdb0;border-radius:4px;padding:4px 10px;font-weight:600">HLS</span>
+      <span style="color:#bbb;font-size:14px">→</span>
+      <span style="background:#f0ede6;border:1px solid #c4bdb0;border-radius:4px;padding:4px 10px;font-weight:600">LLS</span>
+      <span style="color:#bbb;font-size:14px">→</span>
+      <span style="background:#f0ede6;border:1px solid #c4bdb0;border-radius:4px;padding:4px 10px;font-weight:600">RTL tape-out</span>
+      <span style="color:#bbb;font-size:14px">→</span>
+      <span style="background:#fee;border:1px solid #f0c0c0;border-radius:4px;padding:4px 10px;font-weight:600;color:#8b1a1a">chip arrives</span>
+      <span style="color:#bbb;font-size:14px">→</span>
+      <span style="background:#fee;border:1px solid #f0c0c0;border-radius:4px;padding:4px 10px;font-weight:600;color:#8b1a1a">FW starts ← here</span>
+      <span style="color:#bbb;font-size:14px">→</span>
+      <span style="background:#fee;border:1px solid #f0c0c0;border-radius:4px;padding:4px 10px;font-weight:600;color:#8b1a1a">DV starts ← here</span>
+    </div>
+    <p style="margin:0;font-size:13px;color:#333;line-height:1.7">
+      LLS was a <b>verification artifact</b> owned by DV — built after RTL exists, always late.
+      FW and DV waited. Chip arrived, discovery began: register mismatches, interrupt timing wrong,
+      DMA burst behavior undocumented. Each finding risks a respin.
+    </p>
+  </div>
+</div>
+
+<!-- YAML fan-out -->
+<div style="background:#fff;border:1px solid #d0d8e4;border-radius:6px;overflow:hidden;margin-bottom:14px">
+  <div style="padding:9px 16px;background:#f8faff;border-bottom:1px solid #d0d8e4">
+    <div style="font-size:9px;font-weight:700;color:#1a3d6b;text-transform:uppercase;letter-spacing:.08em">YAML micro-architecture spec — single source of truth</div>
+  </div>
+  <div style="padding:14px 18px">
+    <p style="font-size:13px;color:#1a1a1a;line-height:1.75;margin:0 0 16px">
+      Before any RTL or SystemC is written, the team develops to <b>micro-architecture level in YAML</b>:
+      state machines, register maps, pipeline stages, interrupt behavior, DMA protocols, timing constraints.
+      More precise than English spec, less detailed than RTL. One source fans out to all artifacts —
+      consistency guaranteed by construction, not by cross-team review.
+    </p>
+    <div style="display:grid;grid-template-columns:150px 24px 1fr;align-items:start;gap:8px">
+      <div style="background:#1a3d6b;color:#fff;border-radius:6px;padding:14px;text-align:center;font-weight:700;font-size:14px;margin-top:4px">
+        YAML<br><span style="font-size:10px;font-weight:400;opacity:.75">micro-arch spec</span>
+      </div>
+      <div style="font-size:24px;color:#aaa;text-align:center;padding-top:18px">→</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#eef4ff;border:1px solid #c0d4f8;border-radius:5px;padding:9px 11px">
+          <div style="font-weight:700;font-size:12px;color:#1a3d6b">RTL</div>
+          <div style="font-size:11px;color:#333;margin-top:2px;line-height:1.55">Synthesisable implementation. Reviewed against YAML — no independent spec interpretation.</div>
+        </div>
+        <div style="background:#eef4ff;border:1px solid #c0d4f8;border-radius:5px;padding:9px 11px">
+          <div style="font-weight:700;font-size:12px;color:#1a3d6b">SystemC (LLS HW)</div>
+          <div style="font-size:11px;color:#333;margin-top:2px;line-height:1.55">Cycle-accurate HW behavior model. FW development platform from day one.</div>
+        </div>
+        <div style="background:#eef4ff;border:1px solid #c0d4f8;border-radius:5px;padding:9px 11px">
+          <div style="font-weight:700;font-size:12px;color:#1a3d6b">ISS (LLS FW)</div>
+          <div style="font-size:11px;color:#333;margin-top:2px;line-height:1.55">Instruction-accurate CPU model. Runs real compiled FW binary against SystemC HW.</div>
+        </div>
+        <div style="background:#eef4ff;border:1px solid #c0d4f8;border-radius:5px;padding:9px 11px">
+          <div style="font-weight:700;font-size:12px;color:#1a3d6b">FW Headers</div>
+          <div style="font-size:11px;color:#333;margin-top:2px;line-height:1.55">Register maps, interrupt IDs, DMA descriptors. Exact RTL match by construction.</div>
+        </div>
+        <div style="background:#e8f5ee;border:1px solid #a8d8b8;border-radius:5px;padding:9px 11px;grid-column:1/-1">
+          <div style="font-weight:700;font-size:12px;color:#1a4d35">UVM Environment</div>
+          <div style="font-size:11px;color:#333;margin-top:2px;line-height:1.55">RAL, scoreboard, assertions, coverage groups — derived from same YAML as RTL. No interpretation gap. DV is closed at tape-out, not after.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LLS + comparison -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+  <div style="background:#fff;border:1px solid #d0d8e4;border-radius:6px;overflow:hidden">
+    <div style="padding:9px 16px;background:#f8faff;border-bottom:1px solid #d0d8e4">
+      <div style="font-size:9px;font-weight:700;color:#1a3d6b;text-transform:uppercase;letter-spacing:.08em">Why SystemC + ISS, not RTL sim</div>
+    </div>
+    <div style="padding:14px 16px;font-size:12px;line-height:1.75;color:#1a1a1a">
+      RTL simulation is bit-true but <b>10,000–100,000× slower than silicon</b>.
+      A single 5G slot (500µs) can take hours — you cannot develop real firmware against it.<br><br>
+      SystemC runs at ~MHz throughput; ISS near real-time. Together they are the
+      <b>digital twin of future silicon+FW</b>. The architect owns SystemC/ISS as a
+      <b>living spec</b>: any RTL divergence is a bug in RTL, not the spec.
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid #d0d8e4;border-radius:6px;overflow:hidden">
+    <div style="padding:9px 16px;background:#f8faff;border-bottom:1px solid #d0d8e4">
+      <div style="font-size:9px;font-weight:700;color:#1a3d6b;text-transform:uppercase;letter-spacing:.08em">What concurrent development changes</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <tr style="border-bottom:1px solid #d0d8e4;background:#f8faff">
+        <th style="padding:6px 12px;text-align:left;color:#555;font-weight:600">Event</th>
+        <th style="padding:6px 12px;color:#7a1525;font-weight:600">Traditional</th>
+        <th style="padding:6px 12px;color:#1a5c35;font-weight:600">This flow</th>
+      </tr>
+      <tr style="border-bottom:1px solid #eef2fa"><td style="padding:6px 12px;font-weight:600">Arch bug found</td><td style="padding:6px 12px;color:#7a1525">Post-silicon</td><td style="padding:6px 12px;color:#1a5c35">HLS / LLS</td></tr>
+      <tr style="border-bottom:1px solid #eef2fa"><td style="padding:6px 12px;font-weight:600">FW development</td><td style="padding:6px 12px;color:#7a1525">After chip back</td><td style="padding:6px 12px;color:#1a5c35">Day one</td></tr>
+      <tr style="border-bottom:1px solid #eef2fa"><td style="padding:6px 12px;font-weight:600">DV closure</td><td style="padding:6px 12px;color:#7a1525">Post tape-out</td><td style="padding:6px 12px;color:#1a5c35">At tape-out</td></tr>
+      <tr style="border-bottom:1px solid #eef2fa"><td style="padding:6px 12px;font-weight:600">Register mismatch</td><td style="padding:6px 12px;color:#7a1525">Respin risk</td><td style="padding:6px 12px;color:#1a5c35">Caught in LLS</td></tr>
+      <tr style="border-bottom:1px solid #eef2fa"><td style="padding:6px 12px;font-weight:600">Interrupt timing</td><td style="padding:6px 12px;color:#7a1525">Found at bring-up</td><td style="padding:6px 12px;color:#1a5c35">Found in ISS</td></tr>
+      <tr><td style="padding:6px 12px;font-weight:600">Bring-up</td><td style="padding:6px 12px;color:#7a1525">Discovery</td><td style="padding:6px 12px;color:#1a5c35">Confirmation</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="background:#f0f8f4;border:1px solid #b8d8c8;border-left:4px solid #1a3d6b;
+  border-radius:4px;padding:13px 16px;font-size:13px;line-height:1.8;color:#1a1a1a">
+  <b>About the simulation study below:</b> The HLS-level analysis (SimPy Monte Carlo,
+  static latency, DVFS) is the <b>first stage</b> of this flow — ruling out catastrophic
+  architectural decisions before micro-architecture begins. The principal architect
+  owns the full chain: architectural simulation → YAML micro-arch → concurrent RTL/FW/DV → bring-up.
+</div>
+
+</div><!-- end #codesign -->
+
 <div class="sec" id="methodology">
   <div class="sec-lbl">Architecture Methodology — How a Principal Engineer Approaches SoC Design</div>
 
-  <p style="font-size:11px;color:var(--dim);line-height:1.8;max-width:720px;margin-bottom:20px">
+  <p style="font-size:11px;color:#111111;line-height:1.8;max-width:720px;margin-bottom:20px">
     A rigorous 6G RU/DU SoC architecture process follows a specific sequence.
     Each phase has known optimism/pessimism biases — understanding those biases
     is what separates a principal architect from someone reading a datasheet.
@@ -388,62 +562,62 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
   </p>
 
   <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-bottom:24px;
-    border:1px solid var(--bd);border-radius:10px;overflow:hidden">
+    border:1px solid #b8b0a4;border-radius:10px;overflow:hidden">
 
     <!-- Step 1 -->
-    <div style="padding:16px 14px;background:rgba(79,142,247,.07);border-right:1px solid var(--bd)">
-      <div style="font-size:18px;font-weight:800;color:var(--blue);opacity:.4;margin-bottom:6px">01</div>
-      <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Product Envelope</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.6">
+    <div style="padding:16px 14px;background:rgba(79,142,247,.07);border-right:1px solid #b8b0a4">
+      <div style="font-size:18px;font-weight:800;color:#1a3d6b;opacity:.4;margin-bottom:6px">01</div>
+      <div style="font-size:10px;font-weight:700;color:#1a3d6b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Product Envelope</div>
+      <div style="font-size:10px;color:#111111;line-height:1.6">
         Define what you are building: target band, UE/CC count, throughput, power, form factor.
         Ground in a reference platform (Company-A DU100) and the 6G aNB target delta.
       </div>
-      <div style="margin-top:10px;font-size:9px;padding:4px 7px;background:rgba(79,142,247,.12);
-        border-radius:3px;color:var(--blue)">Bias: sets the design point — get this wrong and everything downstream is wrong</div>
+      <div style="margin-top:10px;font-size:11px;padding:4px 7px;background:rgba(79,142,247,.12);
+        border-radius:3px;color:#1a3d6b">Bias: sets the design point — get this wrong and everything downstream is wrong</div>
     </div>
 
     <!-- Step 2 -->
-    <div style="padding:16px 14px;background:rgba(155,126,248,.07);border-right:1px solid var(--bd)">
-      <div style="font-size:18px;font-weight:800;color:var(--purple);opacity:.4;margin-bottom:6px">02</div>
-      <div style="font-size:10px;font-weight:700;color:var(--purple);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Static Latency Analysis</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.6">
+    <div style="padding:16px 14px;background:rgba(155,126,248,.07);border-right:1px solid #b8b0a4">
+      <div style="font-size:18px;font-weight:800;color:#3d2558;opacity:.4;margin-bottom:6px">02</div>
+      <div style="font-size:10px;font-weight:700;color:#3d2558;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Static Latency Analysis</div>
+      <div style="font-size:10px;color:#111111;line-height:1.6">
         Single CC/UE pipeline: ChEst → MIMO EQ → LDPC decode → ACK.
         Measures how long the critical path takes with <em>dedicated</em> resources.
         No contention modeled.
       </div>
-      <div style="margin-top:10px;font-size:9px;padding:4px 7px;background:rgba(155,126,248,.12);
-        border-radius:3px;color:var(--purple)">⚠ Over-optimistic — dedicated resources don't exist when 4 CC run simultaneously</div>
+      <div style="margin-top:10px;font-size:11px;padding:4px 7px;background:rgba(155,126,248,.12);
+        border-radius:3px;color:#3d2558">⚠ Over-optimistic — dedicated resources don't exist when 4 CC run simultaneously</div>
     </div>
 
     <!-- Step 3 -->
-    <div style="padding:16px 14px;background:rgba(62,207,142,.07);border-right:1px solid var(--bd)">
-      <div style="font-size:18px;font-weight:800;color:var(--green);opacity:.4;margin-bottom:6px">03</div>
-      <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Static Peak Analysis</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.6">
+    <div style="padding:16px 14px;background:rgba(62,207,142,.07);border-right:1px solid #b8b0a4">
+      <div style="font-size:18px;font-weight:800;color:#1a4d35;opacity:.4;margin-bottom:6px">03</div>
+      <div style="font-size:10px;font-weight:700;color:#1a4d35;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Static Peak Analysis</div>
+      <div style="font-size:10px;color:#111111;line-height:1.6">
         Worst-case simultaneous load: all UE/CC at peak, all tasks at max duration.
         Sizes coprocessor counts (LDPC engines, CE lanes, MIMO lanes) from first principles.
         The classic "static Excel" approach.
       </div>
-      <div style="margin-top:10px;font-size:9px;padding:4px 7px;background:rgba(62,207,142,.12);
-        border-radius:3px;color:var(--green)">⚠ Over-pessimistic — worst case across all resources rarely happens simultaneously</div>
+      <div style="margin-top:10px;font-size:11px;padding:4px 7px;background:rgba(62,207,142,.12);
+        border-radius:3px;color:#1a4d35">⚠ Over-pessimistic — worst case across all resources rarely happens simultaneously</div>
     </div>
 
     <!-- Step 4 -->
-    <div style="padding:16px 14px;background:rgba(245,165,42,.07);border-right:1px solid var(--bd)">
-      <div style="font-size:18px;font-weight:800;color:var(--amber);opacity:.4;margin-bottom:6px">04</div>
-      <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Contention Simulation</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.6">
+    <div style="padding:16px 14px;background:rgba(245,165,42,.07);border-right:1px solid #b8b0a4">
+      <div style="font-size:18px;font-weight:800;color:#7a3d04;opacity:.4;margin-bottom:6px">04</div>
+      <div style="font-size:10px;font-weight:700;color:#7a3d04;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Contention Simulation</div>
+      <div style="font-size:10px;color:#111111;line-height:1.6">
         SimPy discrete-event model: realistic concurrent load across all paths,
         priority queuing, stochastic task durations.
         Closes both gaps — finds true P99 latency under real contention.
       </div>
-      <div style="margin-top:10px;font-size:9px;padding:4px 7px;background:rgba(245,165,42,.12);
-        border-radius:3px;color:var(--amber)">Corrects both biases — some paths worse than static, some better</div>
+      <div style="margin-top:10px;font-size:11px;padding:4px 7px;background:rgba(245,165,42,.12);
+        border-radius:3px;color:#7a3d04">Corrects both biases — some paths worse than static, some better</div>
     </div>
-    <div style="padding:16px 14px;background:rgba(45,212,191,.07);border-right:1px solid var(--bd)">
-      <div style="font-size:18px;font-weight:800;color:var(--teal);opacity:.4;margin-bottom:6px">05</div>
-      <div style="font-size:10px;font-weight:700;color:var(--teal);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">DVFS Analysis</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.6">
+    <div style="padding:16px 14px;background:rgba(45,212,191,.07);border-right:1px solid #b8b0a4">
+      <div style="font-size:18px;font-weight:800;color:#0d4f4f;opacity:.4;margin-bottom:6px">05</div>
+      <div style="font-size:10px;font-weight:700;color:#0d4f4f;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">DVFS Analysis</div>
+      <div style="font-size:10px;color:#111111;line-height:1.6">
         Accelerator config → Fmin that meets 5–10% margin →
         voltage from DVFS curve → power reduction estimate.
         Validates frequency scaling is safe before committing silicon.
@@ -452,34 +626,34 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
     <!-- Step 5 -->
     <div style="padding:16px 14px;background:rgba(229,85,85,.07)">
-      <div style="font-size:18px;font-weight:800;color:var(--red);opacity:.4;margin-bottom:6px">06</div>
-      <div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Architecture Decisions</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.6">
+      <div style="font-size:18px;font-weight:800;color:#7a1525;opacity:.4;margin-bottom:6px">06</div>
+      <div style="font-size:10px;font-weight:700;color:#7a1525;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Architecture Decisions</div>
+      <div style="font-size:10px;color:#111111;line-height:1.6">
         Simulation findings drive architecture: VU count, program SRAM topology,
         HRTC/PRE partition, process node selection.
         Area analysis validates feasibility at N3E.
       </div>
-      <div style="margin-top:10px;font-size:9px;padding:4px 7px;background:rgba(229,85,85,.12);
-        border-radius:3px;color:var(--red)">Grounded in simulation evidence, not intuition</div>
+      <div style="margin-top:10px;font-size:11px;padding:4px 7px;background:rgba(229,85,85,.12);
+        border-radius:3px;color:#7a1525">Grounded in simulation evidence, not intuition</div>
     </div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:12px;font-size:10px">
-      <div style="font-weight:700;color:var(--amber);margin-bottom:8px">Why static analysis alone is insufficient</div>
-      <div style="color:var(--dim);line-height:1.7">
-        <strong style="color:var(--tx)">Static latency (Step 2)</strong> assumes dedicated resources.
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;padding:12px;font-size:10px">
+      <div style="font-weight:700;color:#7a3d04;margin-bottom:8px">Why static analysis alone is insufficient</div>
+      <div style="color:#111111;line-height:1.7">
+        <strong style="color:#000000">Static latency (Step 2)</strong> assumes dedicated resources.
         In a 4-CC system, 4 ChEst jobs launch simultaneously and compete for 8 CE lanes —
         P99 latency is 20-30% higher than the single-path estimate.<br><br>
-        <strong style="color:var(--tx)">Static peak (Step 3)</strong> assumes worst case on every dimension at once.
+        <strong style="color:#000000">Static peak (Step 3)</strong> assumes worst case on every dimension at once.
         The DL scheduler appears to fail (278µs &gt; 250µs budget) — but simulation reveals
         this is a priority-blocking artifact, not a capacity problem.
         GPU offload of the AI scheduler removes it from HRTC resource competition entirely.
       </div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:12px;font-size:10px">
-      <div style="font-weight:700;color:var(--blue);margin-bottom:8px">Why simulation is the starting point, not the end</div>
-      <div style="color:var(--dim);line-height:1.7">
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;padding:12px;font-size:10px">
+      <div style="font-weight:700;color:#1a3d6b;margin-bottom:8px">Why simulation is the starting point, not the end</div>
+      <div style="color:#111111;line-height:1.7">
         The sim_v18 model covers 28 of ~200 RISC cores (8 CE + 4 MIMO + 4 risc_ctrl + 12 risc_sched)
         and the 4 HRTC paths. It is intentionally scoped — modeling every subsystem produces
         noise, not signal.<br><br>
@@ -493,8 +667,8 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
 <div class="sec" id="envelope">
   <div class="sec-lbl">Step 1 — Product Envelope: Company-A DU100/QRU100 Reference &amp; 6G aNB Target</div>
-  <p style="font-size:10px;color:var(--amber);margin-bottom:10px;padding:6px 10px;background:rgba(245,165,42,.08);border-radius:5px;border-left:2px solid var(--amber)">⚠ Proprietary reference — based on personal experience. Architectural patterns only; no specific IP disclosed.</p>
-  <p style="font-size:11px;color:var(--dim);margin-bottom:16px">
+  <p style="font-size:10px;color:#7a3d04;margin-bottom:10px;padding:6px 10px;background:rgba(245,165,42,.08);border-radius:5px;border-left:2px solid #7a3d04">⚠ Proprietary reference — based on personal experience. Architectural patterns only; no specific IP disclosed.</p>
+  <p style="font-size:11px;color:#111111;margin-bottom:16px">
     Parameters from direct engineering experience (Company-A O-RAN DU team).
     Used as ground truth for simulation calibration and competitive comparison.
   </p>
@@ -508,13 +682,13 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
         <span class="x100-val">~200 cores across heterogeneous subsystems</span></div>
       <div class="x100-row"><span class="x100-key">Matrix coprocessor</span>
         <span class="x100-val">Programmable vector engine: 8-16 complex MAC/cycle at 1.2GHz.<br>
-          <span style="font-size:9px;color:var(--dim)">Paired 1:1 with RISC core. Used for ChEst (H^H×H), MIMOEQ (W×y), W-matrix, precoding. NOT the LDPC engine — completely separate HW. GPU wins on ChEst throughput (~10×); MatAccel wins on deterministic HRTC latency + power (5W vs 50W).</span></span></div>
+          <span style="font-size:11px;color:#111111">Paired 1:1 with RISC core. Used for ChEst (H^H×H), MIMOEQ (W×y), W-matrix, precoding. NOT the LDPC engine — completely separate HW. GPU wins on ChEst throughput (~10×); MatAccel wins on deterministic HRTC latency + power (5W vs 50W).</span></span></div>
       <div class="x100-row"><span class="x100-key">LDPC engine</span>
         <span class="x100-val">Dedicated hardwired belief propagation: Z=384 parallel min-sum units/cycle.<br>
-          <span style="font-size:9px;color:var(--dim)">~100 cycles/iteration (BG1 layered, incl. pipeline overhead). ~0.5-0.8µs per CB. Completely separate from MatAccel. RISC only provides control (configure engine, handle ET interrupt, HARQ state).</span></span></div>
+          <span style="font-size:11px;color:#111111">~100 cycles/iteration (BG1 layered, incl. pipeline overhead). ~0.5-0.8µs per CB. Completely separate from MatAccel. RISC only provides control (configure engine, handle ET interrupt, HARQ state).</span></span></div>
       <div class="x100-row"><span class="x100-key">Subsystem structure</span>
         <span class="x100-val">Heterogeneous — not uniform 50×4.<br>
-          <span style="font-size:9px;color:var(--dim)">Subsystems vary in core count,
+          <span style="font-size:11px;color:#111111">Subsystems vary in core count,
           vector/scalar capability, and co-processor attachment.
           ~200 total is consistent with MIPS budget estimate.
           "50×4" is a simplification for modeling purposes only.</span></span></div>
@@ -547,7 +721,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
         <span class="x100-val">~200 cycles = 167ns</span></div>
       <div class="x100-row"><span class="x100-key">Total NoC overhead (Path 1)</span>
         <span class="x100-val">~33ns (vs 500µs PUSCH budget: 0.007%)</span></div>
-      <div style="margin-top:10px;font-size:10px;color:var(--dim)">
+      <div style="margin-top:10px;font-size:10px;color:#111111">
         NoC overhead is negligible vs compute tasks — hardwired LDPC: ~18,000 cycles/CB;
         SW LDPC would be 500,000+ cycles. Interconnect is never the bottleneck.
       </div>
@@ -565,10 +739,10 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
       <span class="x100-tag">Scrambler/descrambler</span>
       <span class="x100-tag">PUCCH F0 ZC detector</span>
       <span class="x100-tag">Matrix accelerator (Ch Est + MIMO EQ + W)</span>
-      <span class="x100-tag" style="background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.25);color:var(--teal)">
+      <span class="x100-tag" style="background:rgba(45,212,191,.1);border-color:rgba(45,212,191,.25);color:#0d4f4f">
         Bit processing (custom instr: DCI pack, RB bitmap, LLR, HARQ)</span>
     </div>
-    <div style="font-size:10px;color:var(--dim)">
+    <div style="font-size:10px;color:#111111">
       Source: All coprocessors confirmed from direct experience owning LDPC/Turbo HW at Company-A O-RAN DU.
       Company-A reused existing UE modem IP — same engines already developed for smartphone baseband.
       For a greenfield 6G RU/DU vendor (Company-B), only the timing-critical subset needs to be built.
@@ -579,8 +753,8 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     
   <!-- ══ PRODUCT ENVELOPE COMPARISON ══ -->
   <div class="sec-lbl" style="margin-bottom:12px">Product Envelope Comparison — Verified from Public Datasheets (July 2026)</div>
-  <div style="font-size:10px;color:var(--amber);padding:6px 10px;background:rgba(245,165,42,.07);
-    border-left:2px solid var(--amber);border-radius:4px;margin-bottom:10px">
+  <div style="font-size:10px;color:#7a3d04;padding:6px 10px;background:rgba(245,165,42,.07);
+    border-left:2px solid #7a3d04;border-radius:4px;margin-bottom:10px">
     ⚠ Sources: Company-A DU100 Product Brief Rev B (2025);
     Company-A 5G RAN Platforms internal documentation; Linux kernel DTS patches for Company-A DU100/QRU100;
     RCR Wireless / Counterpoint Research (Oct 2020, Oct 2022).
@@ -717,9 +891,9 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     </tbody>
   </table>
 
-  <div style="margin:12px 0 16px;font-size:11px;color:var(--dim);line-height:1.7;
-    padding:8px 12px;background:rgba(79,142,247,.05);border-left:2px solid var(--blue);border-radius:4px">
-    <strong style="color:var(--blue)">Key envelope observations:</strong><br>
+  <div style="margin:12px 0 16px;font-size:11px;color:#111111;line-height:1.7;
+    padding:8px 12px;background:rgba(79,142,247,.05);border-left:2px solid #1a3d6b;border-radius:4px">
+    <strong style="color:#1a3d6b">Key envelope observations:</strong><br>
     1. <strong>Company-A DU100 vs ARC-Compact are closest in deployment target</strong> (D-RAN, per-site).
        Company-A DU100: ~24 Gbps peak at 35W = ~686 Mbps/W. ARC-Compact: 25 Gbps at ~300W = ~83 Mbps/W.
        Company-A DU100 is ~8× more power-efficient per Gbps — but covers only 3 sectors vs 30 sector-carriers,
@@ -757,12 +931,12 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
               across heterogeneous subsystems<br>
               + dedicated coprocessors<br>
               (LDPC, Polar, CRC, ZC, matrix accel)<br>
-              <span style="font-size:9px;color:var(--dim)">Subsystems vary in size,
+              <span style="font-size:11px;color:#111111">Subsystems vary in size,
               vector/scalar ISA, and coprocessor attachment —
               not a uniform 50×4 array.</span></td>
             <td>BlueField-3 DPU (fronthaul+timing only)<br>
               + GPU GPU-PHY software stack for ALL L1<br>
-              <span style="font-size:9px;color:var(--dim)">No dedicated L1 coprocessors</span></td>
+              <span style="font-size:11px;color:#111111">No dedicated L1 coprocessors</span></td>
             <td>Key difference: Company-B GPU does ALL L1 in GPU compute.
               DPU = eCPRI + GPUDirect RDMA + IEEE 1588 only.</td></tr>
         <tr><td><strong>Layer 1 memory</strong></td>
@@ -771,19 +945,19 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
             <td>TCM = zero non-determinism</td></tr>
         <tr><td><strong>P99/P50 ratio (HRTC)</strong></td>
             <td class="cg">~1.4× (estimated)<br>
-              <span style="font-size:9px">Hardwired engine — low variance</span></td>
+              <span style="font-size:11px">Hardwired engine — low variance</span></td>
             <td class="cw">~1.4–1.6× (estimated)<br>
-              <span style="font-size:9px">GPU kernel launch + cache variance</span></td>
+              <span style="font-size:11px">GPU kernel launch + cache variance</span></td>
             <td>Both from timing model — not silicon measurements.
               GPU variance likely slightly higher than Company-A DU100
               due to GPU compute scheduling non-determinism.</td></tr>
         <tr><td><strong>LDPC decode (µ=3)</strong><br>
-            <span style="font-size:9px;color:var(--dim)">Hardwired vs GPU GPU compute</span></td>
+            <span style="font-size:11px;color:#111111">Hardwired vs GPU GPU compute</span></td>
             <td class="cg">~15µs/CB hardwired engine<br>
-              <span style="font-size:9px">Single UE P99: ~35µs<br>
+              <span style="font-size:11px">Single UE P99: ~35µs<br>
               512 CBs (32 eng): ~240µs</span></td>
             <td class="cw">GPU GPU-PHY software stack only — no HW<br>
-              <span style="font-size:9px">~150µs flat per 256-CB batch<br>
+              <span style="font-size:11px">~150µs flat per 256-CB batch<br>
               512 CBs = 2 batches ≈ 300µs</span></td>
             <td>v15 correction: Company-B has NO dedicated LDPC HW.
               GPU-BB: "without any fixed function accelerators."
@@ -791,7 +965,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
               aNB LDPC ≠ UE LDPC: aNB needs many narrow engines
               (min 8) for CB concurrency, not one wide decoder
               optimized for large single-CB throughput.
-              <br><span style="color:var(--amber);font-size:10px">
+              <br><span style="color:#7a3d04;font-size:10px">
               ⚠ With additional PUSCH DMRS at sym 11 (pos2, µ=3):
               effective window shrinks from ~375µs to ~285µs.
               GPU 2-batch LDPC (300µs) fails the tighter window.
@@ -800,7 +974,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
         <tr><td><strong>SRS→W matrix (µ=3)</strong></td>
             <td class="cg">213µs (hardwired ZC + matrix accel)</td>
             <td class="cw">~213µs + GPU overhead<br>
-              <span style="font-size:9px">GPU-PHY software stack; no separate SRS HW</span></td>
+              <span style="font-size:11px">GPU-PHY software stack; no separate SRS HW</span></td>
             <td>Both need staggered SRS (1 UE/slot) regardless.
               Key rule: N_SRS_accels = N_CC (not N_UE) — because
               only one UE's SRS arrives per CC per slot after staggering.
@@ -842,7 +1016,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
             <td class="cg">GPU cuFFT: 2D-FFT natively accelerated.<br>Range-Doppler processing: ~5ms per frame<br>(100ms update rate target — passes easily).<br>ISAC is a second major non-HRTC GPU use case</td>
             <td>ISAC = UAV detection, drone tracking.<br>Rel-20 WI: 58% complete as of March 2026</td></tr>
         <tr><td><strong>MRSS — NR+6G spectrum sharing</strong><br>
-            <span style="font-size:9px;color:var(--dim)">Multi-Radio Spectrum Sharing · Rel-20 study · deployment reality 2030-2035</span></td>
+            <span style="font-size:11px;color:#111111">Multi-Radio Spectrum Sharing · Rel-20 study · deployment reality 2030-2035</span></td>
             <td class="cw">Separate NR + 6G RISC pipelines needed<br>+ coordination layer to prevent collision.<br>Hardwired BG1/BG2 LDPC cannot handle<br>new 6G LDPC variant simultaneously.<br>Three SW layers where one existed.</td>
             <td class="cg">GPU AI scheduler sees NR+6G UEs as one<br>heterogeneous input tensor — learns joint<br>allocation across both RATs natively.<br>GPU-PHY: BG1/BG2 + 6G LDPC as two GPU compute<br>kernels, deployed as software update.</td>
             <td>MRSS = NR+6G on same carrier, same site.<br>Same OFDM/numerology + aligned subcarriers<br>confirmed by 3GPP. Deployment reality<br>during NR→6G migration (est. 2030–2035).<br>Makes both AI scheduler and coding<br>upgradability arguments concrete.</td></tr>
@@ -892,7 +1066,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     <div class="kf b">
       <div class="kf-n">FINDING 04</div>
       <div class="kf-t">AI Scheduler in 6G FR3/FR2</div>
-      <div style="font-size:9px;color:var(--tx);margin-bottom:4px">
+      <div style="font-size:11px;color:#000000;margin-bottom:4px">
         FR3 = 7–24 GHz upper mid-band (primary 6G band, between FR1 &amp; FR2 in frequency) ·
         FR2 = ≥24.25 GHz mmWave · FR# order ≠ frequency order</div>
       <p>At 32UE 4CC µ=2: ALL Layer 1 knobs combined fail at
@@ -946,25 +1120,25 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 <!-- ══════════════════ Company-A DU100 REFERENCE ══════════════════ -->
 <div class="sec" id="timeline">
   <div class="sec-lbl">Step 2 — Static Latency Analysis: Single CC/UE Pipeline (No Contention)</div>
-  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 12px;background:rgba(155,126,248,.08);border:1px solid rgba(155,126,248,.2);border-radius:5px;font-size:10px;color:var(--purple)"><span style="font-size:14px">⚠</span><span><strong>Known bias: over-optimistic.</strong> Assumes dedicated resources per CC/UE. True P99 latency is 20–30% higher once 4 CC compete for shared resources — corrected in Step 4 contention simulation.</span></div>
-  <p style="font-size:11px;color:var(--dim);margin-bottom:14px;line-height:1.6">
+  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 12px;background:rgba(155,126,248,.08);border:1px solid rgba(155,126,248,.2);border-radius:5px;font-size:10px;color:#3d2558"><span style="font-size:14px">⚠</span><span><strong>Known bias: over-optimistic.</strong> Assumes dedicated resources per CC/UE. True P99 latency is 20–30% higher once 4 CC compete for shared resources — corrected in Step 4 contention simulation.</span></div>
+  <p style="font-size:11px;color:#111111;margin-bottom:14px;line-height:1.6">
     Modem architects think in pipeline terms: what share of the HRTC budget does each
     task consume, and what does a coprocessor change?
-    <strong style="color:var(--tx)">LDPC decode dominates everything else by 4–8×</strong>
+    <strong style="color:#000000">LDPC decode dominates everything else by 4–8×</strong>
     — making it the highest-ROI target for hardening.
     Toggle SW baseline vs HW acceleration to see the impact.
   </p>
 
   <!-- Controls row -->
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap">
-    <span style="font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Scenario:</span>
+    <span style="font-size:10px;color:#111111;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Scenario:</span>
     <div style="display:flex;gap:3px">
       <div class="ctog on" id="ctog-sw"   onclick="setChart('sw')">Pure SW baseline</div>
       <div class="ctog"    id="ctog-hw"   onclick="setChart('hw')">With HRTC coprocessors</div>
       <div class="ctog"    id="ctog-both" onclick="setChart('both')">Both (compare)</div>
       <div class="ctog"    id="ctog-gpu"  onclick="setChart('gpu')">GPU GPU-PHY</div>
     </div>
-    <span style="font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-left:8px">Show:</span>
+    <span style="font-size:10px;color:#111111;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-left:8px">Show:</span>
     <div style="display:flex;gap:3px">
       <div class="ctog on" id="tog-labels"   onclick="tlToggle('labels')">Task labels</div>
       <div class="ctog on" id="tog-deadline" onclick="tlToggle('deadline')">Deadline</div>
@@ -973,56 +1147,56 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
   <!-- Legend -->
   <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#111111">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#4f7ef7"></span>RISC SW</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#111111">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3d2558"></span>Matrix Accel</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#111111">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1a4d35"></span>HW-LDPC</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#111111">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#8a3d04"></span>HW-Polar / ZC</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#111111">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#0d4f4f"></span>HW-DMA / LLR</div>
-    <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim)">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#111111">
       <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#5a6880"></span>Cross-SS / overhead</div>
   </div>
 
   <!-- Canvas charts -->
-  <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:10px;overflow-x:auto">
-    <div style="font-size:10px;font-weight:700;color:var(--tx);margin-bottom:8px;letter-spacing:.04em">
+  <div style="background:#ffffff;border:1px solid #b8b0a4;border-radius:8px;padding:14px;margin-bottom:10px;overflow-x:auto">
+    <div style="font-size:10px;font-weight:700;color:#000000;margin-bottom:8px;letter-spacing:.04em">
       PATH 1 — UL PUSCH User Data Decode → HARQ-ACK — 64-ant
     </div>
     <!-- Scenario tabs -->
     <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap" id="tl-sc-tabs">
       <div class="sc-tab on" id="tl-sc-fr1" onclick="tlSetSc('fr1')" style="font-size:11px;padding:4px 10px">
-        FR1 5G NR<br><span style="font-size:9px;opacity:.7">µ=1 · 100MHz · 273 PRB · budget 4ms</span></div>
+        FR1 5G NR<br><span style="font-size:11px;opacity:.7">µ=1 · 100MHz · 273 PRB · budget 4ms</span></div>
       <div class="sc-tab" id="tl-sc-fr2" onclick="tlSetSc('fr2')" style="font-size:11px;padding:4px 10px">
-        FR2 5G NR mmWave<br><span style="font-size:9px;opacity:.7">µ=3 · 100MHz · 66 PRB · budget 375µs (K1=3)</span></div>
+        FR2 5G NR mmWave<br><span style="font-size:11px;opacity:.7">µ=3 · 100MHz · 66 PRB · budget 375µs (K1=3)</span></div>
       <div class="sc-tab" id="tl-sc-fr3" onclick="tlSetSc('fr3')" style="font-size:11px;padding:4px 10px">
-        FR3 6G aNB<br><span style="font-size:9px;opacity:.7">µ=2 · 400MHz · 264 PRB · budget 500µs (K1=2)</span></div>
+        FR3 6G aNB<br><span style="font-size:11px;opacity:.7">µ=2 · 400MHz · 264 PRB · budget 500µs (K1=2)</span></div>
     </div>
-    <div id="tl-sc-note" style="font-size:9px;color:var(--dim);margin-bottom:8px;line-height:1.5"></div>
+    <div id="tl-sc-note" style="font-size:11px;color:#111111;margin-bottom:8px;line-height:1.5"></div>
     <canvas id="harq-canvas" style="display:block;width:100%;min-width:500px"></canvas>
   </div>
 
-  <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:14px;overflow-x:auto">
-    <div style="font-size:10px;font-weight:700;color:var(--tx);margin-bottom:6px;letter-spacing:.04em">
+  <div style="background:#ffffff;border:1px solid #b8b0a4;border-radius:8px;padding:14px;overflow-x:auto">
+    <div style="font-size:10px;font-weight:700;color:#000000;margin-bottom:6px;letter-spacing:.04em">
       PATH 2 — DL HARQ-ACK ← UE PUCCH F0 — ZC sequence detection</div>
-    <div id="pucch-sc-note" style="font-size:9px;margin-bottom:8px;line-height:1.5;
-      padding:6px 10px;border-radius:5px;border:1px solid var(--bd);background:var(--bg3)"></div>
+    <div id="pucch-sc-note" style="font-size:11px;margin-bottom:8px;line-height:1.5;
+      padding:6px 10px;border-radius:5px;border:1px solid #b8b0a4;background:#f0ede6"></div>
     <canvas id="pucch-canvas" style="display:block;width:100%;min-width:500px"></canvas>
   </div>
 
-  <div style="font-size:10px;color:var(--dim);margin-top:8px;line-height:1.6">
+  <div style="font-size:10px;color:#111111;margin-top:8px;line-height:1.6">
     SW times: RISC at 1.2GHz (1/4× estimate for tasks that would use coprocessors).
     HW times: Company-A DU100 hardwired engines — LDPC ~15µs/CB corrected, ZC 0.5µs, Polar 0.5µs.
     GPU GPU-PHY: LDPC ~150µs flat batch. ChEst ~207µs (sequential, no batching) or ~17-20µs (batched all-UE, GPU wins on throughput). MatAccel ~90µs/lane with deterministic HRTC timing — advantage is predictability + power, not throughput.
     Each row = one pipeline path. Bars are stacked left→right in dependency order. Path 1: UL user data (PUSCH) decoded by gNB via LDPC — budget = K1 × slot. Path 2: DL HARQ-ACK feedback sent by UE on PUCCH (ZC sequence for F0/F1 — no coding; Polar coded for F2/F3/F4 when more bits including CSI are reported). LDPC is NEVER used on PUCCH — only on data channels (PUSCH/PDSCH). LDPC encode for DL (PDSCH) is PRE-computable: runs 1-2 slots ahead since gNB controls the timing and MAC PDU is assembled in the PRE window.
   </div>
-  <div style="background:var(--bg3);border:1px solid var(--bd);border-left:2px solid var(--dim2);
+  <div style="background:#f0ede6;border:1px solid #b8b0a4;border-left:2px solid #333333;
     border-radius:6px;padding:10px 13px;margin-top:10px;font-size:10px;
-    color:var(--dim);line-height:1.65">
-    <strong style="color:var(--tx);display:block;margin-bottom:4px">
+    color:#111111;line-height:1.65">
+    <strong style="color:#000000;display:block;margin-bottom:4px">
       Why RF power-up lead time is not in this pipeline</strong>
     On the UE side, RF power-up is a real constraint: depending on RRC state,
     the UE RF chain may be fully powered down (RRC_IDLE) or in low-power standby (DRX),
@@ -1031,35 +1205,35 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     This is why 3GPP K2 minimums are UE-capability-gated.
     <br><br>
     At the macro gNB / 6G aNB the situation is fundamentally different:
-    <strong style="color:var(--tx)">RF is continuously powered during TDD operation.</strong>
+    <strong style="color:#000000">RF is continuously powered during TDD operation.</strong>
     The 64T64R (or 256T256R) PA array is always biased at quiescent point — only
     the output stage is TDD-gated (~&lt;1µs transition), not powered down.
     Fully digital beamforming means W matrix weights are applied in the digital baseband
     before the DAC — no analog phase shifter settle time.
     The closest gNB analog to UE RF lead time is the
-    <strong style="color:var(--tx)">O-RAN eCPRI fronthaul T12/T34 timing</strong>:
+    <strong style="color:#000000">O-RAN eCPRI fronthaul T12/T34 timing</strong>:
     the DU must deliver C-plane resource allocation to the RU at least ~250µs
     before the UL slot. This is already what our PDCCH scheduling deadline (285µs budget)
     is designed to meet — it is embedded in the pipeline budgets shown above,
     not a separate overhead.
     <br><br>
-    <span style="color:var(--dim)">Exception: hybrid analog/digital beamforming (legacy RRH
+    <span style="color:#111111">Exception: hybrid analog/digital beamforming (legacy RRH
     with SPI-programmed phase shifters) does add 50–200µs settle overhead per beam change.
     This is why 6G aNB targets fully digital massive MIMO — eliminating analog settle
     latency entirely and making sub-slot scheduling feasible.</span>
   </div>
 
-  <div style="background:var(--bg3);border:1px solid var(--bd);border-left:2px solid var(--amber);
+  <div style="background:#f0ede6;border:1px solid #b8b0a4;border-left:2px solid #7a3d04;
     border-radius:6px;padding:10px 13px;margin-top:10px;font-size:10px;
-    color:var(--dim);line-height:1.65">
-    <strong style="color:var(--tx);display:block;margin-bottom:4px">
+    color:#111111;line-height:1.65">
+    <strong style="color:#000000;display:block;margin-bottom:4px">
       PUSCH additional DMRS (sym 10/11) — the real HRTC timeline constraint</strong>
     Like PDSCH, PUSCH supports additional DMRS at late symbols to combat high Doppler
     (TS 38.211 Table 6.4.1.1.3-3/4, dmrs-AdditionalPosition: pos0/pos1/pos2/pos3).
     With double-symbol additional DMRS at l0=2, positions land at symbols 7 and 11.
-    At µ=3 (125µs slot), symbol 11 arrives at 11 × 8.93µs = <strong style="color:var(--tx)">98.2µs into the slot.</strong>
+    At µ=3 (125µs slot), symbol 11 arrives at 11 × 8.93µs = <strong style="color:#000000">98.2µs into the slot.</strong>
     <br><br>
-    <strong style="color:var(--tx)">Impact on effective processing window:</strong>
+    <strong style="color:#000000">Impact on effective processing window:</strong>
     The gNB must wait for the symbol 11 DMRS before completing channel re-estimation.
     ChEst takes ~90µs after last DMRS received → completes at 98.2 + 90 = 188µs.
     Slot boundary is at 125µs, so LDPC cannot start until ~188µs into the
@@ -1067,16 +1241,16 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     <br>
     &nbsp;&nbsp;• Without additional DMRS (pos0): ~375µs available after slot boundary
     <br>
-    &nbsp;&nbsp;• With additional DMRS at sym 11 (pos2): <strong style="color:var(--amber)">~285µs effective window</strong>
+    &nbsp;&nbsp;• With additional DMRS at sym 11 (pos2): <strong style="color:#7a3d04">~285µs effective window</strong>
     <br><br>
-    <strong style="color:var(--tx)">Impact on GPU LDPC crossover:</strong>
+    <strong style="color:#000000">Impact on GPU LDPC crossover:</strong>
     At 375µs window: GPU passes up to 512 CBs (2 batches × 150µs = 300µs ✓).
     At 285µs window: GPU 2-batch LDPC (300µs) + HARQ chain (30µs) = 330µs > 285µs
-    <strong style="color:var(--red)">✗ fails</strong>.
+    <strong style="color:#7a1525">✗ fails</strong>.
     Single batch (≤256 CBs, 150µs) still passes.
     Company-A DU100 hardwired: 15µs/CB — unaffected in either window.
     <br><br>
-    <strong style="color:var(--tx)">AI scheduler cross-layer opportunity:</strong>
+    <strong style="color:#000000">AI scheduler cross-layer opportunity:</strong>
     The gNB scheduler controls dmrs-AdditionalPosition per UE via RRC.
     A GPU AI scheduler can assign pos0 (no additional DMRS) to URLLC UEs
     preserving the 375µs window, while assigning pos2/pos3 to high-mobility eMBB UEs
@@ -1089,9 +1263,9 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 <!-- ══════════════════ SIMULATOR ══════════════════ -->
 <div class="sec" id="simulator">
   <div class="sec-lbl">Step 3 — Static Peak Analysis: Coprocessor Sizing Under Worst-Case Load</div>
-  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 12px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:5px;font-size:10px;color:var(--green)"><span style="font-size:14px">⚠</span><span><strong>Known bias: over-pessimistic.</strong> Worst case across all resources rarely occurs simultaneously. The knob explorer shows sensitivity — real operating points are more favorable. Step 4 simulation quantifies actual margins.</span></div>
-  <div style="font-size:11px;color:var(--dim);margin-bottom:10px;line-height:1.6">
-    <strong style="color:var(--tx)">Core argument:</strong>
+  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 12px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:5px;font-size:10px;color:#1a4d35"><span style="font-size:14px">⚠</span><span><strong>Known bias: over-pessimistic.</strong> Worst case across all resources rarely occurs simultaneously. The knob explorer shows sensitivity — real operating points are more favorable. Step 4 simulation quantifies actual margins.</span></div>
+  <div style="font-size:11px;color:#111111;margin-bottom:10px;line-height:1.6">
+    <strong style="color:#000000">Core argument:</strong>
     A small set of targeted <span class="hrtc h">HRTC</span> coprocessors frees the GPU
     from fixed-function work — so it can run the AI that differentiates 6G.
     Toggle knobs to see GPU budget recovered, pass/fail per scenario, and the ROI curve.
@@ -1103,7 +1277,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     <div class="caveat-dot" id="caveat-dot"></div>
     <div class="caveat-label">
       <strong id="caveat-lbl">DPU has NO vector units — ChEst coprocessor gain is high (~5-8×)</strong>
-      <span id="caveat-sub" style="color:var(--dim);font-size:10px;display:block">
+      <span id="caveat-sub" style="color:#111111;font-size:10px;display:block">
         Click to toggle: if DPU already has SIMD + FFT/iFFT, ChEst gain shrinks to ~1.5-2×
         (many modern DPU/SoC designs include vector engines internally)</span>
     </div>
@@ -1112,25 +1286,25 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
   <!-- Scenario tabs -->
   <div class="sc-tabs" style="margin-top:12px">
     <div class="sc-stab on" onclick="setSC('FR1_macro')">FR1 Macro<br>
-      <span style="font-size:9px;opacity:.6">µ=1 · 16UE · 1CC</span></div>
+      <span style="font-size:11px;opacity:.6">µ=1 · 16UE · 1CC</span></div>
     <div class="sc-stab" onclick="setSC('FR2_mmWave')">FR2 mmWave<br>
-      <span style="font-size:9px;opacity:.6">≥24GHz · µ=3 · 4UE · 2CC · 80% SPS</span></div>
+      <span style="font-size:11px;opacity:.6">≥24GHz · µ=3 · 4UE · 2CC · 80% SPS</span></div>
     <div class="sc-stab" onclick="setSC('FR3_32UE')">FR3 6G · 32UE<br>
-      <span style="font-size:9px;opacity:.6">7–24GHz · µ=2 · 32UE · 4CC</span></div>
+      <span style="font-size:11px;opacity:.6">7–24GHz · µ=2 · 32UE · 4CC</span></div>
     <div class="sc-stab" onclick="setSC('FR3_64UE')">FR3 6G · 64UE<br>
-      <span style="font-size:9px;opacity:.6">7–24GHz · µ=2 · 64UE · 4CC</span></div>
+      <span style="font-size:11px;opacity:.6">7–24GHz · µ=2 · 64UE · 4CC</span></div>
   </div>
 
   <div class="sim-cols">
     <!-- Knob panel — HRTC / non-HRTC separated -->
     <div class="kpanel">
-      <div class="kp-lbl" style="color:var(--red)">
+      <div class="kp-lbl" style="color:#7a1525">
         <span class="hrtc h" style="font-size:8px">HRTC</span> Coprocessors
       </div>
       <div id="k-hrtc"></div>
-      <div class="kp-sec" style="color:var(--dim)">non-HRTC — pre-computable</div>
+      <div class="kp-sec" style="color:#111111">non-HRTC — pre-computable</div>
       <div id="k-nhrtc"></div>
-      <div class="kp-sec" style="color:var(--green)">
+      <div class="kp-sec" style="color:#1a4d35">
         <span class="hrtc n" style="font-size:8px">non-HRTC</span> GPU (AI)
       </div>
       <div id="k-l2"></div>
@@ -1144,14 +1318,14 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
     <div>
       <!-- GPU budget stacked bar -->
-      <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+      <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
         letter-spacing:.08em;margin-bottom:5px">GPU Budget — HRTC window</div>
       <div class="gpu-bar-wrap">
         <div class="gpu-bar-row">
           <div class="gpu-bar-lbl">500µs budget</div>
           <div class="gpu-bar-track" id="gpu-budget-bar" style="height:22px"></div>
         </div>
-        <div style="font-size:10px;color:var(--dim);margin-top:3px" id="gpu-summary"></div>
+        <div style="font-size:10px;color:#111111;margin-top:3px" id="gpu-summary"></div>
       </div>
 
       <div style="height:8px"></div>
@@ -1183,15 +1357,15 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
       </div>
       <div class="dci-note">
         <span class="hrtc n" style="font-size:8px">non-HRTC</span>
-        <span style="color:var(--green);margin-left:4px">DCI last-mile patch</span>
-        (12 bits) ≈ <strong id="dci-t" style="color:var(--green)">—</strong> — trivial.
+        <span style="color:#1a4d35;margin-left:4px">DCI last-mile patch</span>
+        (12 bits) ≈ <strong id="dci-t" style="color:#1a4d35">—</strong> — trivial.
         PRB/VRB + Scrambler: also non-HRTC (pre-computed from config + slot#).
       </div>
       <div class="status-row" id="stat"></div>
       <div class="insight" id="ins"></div>
 
       <!-- Power projection -->
-      <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+      <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
         letter-spacing:.08em;margin:14px 0 5px">Platform Power Projection (Company-B GPU + BlueField-3)</div>
 
       <!-- Power stacked bar -->
@@ -1205,22 +1379,22 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
       <!-- Three summary cards -->
       <div class="pwr-cards">
         <div class="pwr-card">
-          <div class="pwr-val" id="pwr-total" style="color:var(--amber)">—W</div>
+          <div class="pwr-val" id="pwr-total" style="color:#7a3d04">—W</div>
           <div class="pwr-lbl">Platform total<br>(GPU+DPU+CPU+Copr)</div>
         </div>
         <div class="pwr-card">
-          <div class="pwr-val" id="pwr-sector" style="color:var(--blue)">—W</div>
+          <div class="pwr-val" id="pwr-sector" style="color:#1a3d6b">—W</div>
           <div class="pwr-lbl">Per-sector equiv<br>(3 sectors sharing server)</div>
         </div>
-        <div class="pwr-card" style="border-color:var(--dim)">
-          <div class="pwr-val" id="pwr-x100" style="color:var(--dim)">35W</div>
+        <div class="pwr-card" style="border-color:#111111">
+          <div class="pwr-val" id="pwr-x100" style="color:#111111">35W</div>
           <div class="pwr-lbl">Company-A DU100 reference<br>per sector (published)</div>
         </div>
       </div>
 
       <!-- Per-knob power delta table -->
       <div id="pwr-knob-section" style="margin:10px 0">
-        <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+        <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
           letter-spacing:.06em;margin-bottom:5px">Per-coprocessor power trade-off</div>
         <table class="pwr-knob-table" id="pwr-knob-table">
           <thead><tr>
@@ -1236,14 +1410,14 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
       <!-- TCO calculator -->
       <div class="tco-row">
-        <span style="font-size:10px;color:var(--dim);font-weight:600">Annual TCO savings vs no coprocessors:</span>
+        <span style="font-size:10px;color:#111111;font-weight:600">Annual TCO savings vs no coprocessors:</span>
         <input class="tco-input" id="tco-sites" type="number" value="10000"
           oninput="updateTCO()" title="Number of deployed sectors">
-        <span style="font-size:10px;color:var(--dim)">sectors</span>
-        <span style="font-size:10px;color:var(--dim)">×</span>
+        <span style="font-size:10px;color:#111111">sectors</span>
+        <span style="font-size:10px;color:#111111">×</span>
         <input class="tco-input" id="tco-rate" type="number" value="0.10" step="0.01"
           oninput="updateTCO()" title="Electricity cost $/kWh">
-        <span style="font-size:10px;color:var(--dim)">$/kWh</span>
+        <span style="font-size:10px;color:#111111">$/kWh</span>
         <span class="tco-result" id="tco-result">—</span>
       </div>
       <div class="pwr-note">
@@ -1254,7 +1428,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
       </div>
 
       <!-- ROI chart -->
-      <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+      <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
         letter-spacing:.08em;margin:14px 0 5px">
         Coprocessor ROI — GPU-µs saved from HRTC window vs silicon area
       </div>
@@ -1263,21 +1437,21 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
           style="display:block;width:100%;min-width:300px;min-height:160px;background:rgba(19,23,32,.5);border-radius:6px">
     <text x="250" y="100" fill="#30384a" font-size="12" text-anchor="middle">Loading chart...</text></svg>
         <div class="roi-legend">
-          <div class="roi-leg"><div class="roi-dot" style="background:var(--red)"></div>
+          <div class="roi-leg"><div class="roi-dot" style="background:#7a1525"></div>
             <span>HRTC coprocessor</span></div>
-          <div class="roi-leg"><div class="roi-dot" style="background:var(--dim2)"></div>
+          <div class="roi-leg"><div class="roi-dot" style="background:#333333"></div>
             <span>non-HRTC (pre-computable — saves 0 HRTC GPU-µs)</span></div>
-          <div class="roi-leg"><div class="roi-dot" style="background:var(--green)"></div>
+          <div class="roi-leg"><div class="roi-dot" style="background:#1a4d35"></div>
             <span>Active (selected)</span></div>
         </div>
-        <div style="font-size:9px;color:var(--dim);margin-top:4px">
+        <div style="font-size:11px;color:#111111;margin-top:4px">
           Efficient frontier: LDPC engine alone gives ~80% of max GPU headroom at ~8% of
           full Company-A DU100 coprocessor suite area. ChEst dot moves with caveat toggle above.
         </div>
       </div>
 
       <!-- Individual impact grid -->
-      <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+      <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
         letter-spacing:.08em;margin:10px 0 5px">Per-knob impact on miss rate (click to toggle)</div>
       <div class="impact-grid" id="igrid"></div>
     </div>
@@ -1288,7 +1462,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 <!-- ══════════════════ CONTENTION SIM ══════════════════ -->
 <div class="sec" id="contention">
   <div class="sec-lbl">Step 4 — Resource Contention Simulation: Closing Both Static Biases</div>
-  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 12px;background:rgba(245,165,42,.08);border:1px solid rgba(245,165,42,.2);border-radius:5px;font-size:10px;color:var(--amber)"><span style="font-size:14px">✓</span><span><strong>Corrects both biases.</strong> SimPy discrete-event model with priority queuing and stochastic task durations across all 4 HRTC paths simultaneously. Some paths tighter than static predicted (PUSCH P99 = 180µs, 42% margin (budget correctly accounts for RX frontend + TX tail)); others reveal priority — not capacity — as the real constraint (DL_SCHED).</span></div>
+  <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:6px 12px;background:rgba(245,165,42,.08);border:1px solid rgba(245,165,42,.2);border-radius:5px;font-size:10px;color:#7a3d04"><span style="font-size:14px">✓</span><span><strong>Corrects both biases.</strong> SimPy discrete-event model with priority queuing and stochastic task durations across all 4 HRTC paths simultaneously. Some paths tighter than static predicted (PUSCH P99 = 180µs, 42% margin (budget correctly accounts for RX frontend + TX tail)); others reveal priority — not capacity — as the real constraint (DL_SCHED).</span></div>
   <!--
     RESOURCE CONTENTION SIMULATION — SCOPE NOTES
     =============================================
@@ -1322,8 +1496,8 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
       Low HW utilization + high miss rate = priority-blocking bottleneck, not capacity.
   -->
   <div class="sec-lbl">Resource Contention Simulation (v18) — SimPy Monte Carlo · FR3 6G aNB</div>
-  <p style="font-size:11px;color:var(--amber);font-style:italic;margin-bottom:12px;max-width:720px">Toggle the knobs — a few HW coprocessors do wonders to 6G FR2/FR3 architecture.</p>
-<p style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.6">
+  <p style="font-size:11px;color:#7a3d04;font-style:italic;margin-bottom:12px;max-width:720px">Toggle the knobs — a few HW coprocessors do wonders to 6G FR2/FR3 architecture.</p>
+<p style="font-size:11px;color:#111111;margin-bottom:12px;line-height:1.6">
     <strong>FR3 6G aNB scenario — hardwired HRTC path only, no GPU.</strong>
     µ=3 (SCS=120kHz), slot=125µs, K1=2, PUSCH budget=250µs. 16 UE · 4 CC · 600 slots · 5 runs (sim_v18).
     Architecture: 8 CE lanes (each = 1 RISC + 1 MatAccel), 4 MIMO lanes (each = 1 RISC + 1 MatAccel),
@@ -1339,25 +1513,25 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
   <!-- Summary cards -->
   <div class="sim-cards">
-    <div class="sim-card" style="border-left-color:var(--green)">
-      <div class="sim-card-val" style="color:var(--amber)">80%</div>
+    <div class="sim-card" style="border-left-color:#1a4d35">
+      <div class="sim-card-val" style="color:#7a3d04">80%</div>
       <div class="sim-card-lbl">DL_SCHED deadline miss rate</div>
-      <div class="sim-card-sub" style="color:var(--amber)">HRTC paths all pass ✓ · GPU offload required for DL sched</div>
+      <div class="sim-card-sub" style="color:#7a3d04">HRTC paths all pass ✓ · GPU offload required for DL sched</div>
     </div>
-    <div class="sim-card" style="border-left-color:var(--green)">
-      <div class="sim-card-val" style="color:var(--green)">0</div>
+    <div class="sim-card" style="border-left-color:#1a4d35">
+      <div class="sim-card-val" style="color:#1a4d35">0</div>
       <div class="sim-card-lbl">Priority inversions</div>
-      <div class="sim-card-sub" style="color:var(--green)">no preemption needed</div>
+      <div class="sim-card-sub" style="color:#1a4d35">no preemption needed</div>
     </div>
-    <div class="sim-card" style="border-left-color:var(--blue)">
-      <div class="sim-card-val" style="color:var(--blue)">45.0%</div>
+    <div class="sim-card" style="border-left-color:#1a3d6b">
+      <div class="sim-card-val" style="color:#1a3d6b">45.0%</div>
       <div class="sim-card-lbl">CE lane avg utilization</div>
-      <div class="sim-card-sub" style="color:var(--blue)">target ≤60% ✓</div>
+      <div class="sim-card-sub" style="color:#1a3d6b">target ≤60% ✓</div>
     </div>
-    <div class="sim-card" style="border-left-color:var(--teal)">
-      <div class="sim-card-val" style="color:var(--teal)">1.6%</div>
+    <div class="sim-card" style="border-left-color:#0d4f4f">
+      <div class="sim-card-val" style="color:#0d4f4f">1.6%</div>
       <div class="sim-card-lbl">LDPC engine avg utilization</div>
-      <div class="sim-card-sub" style="color:var(--teal)">tiny HW, fires fast then idles</div>
+      <div class="sim-card-sub" style="color:#0d4f4f">tiny HW, fires fast then idles</div>
     </div>
   </div>
 
@@ -1369,86 +1543,86 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
     </tr></thead>
     <tbody><tr>
       <td><strong style="font-size:11px">PUSCH_HARQ</strong></td>
-      <td style="color:var(--red);font-size:10px">HRTC</td>
+      <td style="color:#7a1525;font-size:10px">HRTC</td>
       <td class="mono" style="font-size:10px">215µs</td>
       <td class="mono" style="font-size:10px">180µs</td>
       <td class="mono" style="font-size:10px">250µs</td>
-      <td style="color:var(--amber);font-size:10px;font-weight:700">
+      <td style="color:#7a3d04;font-size:10px;font-weight:700">
         4% headroom ⚠</td>
-      <td style="color:var(--green);font-size:10px;font-weight:700">✓ 0.06%</td>
+      <td style="color:#1a4d35;font-size:10px;font-weight:700">✓ 0.06%</td>
     </tr><tr>
       <td><strong style="font-size:11px">PUCCH_F0</strong></td>
-      <td style="color:var(--red);font-size:10px">HRTC</td>
+      <td style="color:#7a1525;font-size:10px">HRTC</td>
       <td class="mono" style="font-size:10px">46µs</td>
       <td class="mono" style="font-size:10px">62µs</td>
       <td class="mono" style="font-size:10px">125µs</td>
-      <td style="color:var(--green);font-size:10px;font-weight:700">
+      <td style="color:#1a4d35;font-size:10px;font-weight:700">
         50% headroom</td>
-      <td style="color:var(--green);font-size:10px;font-weight:700">✓ 0%</td>
+      <td style="color:#1a4d35;font-size:10px;font-weight:700">✓ 0%</td>
     </tr><tr>
       <td><strong style="font-size:11px">SRS_W</strong></td>
-      <td style="color:var(--red);font-size:10px">HRTC</td>
+      <td style="color:#7a1525;font-size:10px">HRTC</td>
       <td class="mono" style="font-size:10px">31µs</td>
       <td class="mono" style="font-size:10px">35µs</td>
       <td class="mono" style="font-size:10px">250µs</td>
-      <td style="color:var(--green);font-size:10px;font-weight:700">
+      <td style="color:#1a4d35;font-size:10px;font-weight:700">
         86% headroom</td>
-      <td style="color:var(--green);font-size:10px;font-weight:700">✓ 0%</td>
+      <td style="color:#1a4d35;font-size:10px;font-weight:700">✓ 0%</td>
     </tr><tr>
       <td><strong style="font-size:11px">DL_SCHED</strong></td>
-      <td style="color:var(--amber);font-size:10px">PRE</td>
+      <td style="color:#7a3d04;font-size:10px">PRE</td>
       <td class="mono" style="font-size:10px">278µs</td>
       <td class="mono" style="font-size:10px">354µs</td>
       <td class="mono" style="font-size:10px">250µs</td>
-      <td style="color:var(--red);font-size:10px;font-weight:700">
+      <td style="color:#7a1525;font-size:10px;font-weight:700">
         ✗ over budget</td>
-      <td style="color:var(--red);font-size:10px;font-weight:700">✗ 80.6%</td>
+      <td style="color:#7a1525;font-size:10px;font-weight:700">✗ 80.6%</td>
     </tr></tbody>
   </table>
 
   <!-- Resource util charts -->
-  <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+  <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:8px">Resource utilization (per slot, green line = 60% target)</div>
   <div class="sim-res-grid">
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#1a3d6b">CE lanes (8×RISC+MatAccel)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">45.0%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">45.0%</span>
           &nbsp;·&nbsp; peak: 48.1%</div>
         <canvas class="sim-uc" id="suc-ce"></canvas>
       </div>
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#3d2558">MIMO lanes (4×RISC+MatAccel)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">6.0%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">6.0%</span>
           &nbsp;·&nbsp; peak: 7.7%</div>
         <canvas class="sim-uc" id="suc-mimo"></canvas>
       </div>
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#0d4f4f">Spare MatAccel (8 units)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">10.2%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">10.2%</span>
           &nbsp;·&nbsp; peak: 14.0%</div>
         <canvas class="sim-uc" id="suc-spare"></canvas>
       </div>
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#1a4d35">LDPC Decode (4 engines)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">1.6%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">1.6%</span>
           &nbsp;·&nbsp; peak: 2.3%</div>
         <canvas class="sim-uc" id="suc-ldpc_dec"></canvas>
       </div>
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#1a9e6e">LDPC Encode (2 engines)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">2.0%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">2.0%</span>
           &nbsp;·&nbsp; peak: 2.2%</div>
         <canvas class="sim-uc" id="suc-ldpc_enc"></canvas>
       </div>
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#8a3d04">DMA (4 channels)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">5.2%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">5.2%</span>
           &nbsp;·&nbsp; peak: 5.4%</div>
         <canvas class="sim-uc" id="suc-dma"></canvas>
       </div>
       <div class="sim-res-card">
         <div class="sim-res-title" style="color:#7a1525">RISC ctrl (4 cores)</div>
-        <div class="sim-res-meta">avg: <span style="color:var(--green)">4.8%</span>
+        <div class="sim-res-meta">avg: <span style="color:#1a4d35">4.8%</span>
           &nbsp;·&nbsp; peak: 6.4%</div>
         <canvas class="sim-uc" id="suc-risc_ctrl"></canvas>
       </div>
@@ -1457,7 +1631,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 </div>
 
   <!-- Gantt timeline -->
-  <div style="font-size:9px;font-weight:700;color:var(--tx);text-transform:uppercase;
+  <div style="font-size:11px;font-weight:700;color:#000000;text-transform:uppercase;
     letter-spacing:.08em;margin:12px 0 8px">HRTC pipeline Gantt — per-lane task timeline</div>
   <div class="sim-gantt-ctrl">
     <label>Show slots:
@@ -1465,11 +1639,11 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
         oninput="simUpdateGantt(this.value)">
       <span id="sim-tl-val" style="min-width:20px">5</span>
     </label>
-    <span style="color:var(--dim)">Each sub-row = one lane (RISC+MatAccel pair or engine)</span>
+    <span style="color:#111111">Each sub-row = one lane (RISC+MatAccel pair or engine)</span>
   </div>
   <div class="sim-leg-row" id="sim-gantt-leg"></div>
   <div style="overflow-x:auto">
-    <canvas id="sim-gantt" style="display:block;border-radius:6px;border:1px solid var(--bd)"></canvas>
+    <canvas id="sim-gantt" style="display:block;border-radius:6px;border:1px solid #b8b0a4"></canvas>
   </div>
   
 </div>
@@ -1519,20 +1693,20 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
 
   <div class="dd-sec">3GPP AI Standards Progression</div>
   <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.2);
-    border-left:2px solid var(--blue);border-radius:6px;padding:8px 12px;
-    margin-bottom:12px;font-size:11px;color:var(--dim)">
-    <strong style="color:var(--blue)">6G base station name (3GPP official, March 2026):</strong>
-    The 6G RAN node is officially designated <strong style="color:var(--tx)">aNB</strong>
+    border-left:2px solid #1a3d6b;border-radius:6px;padding:8px 12px;
+    margin-bottom:12px;font-size:11px;color:#111111">
+    <strong style="color:#1a3d6b">6G base station name (3GPP official, March 2026):</strong>
+    The 6G RAN node is officially designated <strong style="color:#000000">aNB</strong>
     (aNodeB), where 'a' = "Advanced" + "AI-native". Naming evolution:
     NodeB (3G) → eNodeB (4G) → <strong>gNB (5G NR)</strong> → <strong>aNB (6G)</strong>.
     Throughout this study, "gNB" refers to 5G NR nodes per TS 38.xxx.
     The 6G RU/DU targets the aNB (a-NodeB) RU and DU. aNB and aNB-DU will be specified in Rel-21.
   </div>
   <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.2);
-    border-left:2px solid var(--blue);border-radius:6px;padding:8px 12px;
-    margin-bottom:12px;font-size:11px;color:var(--dim)">
-    <strong style="color:var(--blue)">6G terminology note (March 2026):</strong>
-    3GPP has officially designated the 6G RAN node name as <strong style="color:var(--tx)">aNB</strong>
+    border-left:2px solid #1a3d6b;border-radius:6px;padding:8px 12px;
+    margin-bottom:12px;font-size:11px;color:#111111">
+    <strong style="color:#1a3d6b">6G terminology note (March 2026):</strong>
+    3GPP has officially designated the 6G RAN node name as <strong style="color:#000000">aNB</strong>
     (aNodeB), where 'a' stands for both "Advanced" and "AI" — reflecting 6G's deep
     integration of AI-native design. The naming chain: NodeB (3G) → eNodeB (4G) →
     gNodeB/gNB (5G NR) → <strong>aNB (6G)</strong>.
@@ -1571,7 +1745,7 @@ canvas.sim-uc{display:block;width:100%;height:70px;border-radius:3px}
   <div class="dd-sec">NN Model I/O — 6G aNB Scheduler &amp; Rel-19/20 Specifics</div>
 
   <!-- Slot-level allocator detail -->
-  <pre class="code">SLOT-LEVEL RESOURCE ALLOCATOR — the hard one (runs every 125µs at µ=3)
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">SLOT-LEVEL RESOURCE ALLOCATOR — the hard one (runs every 125µs at µ=3)
 
 INPUT (~13,905 raw features → compressed to ~512-1024 via embedding):
 
@@ -1632,7 +1806,7 @@ WHY GPU, NOT RISC:
   RISC PF equivalent: 32 × 8CC × 33 PRB-groups × 30 cycles = 253,440 cyc = 211µs → FAILS µ=3
   GPU GEMM:           32×1024 × 1024×512 matrix multiply = ~2µs per layer → passes easily
   The computation class (GEMM over large matrices) is fundamentally
-  incompatible with scalar RISC — not just slower, wrong architecture entirely.</pre>
+  incompatible with scalar RISC — not just slower, wrong architecture entirely.</span></pre>
 
   <table class="tbl">
     <thead><tr>
@@ -1641,20 +1815,20 @@ WHY GPU, NOT RISC:
     </tr></thead>
     <tbody>
       <tr><td><strong>Slot-level Resource Allocator</strong><br>
-          <span style="font-size:9px;color:var(--dim)">Core scheduler — see detail above</span></td>
-          <td style="font-family:var(--mono);font-size:10px">125µs<br>(µ=3)</td>
+          <span style="font-size:11px;color:#111111">Core scheduler — see detail above</span></td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">125µs<br>(µ=3)</td>
           <td>CQI + buffer + HARQ + beam correlation<br>
-            <span style="font-size:9px;color:var(--dim)">~13,905 raw → 512 embedded</span></td>
+            <span style="font-size:11px;color:#111111">~13,905 raw → 512 embedded</span></td>
           <td>PRB bitmap + MCS + rank + cross-layer config<br>
-            <span style="font-size:9px;color:var(--dim)">~9,056 values decoded from 256-512 dim</span></td>
+            <span style="font-size:11px;color:#111111">~9,056 values decoded from 256-512 dim</span></td>
           <td>Transformer (cross-UE attn) + MLP heads<br>
             ~26µs forward pass · 2-5M params</td>
           <td class="tg">GPU (Company-B GPU)<br>PRE layer</td>
           <td class="tg">NOW</td></tr>
 
       <tr><td><strong>Beam Manager</strong><br>
-          <span style="font-size:9px;color:var(--dim)">Spatial + temporal prediction</span></td>
-          <td style="font-family:var(--mono);font-size:10px">10ms</td>
+          <span style="font-size:11px;color:#111111">Spatial + temporal prediction</span></td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">10ms</td>
           <td>SSB RSRP (8 coarse beams) + UE position/speed history<br>
             RSRP history past 5-10 slots + beam IDs</td>
           <td>Top-K fine beam indices (from 64+ beams)<br>
@@ -1665,7 +1839,7 @@ WHY GPU, NOT RISC:
           <td class="tg">Rel-19</td></tr>
 
       <tr><td><strong>CSI Compression — UE encoder</strong></td>
-          <td style="font-family:var(--mono);font-size:10px">slot</td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">slot</td>
           <td>H matrix ~32×32×2 complex tensor<br>
             (measured from DL CSI-RS at UE)</td>
           <td>32–128 compressed feedback bits<br>
@@ -1676,7 +1850,7 @@ WHY GPU, NOT RISC:
           <td class="tw">Rel-20</td></tr>
 
       <tr><td><strong>CSI Decompression — aNB decoder</strong></td>
-          <td style="font-family:var(--mono);font-size:10px">slot</td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">slot</td>
           <td>Compressed CSI bits from UE</td>
           <td>Reconstructed H_hat for precoding W</td>
           <td>Mirror of encoder · ~10M–1100M FLOPs<br>
@@ -1685,7 +1859,7 @@ WHY GPU, NOT RISC:
           <td class="tw">Rel-20</td></tr>
 
       <tr><td><strong>CSI Prediction (aNB-side)</strong></td>
-          <td style="font-family:var(--mono);font-size:10px">slot</td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">slot</td>
           <td>H_hat history past 5-10 slots + UE speed</td>
           <td>Predicted H_hat(t+τ) for precoding ahead of time</td>
           <td>Transformer over time dimension<br>
@@ -1694,8 +1868,8 @@ WHY GPU, NOT RISC:
           <td class="tg">Rel-19</td></tr>
 
       <tr><td><strong>Per-PRB Noise Estimator</strong><br>
-          <span style="font-size:9px;color:var(--dim)">Runs alongside ChEst in parallel</span></td>
-          <td style="font-family:var(--mono);font-size:10px">slot<br>~1-2µs</td>
+          <span style="font-size:11px;color:#111111">Runs alongside ChEst in parallel</span></td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">slot<br>~1-2µs</td>
           <td>DMRS residual + null subcarrier power<br>
             per PRB (spatially varying interference)</td>
           <td>σ² estimate per PRB<br>
@@ -1706,8 +1880,8 @@ WHY GPU, NOT RISC:
           <td>proprietary</td></tr>
 
       <tr><td><strong>AI Mobility / HO Prediction</strong><br>
-          <span style="font-size:9px;color:var(--dim)">Rel-20 normative WI</span></td>
-          <td style="font-family:var(--mono);font-size:10px">100ms–1s</td>
+          <span style="font-size:11px;color:#111111">Rel-20 normative WI</span></td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">100ms–1s</td>
           <td>RSRP history, past HO/RLF events per UE<br>
             neighbor cell load, speed estimate</td>
           <td>Predicted HO target + timing<br>
@@ -1718,8 +1892,8 @@ WHY GPU, NOT RISC:
           <td class="tw">Rel-20</td></tr>
 
       <tr><td><strong>ISAC Sensing</strong><br>
-          <span style="font-size:9px;color:var(--dim)">gNB/aNB monostatic · UAV use case</span></td>
-          <td style="font-family:var(--mono);font-size:10px">10-100ms</td>
+          <span style="font-size:11px;color:#111111">gNB/aNB monostatic · UAV use case</span></td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">10-100ms</td>
           <td>Reflected IQ from DL ref signals<br>
             64T × 100MHz BW × slow-time frames<br>
             134M FFT ops per sensing frame</td>
@@ -1731,7 +1905,7 @@ WHY GPU, NOT RISC:
           <td class="tw">Rel-20/21</td></tr>
 
       <tr><td><strong>Load Balancer / SON</strong></td>
-          <td style="font-family:var(--mono);font-size:10px">1-10s</td>
+          <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500;font-size:12px">1-10s</td>
           <td>Cell KPIs, UE distribution, neighbor load<br>
             anomaly detection signals</td>
           <td>Handover bias adjustments<br>
@@ -1744,7 +1918,7 @@ WHY GPU, NOT RISC:
   </table>
 
   <div class="dd-sec">Training Lifecycle</div>
-  <pre class="code">Phase 1 — Offline (vendor lab, GPU cluster):
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">Phase 1 — Offline (vendor lab, GPU cluster):
   Data: 3GPP CDL channel models (CDL-A/B/C/D/E, UMa, UMi, RMa)
   Duration: hours to days · Output: generalist model weights → firmware
 
@@ -1758,13 +1932,13 @@ Phase 3 — Site-specific fine-tuning (gNB GPU, hours to days):
 Phase 4 — Continuous monitoring (Rel-19): drift detection → fallback → rollback
 
 Phase 5 — Federated learning (Rel-20+):
-  gNBs share gradient updates (not raw data) to NWDAF → improved global model</pre>
+  gNBs share gradient updates (not raw data) to NWDAF → improved global model</span></pre>
 
   
   
 
   <div class="dd-sec">ISAC — Integrated Sensing and Communication (Rel-20 normative)</div>
-  <pre class="code">Status (July 2026): Rel-20 Work Item, 58% complete. Normative for UAV tracking.
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">Status (July 2026): Rel-20 Work Item, 58% complete. Normative for UAV tracking.
 Builds on Rel-19 channel modeling (E-GBSM model finalized May 2025).
 
 What ISAC does:
@@ -1789,10 +1963,10 @@ Why this matters:
   Together with beam prediction and CSI compression:
   GPU utilization is high — the ~300W power overhead amortizes across 4+ functions.
   Company-A DU100: no GPU → ISAC not possible at scale.
-  This should appear in the product capability comparison with operators.</pre>
+  This should appear in the product capability comparison with operators.</span></pre>
 
   <div class="dd-sec">MRSS — Multi-Radio Spectrum Sharing: The 5G→6G Deployment Reality</div>
-  <pre class="code">What MRSS is (3GPP Rel-20 study, MRSS = Multi-Radio Access Technology Spectrum Sharing):
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">What MRSS is (3GPP Rel-20 study, MRSS = Multi-Radio Access Technology Spectrum Sharing):
   The 5G→6G transition will not be a hard cutover — operators will run NR and 6G aNB
   on the SAME frequency band simultaneously for years, exactly as LTE+NR DSS ran 2019–2024.
   
@@ -1853,10 +2027,10 @@ Why MRSS strengthens the GPU argument:
      For GPU-based DU: software update covers both → no silicon risk.
      For ASIC-based DU: requires MRSS to be architected into RTL
      before first tapeout — high risk if MRSS specs are still evolving.
-     GPU's software-defined nature is a direct answer to this risk.</pre>
+     GPU's software-defined nature is a direct answer to this risk.</span></pre>
 
   <div class="dd-sec">Channel Coding Upgradability — 6G LDPC/Polar Beyond 5G NR (Rel-20 Study)</div>
-  <pre class="code">Rel-20 scope (confirmed): "Further studying enhancement of polar code and LDPC
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">Rel-20 scope (confirmed): "Further studying enhancement of polar code and LDPC
 beyond 5G NR range" — active study item as of March 2026.
 
 5G NR today:
@@ -1888,10 +2062,10 @@ Concrete scenario:
   Company-B DU:  GPU-PHY software update → same GPU handles 6G LDPC next day
 
 This is the most concrete "future-proof" argument for GPU-based DU.
-3GPP is actively studying this — not theoretical.</pre>
+3GPP is actively studying this — not theoretical.</span></pre>
 
   <div class="dd-sec">aNB LDPC Architecture — Why Many Narrow Engines, Not One Wide</div>
-  <pre class="code">Key insight (from hardware experience): aNB LDPC ≠ UE LDPC
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">Key insight (from hardware experience): aNB LDPC ≠ UE LDPC
 
 UE LDPC decoder (optimized for single-CB throughput):
   Goal: decode ONE large CB as fast as possible
@@ -1947,10 +2121,10 @@ Note on sim_v18 (FR3 6G aNB, K1=2, 250µs budget):
   This correctly scales with the deployment envelope.
   The number is right if the inputs are right —
   the uncertainty is in N_UE and N_CB per slot,
-  which vary significantly by deployment scenario.</pre>
+  which vary significantly by deployment scenario.</span></pre>
 
   <div class="dd-sec">PDCCH False Alarm — UE vs gNB</div>
-  <pre class="code">UE (blind decoding, false alarm is real):
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">UE (blind decoding, false alarm is real):
   Layer 1: LLR confidence metric → parallelizable → Knob 8 covers it
   Layer 2: RNTI-CRC check → Knob 4 covers it
   Layer 3: DCI field range/consistency checks — sequential if-else → pure SW
@@ -1961,14 +2135,14 @@ Note on sim_v18 (FR3 6G aNB, K1=2, 250µs budget):
 gNB (no blind decoding → no false alarm check needed):
   gNB built the DCI — cannot falsely detect its own transmission
   PUCCH F0 ZC threshold (Knob 5) handles false detection on receive side
-  → No new knob needed at gNB</pre>
+  → No new knob needed at gNB</span></pre>
 
 </div>
 
 <div class="sec" id="dvfs-analysis">
   <div class="sec-lbl">⑤ DVFS Analysis — Accelerator → Frequency → Voltage → Power</div>
 
-  <p style="font-size:11px;color:var(--dim);line-height:1.8;max-width:720px;margin-bottom:16px">
+  <p style="font-size:11px;color:#111111;line-height:1.8;max-width:720px;margin-bottom:16px">
     Adding hardwired accelerators shortens the HRTC critical path, creating timing margin.
     That margin can be converted into a lower minimum operating frequency (Fmin), which
     allows voltage scaling (DVFS), reducing dynamic and leakage power.
@@ -1978,74 +2152,74 @@ gNB (no blind decoding → no false alarm check needed):
   <!-- Controls -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
 
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:8px">LDPC Engines</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#111111;margin-bottom:8px">LDPC Engines</div>
       <input type="range" id="ldpc-n" min="1" max="8" value="4" style="width:100%">
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim)"><span>1</span><span>8</span></div>
-      <div style="text-align:center;font-size:16px;font-weight:700;color:var(--green);margin-top:4px" id="ldpc-val">4</div>
-      <div style="font-size:9px;color:var(--dim);text-align:center">engines × ~16µs/CB batch</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#111111"><span>1</span><span>8</span></div>
+      <div style="text-align:center;font-size:16px;font-weight:700;color:#1a4d35;margin-top:4px" id="ldpc-val">4</div>
+      <div style="font-size:11px;color:#111111;text-align:center">engines × ~16µs/CB batch</div>
     </div>
 
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:8px">ChEst / MIMO Lanes</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#111111;margin-bottom:8px">ChEst / MIMO Lanes</div>
       <input type="range" id="chest-n" min="2" max="16" value="8" style="width:100%">
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim)"><span>2</span><span>16</span></div>
-      <div style="text-align:center;font-size:16px;font-weight:700;color:var(--blue);margin-top:4px" id="chest-val">8</div>
-      <div style="font-size:9px;color:var(--dim);text-align:center">parallel antenna streams</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#111111"><span>2</span><span>16</span></div>
+      <div style="text-align:center;font-size:16px;font-weight:700;color:#1a3d6b;margin-top:4px" id="chest-val">8</div>
+      <div style="font-size:11px;color:#111111;text-align:center">parallel antenna streams</div>
     </div>
 
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:8px">Target Margin</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:14px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#111111;margin-bottom:8px">Target Margin</div>
       <input type="range" id="margin-target" min="5" max="20" value="8" style="width:100%">
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim)"><span>5%</span><span>20%</span></div>
-      <div style="text-align:center;font-size:16px;font-weight:700;color:var(--amber);margin-top:4px" id="margin-val">8%</div>
-      <div style="font-size:9px;color:var(--dim);text-align:center">P99 timing margin target</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#111111"><span>5%</span><span>20%</span></div>
+      <div style="text-align:center;font-size:16px;font-weight:700;color:#7a3d04;margin-top:4px" id="margin-val">8%</div>
+      <div style="font-size:11px;color:#111111;text-align:center">P99 timing margin target</div>
     </div>
   </div>
 
   <!-- Results grid -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
-      <div style="font-size:9px;color:var(--tx);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">P99 PUSCH</div>
-      <div style="font-size:22px;font-weight:700;color:var(--green)" id="res-p99">—</div>
-      <div style="font-size:9px;color:var(--dim);margin-top:2px">at Fmax (400MHz)</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:#000000;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">P99 PUSCH</div>
+      <div style="font-size:22px;font-weight:700;color:#1a4d35" id="res-p99">—</div>
+      <div style="font-size:11px;color:#111111;margin-top:2px">at Fmax (400MHz)</div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
-      <div style="font-size:9px;color:var(--tx);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Min Frequency</div>
-      <div style="font-size:22px;font-weight:700;color:var(--blue)" id="res-fmin">—</div>
-      <div style="font-size:9px;color:var(--dim);margin-top:2px">for target margin</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:#000000;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Min Frequency</div>
+      <div style="font-size:22px;font-weight:700;color:#1a3d6b" id="res-fmin">—</div>
+      <div style="font-size:11px;color:#111111;margin-top:2px">for target margin</div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
-      <div style="font-size:9px;color:var(--tx);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Min Voltage</div>
-      <div style="font-size:22px;font-weight:700;color:var(--amber)" id="res-vmin">—</div>
-      <div style="font-size:9px;color:var(--dim);margin-top:2px">DVFS curve estimate</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:#000000;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Min Voltage</div>
+      <div style="font-size:22px;font-weight:700;color:#7a3d04" id="res-vmin">—</div>
+      <div style="font-size:11px;color:#111111;margin-top:2px">DVFS curve estimate</div>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center">
-      <div style="font-size:9px;color:var(--tx);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Power Reduction</div>
-      <div style="font-size:22px;font-weight:700;color:var(--teal)" id="res-pwr">—</div>
-      <div style="font-size:9px;color:var(--dim);margin-top:2px">vs 400MHz baseline</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:11px;color:#000000;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Power Reduction</div>
+      <div style="font-size:22px;font-weight:700;color:#0d4f4f" id="res-pwr">—</div>
+      <div style="font-size:11px;color:#111111;margin-top:2px">vs 400MHz baseline</div>
     </div>
   </div>
 
   <!-- HRTC Gantt -->
-  <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:16px">
-    <div style="font-size:10px;font-weight:600;color:var(--tx);margin-bottom:10px">HRTC Critical Path at Fmin</div>
+  <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:14px;margin-bottom:16px">
+    <div style="font-size:10px;font-weight:600;color:#000000;margin-bottom:10px">HRTC Critical Path at Fmin</div>
     <canvas id="dvfs-gantt" height="120" style="width:100%"></canvas>
   </div>
 
   <!-- Power breakdown -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
-      <div style="font-size:10px;font-weight:600;color:var(--tx);margin-bottom:10px">Power Model (relative, N3E estimate)</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:14px">
+      <div style="font-size:10px;font-weight:600;color:#000000;margin-bottom:10px">Power Model (relative, N3E estimate)</div>
       <canvas id="dvfs-power" height="160" style="width:100%"></canvas>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
-      <div style="font-size:10px;font-weight:600;color:var(--tx);margin-bottom:10px">Frequency vs Margin Trade-off</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:14px">
+      <div style="font-size:10px;font-weight:600;color:#000000;margin-bottom:10px">Frequency vs Margin Trade-off</div>
       <canvas id="dvfs-curve" height="160" style="width:100%"></canvas>
     </div>
   </div>
 
-  <pre class="code">DVFS Validation Methodology:
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">DVFS Validation Methodology:
 
   1. Add accelerators → measure P99 reduction at Fmax (400MHz)
   2. Compute margin = (budget − P99) / budget
@@ -2064,7 +2238,7 @@ gNB (no blind decoding → no false alarm check needed):
   Key insight: at N3E, leakage power has strong voltage dependence (V^3).
   Even modest voltage reduction from DVFS yields disproportionate leakage savings.
   This is why accelerator investment pays back in power — not just through
-  frequency reduction but through the voltage headroom it creates.</pre>
+  frequency reduction but through the voltage headroom it creates.</span></pre>
 </div>
 
 <script>
@@ -2338,7 +2512,7 @@ gNB (no blind decoding → no false alarm check needed):
 
     // Color code Fmin
     const fminEl = document.getElementById('res-fmin');
-    fminEl.style.color = fm < 200 ? 'var(--green)' : fm < 300 ? 'var(--amber)' : 'var(--red)';
+    fminEl.style.color = fm < 200 ? '#1a4d35' : fm < 300 ? '#7a3d04' : '#7a1525';
 
     drawGantt(nLdpc, nChest, fm, res);
     drawPower(fm);
@@ -2356,7 +2530,7 @@ gNB (no blind decoding → no false alarm check needed):
 <div class="sec" id="vu-tradeoff">
   <div class="sec-lbl">Step 5a — Architecture Decision: VU Time-Share vs Dedicated at TSMC N3E</div>
 
-  <p style="font-size:11px;color:var(--dim);line-height:1.7;margin-bottom:14px">
+  <p style="font-size:11px;color:#111111;line-height:1.7;margin-bottom:14px">
     <strong>Three architectures.</strong> The baseband pipeline uses N<sub>sub</sub> replicated subsystems
     (4–6), each handling an independent UE/CC partition.
     <strong>A — Distributed, dedicated VU:</strong> each subsystem has dedicated VUs; programs are distributed (128KB each, local to their subsystem). Simple, no sharing.
@@ -2369,48 +2543,48 @@ gNB (no blind decoding → no false alarm check needed):
   </p>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px">
-      <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:8px">TSMC N3E (confirmed)</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:12px">
+      <div style="font-size:10px;font-weight:700;color:#1a3d6b;margin-bottom:8px">TSMC N3E (confirmed)</div>
       <table style="font-size:10px;width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim);padding:2px 0">Logic density (HD)</td><td class="mono" style="text-align:right">215 MTr/mm²</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">SRAM bitcell (HD 6T)</td><td class="mono" style="text-align:right">0.021 µm² — same as N5</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">SRAM eff. (incl. 30% assist)</td><td class="mono" style="text-align:right">0.0273 µm²/bit</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Logic placement utilization</td><td class="mono" style="text-align:right">70% (std cell) / 98% (SRAM macro)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">VU area (200k gates, N3E)</td><td class="mono" style="text-align:right">~5,316 µm² (÷70% util)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">RISC area (30k gates, N3E)</td><td class="mono" style="text-align:right">~797 µm² (÷70% util)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Logic/sub (6VU+4RISC, N3E)</td><td class="mono" style="text-align:right">~35,083 µm² = 0.035 mm²</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Logic/sub at 28nm</td><td class="mono" style="text-align:right">~301,714 µm² = 0.302 mm² (8.6× larger)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">SRAM/bit at 28nm</td><td class="mono" style="text-align:right">~0.156 µm² (5.7× larger)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0"><strong>Logic/SRAM ratio shift</strong></td>
-          <td class="mono" style="text-align:right;color:var(--amber)">8.6÷5.7 = 1.5× worse for TS</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Logic density (HD)</td><td class="mono" style="text-align:right">215 MTr/mm²</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">SRAM bitcell (HD 6T)</td><td class="mono" style="text-align:right">0.021 µm² — same as N5</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">SRAM eff. (incl. 30% assist)</td><td class="mono" style="text-align:right">0.0273 µm²/bit</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Logic placement utilization</td><td class="mono" style="text-align:right">70% (std cell) / 98% (SRAM macro)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">VU area (200k gates, N3E)</td><td class="mono" style="text-align:right">~5,316 µm² (÷70% util)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">RISC area (30k gates, N3E)</td><td class="mono" style="text-align:right">~797 µm² (÷70% util)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Logic/sub (6VU+4RISC, N3E)</td><td class="mono" style="text-align:right">~35,083 µm² = 0.035 mm²</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Logic/sub at 28nm</td><td class="mono" style="text-align:right">~301,714 µm² = 0.302 mm² (8.6× larger)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">SRAM/bit at 28nm</td><td class="mono" style="text-align:right">~0.156 µm² (5.7× larger)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0"><strong>Logic/SRAM ratio shift</strong></td>
+          <td class="mono" style="text-align:right;color:#7a3d04">8.6÷5.7 = 1.5× worse for TS</td></tr>
       </table>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px">
-      <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:8px">Design Parameters</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:8px;padding:12px">
+      <div style="font-size:10px;font-weight:700;color:#7a3d04;margin-bottom:8px">Design Parameters</div>
       <table style="font-size:10px;width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim);padding:2px 0">Subsystem instances (N<sub>sub</sub>)</td><td class="mono" style="text-align:right">4–6 (UE/CC partitioned)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Program size per function</td><td class="mono" style="text-align:right">200 KB total: 80KB instructions + 120KB data (engineering est.)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Functions: CE, MIMO, Spare</td><td class="mono" style="text-align:right">200KB per instance: 80KB instruction SRAM + 120KB data SRAM</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Time-share combined prog</td><td class="mono" style="text-align:right">96KB per instance (+20% overhead on 80KB instr — only instructions duplicated)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">VUs: time-share / dedicated</td><td class="mono" style="text-align:right">4 shared / 6 dedicated</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Context SRAM (TS only)</td><td class="mono" style="text-align:right">4 VUs × 4KB = 16KB/instance</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0"><strong>Program SRAM % of total</strong></td>
-          <td class="mono" style="text-align:right;color:var(--red)">~92% (dedicated) / ~96% (TS)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Subsystem instances (N<sub>sub</sub>)</td><td class="mono" style="text-align:right">4–6 (UE/CC partitioned)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Program size per function</td><td class="mono" style="text-align:right">200 KB total: 80KB instructions + 120KB data (engineering est.)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Functions: CE, MIMO, Spare</td><td class="mono" style="text-align:right">200KB per instance: 80KB instruction SRAM + 120KB data SRAM</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Time-share combined prog</td><td class="mono" style="text-align:right">96KB per instance (+20% overhead on 80KB instr — only instructions duplicated)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">VUs: time-share / dedicated</td><td class="mono" style="text-align:right">4 shared / 6 dedicated</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Context SRAM (TS only)</td><td class="mono" style="text-align:right">4 VUs × 4KB = 16KB/instance</td></tr>
+        <tr><td style="color:#111111;padding:2px 0"><strong>Program SRAM % of total</strong></td>
+          <td class="mono" style="text-align:right;color:#7a1525">~92% (dedicated) / ~96% (TS)</td></tr>
       </table>
     </div>
   </div>
 
   <!-- VU Gantt Charts -->
-  <div style="font-size:10px;font-weight:700;color:var(--tx);text-transform:uppercase;
+  <div style="font-size:10px;font-weight:700;color:#000000;text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:8px">VU Gantt — One Instance, One Slot (125µs)</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:10px">
-      <div style="font-size:10px;font-weight:700;color:var(--amber);margin-bottom:6px">
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;padding:10px">
+      <div style="font-size:10px;font-weight:700;color:#7a3d04;margin-bottom:6px">
         Time-Share: 4 VUs — all tasks queue on shared pool</div>
       <canvas id="vu-gantt-ts" style="display:block;width:100%;border-radius:4px"></canvas>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:10px">
-      <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:6px">
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:7px;padding:10px">
+      <div style="font-size:10px;font-weight:700;color:#1a4d35;margin-bottom:6px">
         Dedicated: 6 VUs — each bound to one function, no queuing</div>
       <canvas id="vu-gantt-ded" style="display:block;width:100%;border-radius:4px"></canvas>
     </div>
@@ -2425,27 +2599,27 @@ gNB (no blind decoding → no false alarm check needed):
   </div>
 
   <!-- Area stick diagrams -->
-  <div style="font-size:10px;font-weight:700;color:var(--tx);text-transform:uppercase;
+  <div style="font-size:10px;font-weight:700;color:#000000;text-transform:uppercase;
     letter-spacing:.08em;margin-bottom:6px">Area Stick Diagram — N<sub>sub</sub>=4 instances total, N3E vs 28nm</div>
-  <div style="font-size:10px;color:var(--dim);margin-bottom:10px">
+  <div style="font-size:10px;color:#111111;margin-bottom:10px">
     Each instance carries its own 384KB program copy (3×128KB). Bars show <em>total on-die area</em> across all 4 instances.
     SRAM dominates — VU area is barely visible.
   </div>
-  <canvas id="vu-area-bars" style="display:block;width:100%;border-radius:6px;border:1px solid var(--bd);margin-bottom:12px"></canvas>
+  <canvas id="vu-area-bars" style="display:block;width:100%;border-radius:6px;border:1px solid #b8b0a4;margin-bottom:12px"></canvas>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:10px;margin-bottom:12px">
-  <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:10px;margin-bottom:12px;grid-column:1/-1">
-    <div style="font-weight:700;color:var(--teal);margin-bottom:6px">C — Consolidated program (1×384KB) + time-share VU (4VU+4RISC) ← Best area</div>
+  <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;padding:10px;margin-bottom:12px;grid-column:1/-1">
+    <div style="font-weight:700;color:#0d4f4f;margin-bottom:6px">C — Consolidated program (1×384KB) + time-share VU (4VU+4RISC) ← Best area</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px">
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim)">Shared program SRAM (1×384KB)</td><td class="mono" style="text-align:right">87,631 µm²</td><td style="color:var(--dim);text-align:right">(73%)</td></tr>
-        <tr><td style="color:var(--dim)">VU logic (4inst × 6VU)</td><td class="mono" style="text-align:right">97,807 µm²</td><td style="color:var(--dim);text-align:right">(52%)</td></tr>
-        <tr><td style="color:var(--dim)">Prefetch bufs (4inst × 4KB)</td><td class="mono" style="text-align:right">3,578 µm²</td><td style="color:var(--dim);text-align:right">(2%)</td></tr>
-        <tr><td style="color:var(--dim)">Crossbar/arbiter (~20k gates)</td><td class="mono" style="text-align:right">372 µm²</td><td style="color:var(--dim);text-align:right">(&lt;1%)</td></tr>
-        <tr style="font-weight:700;border-top:1px solid var(--bd)"><td>Total (4 instances)</td><td class="mono" style="text-align:right">182,786 µm²</td><td style="color:var(--teal);text-align:right">0.1896 mm²</td></tr>
+        <tr><td style="color:#111111">Shared program SRAM (1×384KB)</td><td class="mono" style="text-align:right">87,631 µm²</td><td style="color:#111111;text-align:right">(73%)</td></tr>
+        <tr><td style="color:#111111">VU logic (4inst × 6VU)</td><td class="mono" style="text-align:right">97,807 µm²</td><td style="color:#111111;text-align:right">(52%)</td></tr>
+        <tr><td style="color:#111111">Prefetch bufs (4inst × 4KB)</td><td class="mono" style="text-align:right">3,578 µm²</td><td style="color:#111111;text-align:right">(2%)</td></tr>
+        <tr><td style="color:#111111">Crossbar/arbiter (~20k gates)</td><td class="mono" style="text-align:right">372 µm²</td><td style="color:#111111;text-align:right">(&lt;1%)</td></tr>
+        <tr style="font-weight:700;border-top:1px solid #b8b0a4"><td>Total (4 instances)</td><td class="mono" style="text-align:right">182,786 µm²</td><td style="color:#0d4f4f;text-align:right">0.1896 mm²</td></tr>
       </table>
-      <div style="color:var(--dim);line-height:1.7;font-size:10px">
-        <strong style="color:var(--teal)">−16.8% vs A, −64.5% vs B</strong> at N_sub=4.<br>
+      <div style="color:#111111;line-height:1.7;font-size:10px">
+        <strong style="color:#0d4f4f">−16.8% vs A, −64.5% vs B</strong> at N_sub=4.<br>
         Scales further: −19.4% vs A at N_sub=6, −80% at N_sub=8.<br><br>
         <strong>Tradeoff:</strong> instruction fetch latency ~2× under N_sub=4 contention.
         Acceptable because VU programs are branch-free deep loops — a 4KB streaming prefetch
@@ -2456,30 +2630,30 @@ gNB (no blind decoding → no false alarm check needed):
       </div>
     </div>
   </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:10px">
-      <div style="font-weight:700;color:var(--green);margin-bottom:6px">Dedicated — 6 VUs, 3×128KB programs</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;padding:10px">
+      <div style="font-weight:700;color:#1a4d35;margin-bottom:6px">Dedicated — 6 VUs, 3×128KB programs</div>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim)">VU logic (6×) per instance</td><td class="mono" style="text-align:right">11,163 µm²</td><td style="color:var(--dim);text-align:right">(8%)</td></tr>
-        <tr><td style="color:var(--dim)">Program SRAM (384KB)</td><td class="mono" style="text-align:right">87,631 µm²</td><td style="color:var(--dim);text-align:right">(92%)</td></tr>
-        <tr style="border-top:1px solid var(--bd)"><td>Per instance</td><td class="mono" style="text-align:right">145,348 µm²</td><td></td></tr>
-        <tr style="font-weight:700"><td>× 4 instances total</td><td class="mono" style="text-align:right">581,391 µm²</td><td style="color:var(--green);text-align:right">0.2280 mm²</td></tr>
+        <tr><td style="color:#111111">VU logic (6×) per instance</td><td class="mono" style="text-align:right">11,163 µm²</td><td style="color:#111111;text-align:right">(8%)</td></tr>
+        <tr><td style="color:#111111">Program SRAM (384KB)</td><td class="mono" style="text-align:right">87,631 µm²</td><td style="color:#111111;text-align:right">(92%)</td></tr>
+        <tr style="border-top:1px solid #b8b0a4"><td>Per instance</td><td class="mono" style="text-align:right">145,348 µm²</td><td></td></tr>
+        <tr style="font-weight:700"><td>× 4 instances total</td><td class="mono" style="text-align:right">581,391 µm²</td><td style="color:#1a4d35;text-align:right">0.2280 mm²</td></tr>
       </table>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:10px">
-      <div style="font-weight:700;color:var(--red);margin-bottom:6px">Time-Share — 4 VUs, 461KB combined program</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;padding:10px">
+      <div style="font-weight:700;color:#7a1525;margin-bottom:6px">Time-Share — 4 VUs, 461KB combined program</div>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim)">VU logic (4×) per instance</td><td class="mono" style="text-align:right">7,442 µm²</td><td style="color:var(--dim);text-align:right">(4%)</td></tr>
-        <tr><td style="color:var(--dim)">Program SRAM (461KB)</td><td class="mono" style="text-align:right">161,022 µm²</td><td style="color:var(--dim);text-align:right">(93%)</td></tr>
-        <tr><td style="color:var(--dim)">Context SRAM (16KB)</td><td class="mono" style="text-align:right">3,578 µm²</td><td style="color:var(--dim);text-align:right">(2%)</td></tr>
-        <tr style="border-top:1px solid var(--bd)"><td>Per instance</td><td class="mono" style="text-align:right">172,228 µm²</td><td style="color:var(--red)">+134.3%</td></tr>
-        <tr style="font-weight:700"><td>× 4 instances total</td><td class="mono" style="text-align:right">688,912 µm²</td><td style="color:var(--red);text-align:right">0.5341 mm²</td></tr>
+        <tr><td style="color:#111111">VU logic (4×) per instance</td><td class="mono" style="text-align:right">7,442 µm²</td><td style="color:#111111;text-align:right">(4%)</td></tr>
+        <tr><td style="color:#111111">Program SRAM (461KB)</td><td class="mono" style="text-align:right">161,022 µm²</td><td style="color:#111111;text-align:right">(93%)</td></tr>
+        <tr><td style="color:#111111">Context SRAM (16KB)</td><td class="mono" style="text-align:right">3,578 µm²</td><td style="color:#111111;text-align:right">(2%)</td></tr>
+        <tr style="border-top:1px solid #b8b0a4"><td>Per instance</td><td class="mono" style="text-align:right">172,228 µm²</td><td style="color:#7a1525">+134.3%</td></tr>
+        <tr style="font-weight:700"><td>× 4 instances total</td><td class="mono" style="text-align:right">688,912 µm²</td><td style="color:#7a1525;text-align:right">0.5341 mm²</td></tr>
       </table>
     </div>
   </div>
 
   <div style="padding:8px 12px;background:rgba(229,85,85,.07);
-    border-left:2px solid var(--red);border-radius:5px;font-size:11px;line-height:1.7">
-    <strong style="color:var(--red)">Conclusion: time-sharing loses area dramatically at both nodes — B is +134% vs A at N_sub=4.</strong>
+    border-left:2px solid #7a1525;border-radius:5px;font-size:11px;line-height:1.7">
+    <strong style="color:#7a1525">Conclusion: time-sharing loses area dramatically at both nodes — B is +134% vs A at N_sub=4.</strong>
     Per-instance penalty: <strong>+134.3%</strong> at N3E,
     +16.6% at 28nm.
     Across 4 instances the total extra SRAM from time-sharing is
@@ -2491,7 +2665,7 @@ gNB (no blind decoding → no false alarm check needed):
     At N3E, the logic/SRAM ratio has shifted 1.5× vs 28nm, making this trade even less favorable
     and worsening further at N2 and beyond.
   </div>
-  <div style="margin-top:8px;font-size:10px;color:var(--dim)">
+  <div style="margin-top:8px;font-size:10px;color:#111111">
     Sources: TSMC N3E bitcell 0.021 µm² (TSMC IEDM 2022); logic density 215 MTr/mm² (WikiChip/Angstronomics);
     28nm SRAM ~0.120 µm²/bit; VU ~200k gates, RISC ~30k gates (engineering estimate, 5nm scaled to N3E); program ~128KB/function (engineering estimate).
   </div>
@@ -2501,7 +2675,7 @@ gNB (no blind decoding → no false alarm check needed):
   <div class="sec-lbl">Step 5b — Architecture Decision: O-RAN Functional Partition (HRTC / PRE)</div>
 
 
-  <p style="font-size:11px;color:var(--dim);line-height:1.7;margin-bottom:14px">
+  <p style="font-size:11px;color:#111111;line-height:1.7;margin-bottom:14px">
     O-RAN's split 7.2x divides PHY into High-PHY (O-DU) and Low-PHY (O-RU). Within the O-DU,
     a further internal split — O-DU Low vs O-DU High — creates the partition that matters most
     for silicon architecture: hard real-time HRTC functions vs schedulable PRE functions.
@@ -2511,20 +2685,20 @@ gNB (no blind decoding → no false alarm check needed):
 
   <!-- Partition diagram -->
   <div style="display:grid;grid-template-columns:1fr 2px 1fr;gap:0;margin-bottom:16px;
-    border:1px solid var(--bd);border-radius:8px;overflow:hidden">
+    border:1px solid #b8b0a4;border-radius:8px;overflow:hidden">
 
     <!-- Left: HRTC domain -->
     <div style="background:rgba(62,207,142,.06);padding:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;
+      <div style="font-size:10px;font-weight:700;color:#1a4d35;text-transform:uppercase;
         letter-spacing:.08em;margin-bottom:10px">HRTC Domain — Custom ASIC (co-located with RU)</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.8">
-        <div style="color:var(--tx);font-weight:600;margin-bottom:4px">O-RU (PHY-Low)</div>
+      <div style="font-size:10px;color:#111111;line-height:1.8">
+        <div style="color:#000000;font-weight:600;margin-bottom:4px">O-RU (PHY-Low)</div>
         FFT/iFFT · CP add/remove · Digital beamforming · PRACH extraction · eCPRI framing
-        <div style="color:var(--tx);font-weight:600;margin:8px 0 4px">O-DU Low (High-PHY HRTC)</div>
+        <div style="color:#000000;font-weight:600;margin:8px 0 4px">O-DU Low (High-PHY HRTC)</div>
         ChEst (MMSE) · MIMO EQ · LDPC decode · HARQ combine · SRS processing ·
         UCI decode · PUCCH ZC · DCI Polar encode
         <div style="margin-top:10px;padding:6px 8px;background:rgba(62,207,142,.1);
-          border-radius:4px;font-size:9px;color:var(--green)">
+          border-radius:4px;font-size:11px;color:#1a4d35">
           Deadline: K1×slot_duration (125–500µs)<br>
           Jitter tolerance: &lt;5µs<br>
           Interface to RU: PCIe / die-to-die (short distance, deterministic)<br>
@@ -2534,27 +2708,27 @@ gNB (no blind decoding → no false alarm check needed):
     </div>
 
     <!-- Divider -->
-    <div style="background:var(--bd);position:relative">
+    <div style="background:#b8b0a4;position:relative">
       <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-        background:var(--bg2);border:1px solid var(--bd);border-radius:4px;
-        padding:4px 6px;font-size:9px;color:var(--dim);white-space:nowrap;writing-mode:vertical-rl">
+        background:#ffffff;border:1px solid #b8b0a4;border-radius:4px;
+        padding:4px 6px;font-size:11px;color:#111111;white-space:nowrap;writing-mode:vertical-rl">
         intra-DU interface (WG6 — not yet frozen)
       </div>
     </div>
 
     <!-- Right: PRE domain -->
     <div style="background:rgba(79,142,247,.06);padding:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;
+      <div style="font-size:10px;font-weight:700;color:#1a3d6b;text-transform:uppercase;
         letter-spacing:.08em;margin-bottom:10px">PRE Domain — Stock GPU (remote server)</div>
-      <div style="font-size:10px;color:var(--dim);line-height:1.8">
-        <div style="color:var(--tx);font-weight:600;margin-bottom:4px">O-DU High (PHY-High / L2)</div>
+      <div style="font-size:10px;color:#111111;line-height:1.8">
+        <div style="color:#000000;font-weight:600;margin-bottom:4px">O-DU High (PHY-High / L2)</div>
         PDSCH rate matching · LDPC encode · Scrambling · Modulation · Layer mapping ·
         RE mapping · MAC scheduling · RLC · HARQ feedback
-        <div style="color:var(--tx);font-weight:600;margin:8px 0 4px">PRE / AI-RAN</div>
+        <div style="color:#000000;font-weight:600;margin:8px 0 4px">PRE / AI-RAN</div>
         PF scheduler · DCI build · AI beam prediction · CSI compression ·
         Traffic forecasting · Near-RT RIC xApps
         <div style="margin-top:10px;padding:6px 8px;background:rgba(79,142,247,.1);
-          border-radius:4px;font-size:9px;color:var(--blue)">
+          border-radius:4px;font-size:11px;color:#1a3d6b">
           Deadline: slot / frame level (1–10ms)<br>
           Jitter tolerance: ~150µs GPU compute jitter acceptable<br>
           Interface to DU-Low: eCPRI / Ethernet midhaul (relaxed)<br>
@@ -2564,7 +2738,7 @@ gNB (no blind decoding → no false alarm check needed):
     </div>
   </div>
 
-  <pre class="code">Why this partition is architecturally forced (not a design choice):
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">Why this partition is architecturally forced (not a design choice):
 
   HRTC timing at FR3 (µ=3, K1=2):
     Budget: 2 × 125µs = 250µs from last RU symbol to HARQ ACK/NACK at antenna
@@ -2583,27 +2757,27 @@ gNB (no blind decoding → no false alarm check needed):
     → GPU is the natural fit for PRE: massive parallelism, FP8 inference, programmable
 
   Conclusion: the HRTC/PRE boundary IS the O-DU Low/High boundary.
-  Co-locating O-DU Low with RU is not a vendor trick — it follows from the timing math.</pre>
+  Co-locating O-DU Low with RU is not a vendor trick — it follows from the timing math.</span></pre>
 
   <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px;font-size:10px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:10px">
-      <div style="font-weight:700;color:var(--amber);margin-bottom:6px">O-RAN Standard Status</div>
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;padding:10px">
+      <div style="font-weight:700;color:#7a3d04;margin-bottom:6px">O-RAN Standard Status</div>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim);padding:2px 0">Split 7.2x (O-DU / O-RU)</td>
-          <td style="text-align:right;color:var(--green)">✓ Frozen (WG4)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">O-DU High / O-DU Low boundary</td>
-          <td style="text-align:right;color:var(--green)">✓ Defined (WG6/WG8)</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">nFAPI (DU-High ↔ DU-Low interface)</td>
-          <td style="text-align:right;color:var(--amber)">⚠ Draft / evolving</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Intra-DU accelerator interface (WG6)</td>
-          <td style="text-align:right;color:var(--red)">✗ Not yet frozen</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">RU+DU-Low co-location profile</td>
-          <td style="text-align:right;color:var(--red)">✗ Vendor-proprietary today</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Split 7.2x (O-DU / O-RU)</td>
+          <td style="text-align:right;color:#1a4d35">✓ Frozen (WG4)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">O-DU High / O-DU Low boundary</td>
+          <td style="text-align:right;color:#1a4d35">✓ Defined (WG6/WG8)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">nFAPI (DU-High ↔ DU-Low interface)</td>
+          <td style="text-align:right;color:#7a3d04">⚠ Draft / evolving</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Intra-DU accelerator interface (WG6)</td>
+          <td style="text-align:right;color:#7a1525">✗ Not yet frozen</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">RU+DU-Low co-location profile</td>
+          <td style="text-align:right;color:#7a1525">✗ Vendor-proprietary today</td></tr>
       </table>
     </div>
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:10px">
-      <div style="font-weight:700;color:var(--blue);margin-bottom:6px">Competitive Implications</div>
-      <div style="color:var(--dim);line-height:1.7">
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;padding:10px">
+      <div style="font-weight:700;color:#1a3d6b;margin-bottom:6px">Competitive Implications</div>
+      <div style="color:#111111;line-height:1.7">
         Vendors co-locating O-DU Low with RU today (Ericsson, Nokia, Company-B ARC-Compact)
         are making <em>proprietary interface choices</em> because WG6 hasn't standardized
         the accelerator boundary. This is a moat — early implementations lock in
@@ -2625,7 +2799,7 @@ gNB (no blind decoding → no false alarm check needed):
 <div class="sec" id="ru-interface-budget">
   <div class="sec-lbl">Appendix — RU/DU Interface Timing Budget Model</div>
 
-  <p style="font-size:11px;color:var(--dim);line-height:1.8;max-width:720px;margin-bottom:16px">
+  <p style="font-size:11px;color:#111111;line-height:1.8;max-width:720px;margin-bottom:16px">
     The gNB/aNB HRTC processing budget is <strong>not specified by 3GPP</strong> — all N1/N2/K1
     timing parameters are UE-side requirements only. The aNB budget is a product design choice
     driven by TDD slot structure and HARQ round-trip latency targets. This section models the
@@ -2633,61 +2807,61 @@ gNB (no blind decoding → no false alarm check needed):
   </p>
 
   <div style="display:grid;grid-template-columns:1fr 2px 1fr 2px 1fr;gap:0;margin-bottom:16px;
-    border:1px solid var(--bd);border-radius:8px;overflow:hidden;font-size:10px">
+    border:1px solid #b8b0a4;border-radius:8px;overflow:hidden;font-size:10px">
 
     <!-- RX path -->
     <div style="padding:14px;background:rgba(62,207,142,.06)">
-      <div style="font-weight:700;color:var(--green);margin-bottom:8px;text-transform:uppercase;
-        font-size:9px;letter-spacing:.06em">RX Frontend (RU→DU)</div>
+      <div style="font-weight:700;color:#1a4d35;margin-bottom:8px;text-transform:uppercase;
+        font-size:11px;letter-spacing:.06em">RX Frontend (RU→DU)</div>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim);padding:2px 0">ADC + DDC</td><td style="text-align:right">~3µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">FFT pipeline</td><td style="text-align:right">~2.5µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">eCPRI RX transport</td><td style="text-align:right">~10µs</td></tr>
-        <tr style="border-top:1px solid var(--bd)">
-          <td style="color:var(--tx);font-weight:600;padding-top:4px">Total RX</td>
-          <td style="text-align:right;color:var(--green);font-weight:700;padding-top:4px">~15µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">ADC + DDC</td><td style="text-align:right">~3µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">FFT pipeline</td><td style="text-align:right">~2.5µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">eCPRI RX transport</td><td style="text-align:right">~10µs</td></tr>
+        <tr style="border-top:1px solid #b8b0a4">
+          <td style="color:#000000;font-weight:600;padding-top:4px">Total RX</td>
+          <td style="text-align:right;color:#1a4d35;font-weight:700;padding-top:4px">~15µs</td></tr>
       </table>
     </div>
 
-    <div style="background:var(--bd)"></div>
+    <div style="background:#b8b0a4"></div>
 
     <!-- Compute window -->
     <div style="padding:14px;background:rgba(79,142,247,.06)">
-      <div style="font-weight:700;color:var(--blue);margin-bottom:8px;text-transform:uppercase;
-        font-size:9px;letter-spacing:.06em">True Compute Window</div>
+      <div style="font-weight:700;color:#1a3d6b;margin-bottom:8px;text-transform:uppercase;
+        font-size:11px;letter-spacing:.06em">True Compute Window</div>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim);padding:2px 0">Product budget (K=3 slots)</td><td style="text-align:right">375µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Minus RX frontend</td><td style="text-align:right">−15µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">Minus TX tail</td><td style="text-align:right">−51µs</td></tr>
-        <tr style="border-top:1px solid var(--bd)">
-          <td style="color:var(--tx);font-weight:600;padding-top:4px">True compute</td>
-          <td style="text-align:right;color:var(--blue);font-weight:700;padding-top:4px">~308µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0;font-size:9px">Sim P99 PUSCH</td>
-            <td style="text-align:right;font-size:9px;color:var(--green)">180µs (42% margin)</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Product budget (K=3 slots)</td><td style="text-align:right">375µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Minus RX frontend</td><td style="text-align:right">−15µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Minus TX tail</td><td style="text-align:right">−51µs</td></tr>
+        <tr style="border-top:1px solid #b8b0a4">
+          <td style="color:#000000;font-weight:600;padding-top:4px">True compute</td>
+          <td style="text-align:right;color:#1a3d6b;font-weight:700;padding-top:4px">~308µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0;font-size:11px">Sim P99 PUSCH</td>
+            <td style="text-align:right;font-size:11px;color:#1a4d35">180µs (42% margin)</td></tr>
       </table>
-      <div style="margin-top:8px;font-size:9px;color:var(--dim);line-height:1.6">
+      <div style="margin-top:8px;font-size:11px;color:#111111;line-height:1.6">
         K=3 (375µs) is aggressive but realistic. Industry assumption for gNB is n+5 slots (625µs).
         3GPP default K1=3 at 120kHz for UE suggests K=3 as minimum practical product target.
       </div>
     </div>
 
-    <div style="background:var(--bd)"></div>
+    <div style="background:#b8b0a4"></div>
 
     <!-- TX tail -->
     <div style="padding:14px;background:rgba(229,85,85,.06)">
-      <div style="font-weight:700;color:var(--red);margin-bottom:8px;text-transform:uppercase;
-        font-size:9px;letter-spacing:.06em">TX Tail (DU→RU→Antenna)</div>
+      <div style="font-weight:700;color:#7a1525;margin-bottom:8px;text-transform:uppercase;
+        font-size:11px;letter-spacing:.06em">TX Tail (DU→RU→Antenna)</div>
       <table style="width:100%;border-collapse:collapse">
-        <tr><td style="color:var(--dim);padding:2px 0">Baseband TX (IFFT+CP)</td><td style="text-align:right">~5µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">eCPRI TX transport</td><td style="text-align:right">~10µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">RF chain programming</td><td style="text-align:right">~35µs</td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0;font-size:9px">(beam weights, PA bias,<br>synthesizer confirm)</td><td></td></tr>
-        <tr><td style="color:var(--dim);padding:2px 0">PA ramp-up</td><td style="text-align:right">~1µs</td></tr>
-        <tr style="border-top:1px solid var(--bd)">
-          <td style="color:var(--tx);font-weight:600;padding-top:4px">Total TX tail</td>
-          <td style="text-align:right;color:var(--red);font-weight:700;padding-top:4px">~51µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">Baseband TX (IFFT+CP)</td><td style="text-align:right">~5µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">eCPRI TX transport</td><td style="text-align:right">~10µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0">RF chain programming</td><td style="text-align:right">~35µs</td></tr>
+        <tr><td style="color:#111111;padding:2px 0;font-size:11px">(beam weights, PA bias,<br>synthesizer confirm)</td><td></td></tr>
+        <tr><td style="color:#111111;padding:2px 0">PA ramp-up</td><td style="text-align:right">~1µs</td></tr>
+        <tr style="border-top:1px solid #b8b0a4">
+          <td style="color:#000000;font-weight:600;padding-top:4px">Total TX tail</td>
+          <td style="text-align:right;color:#7a1525;font-weight:700;padding-top:4px">~51µs</td></tr>
       </table>
-      <div style="margin-top:8px;font-size:9px;color:var(--dim);line-height:1.6">
+      <div style="margin-top:8px;font-size:11px;color:#111111;line-height:1.6">
         RF setup dominates (35µs): all register values must be stable at the RU
         before RF is turned on. Co-locating O-DU Low with RU eliminates eCPRI
         transport on both paths, recovering ~20µs.
@@ -2695,7 +2869,7 @@ gNB (no blind decoding → no false alarm check needed):
     </div>
   </div>
 
-  <pre class="code">Why gNB processing time is not 3GPP-specified:
+  <pre class="code" style="color:#1a1a1a;font-weight:400;font-size:13px;line-height:1.7;background:#f5f4f0;border:1px solid #d0ccc4;border-radius:6px;padding:13px 16px;font-family:'SF Mono','Consolas','Courier New',monospace;display:block;overflow-x:auto;margin:10px 0 15px;white-space:pre"><span style="color:#1a1a1a">Why gNB processing time is not 3GPP-specified:
 
   All 3GPP timing parameters (N1, N2, K1, K2, Tproc,1, Tproc,2) are UE-side requirements only.
   For UL HARQ (PUSCH), NR has NO explicit ACK/NACK from gNB to UE — NR eliminated LTE's PHICH.
@@ -2718,12 +2892,12 @@ gNB (no blind decoding → no false alarm check needed):
   Co-location benefit (O-DU Low at RU vs remote):
     eCPRI RX: ~10µs co-located vs ~50µs remote (100m fiber) — 40µs recovered
     eCPRI TX: ~10µs co-located vs ~50µs remote              — 40µs recovered
-    Net:      ~80µs budget recovery — significant at 375µs total</pre>
+    Net:      ~80µs budget recovery — significant at 375µs total</span></pre>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;font-size:10px">
-    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:10px">
-      <div style="font-weight:700;color:var(--blue);margin-bottom:6px">Sim v19 correction summary</div>
-      <div style="color:var(--dim);line-height:1.7">
+    <div style="background:#f0ede6;border:1px solid #b8b0a4;border-radius:6px;padding:10px">
+      <div style="font-weight:700;color:#1a3d6b;margin-bottom:6px">Sim v19 correction summary</div>
+      <div style="color:#111111;line-height:1.7">
         sim_v18 used 250µs budget (K=2, unrealistic) → 4% margin claim<br>
         sim_v19 uses 308µs true compute (K=3 product, minus RX/TX) → 42% margin<br>
         DL_SCHED finding unchanged: priority inversion, not capacity<br>
@@ -2742,8 +2916,8 @@ gNB (no blind decoding → no false alarm check needed):
   <div class="app-section" style="margin-bottom:16px">
     <div class="app-title">Supporting Findings (moved from Key Findings)</div>
     <div class="kf-grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-    <div class="kf" style="border-left-color:var(--dim)">
-      <div class="kf-n" style="color:var(--dim)">APPENDIX — Multi-CC LDPC</div>
+    <div class="kf" style="border-left-color:#111111">
+      <div class="kf-n" style="color:#111111">APPENDIX — Multi-CC LDPC</div>
       <div class="kf-t">Multi-CC LDPC: 4 parallel engines is optimal</div>
       <p>Wait-for-all: gNB cannot advance scheduling until ALL CC PUSCH
          decodes complete. 4 parallel LDPC engines: 8CC P99 grows only
@@ -2752,8 +2926,8 @@ gNB (no blind decoding → no false alarm check needed):
          More than 4 engines: diminishing silicon returns.</p>
     </div>
 
-    <div class="kf" style="border-left-color:var(--dim)">
-      <div class="kf-n" style="color:var(--dim)">APPENDIX — SRS Mixed-µ</div>
+    <div class="kf" style="border-left-color:#111111">
+      <div class="kf-n" style="color:#111111">APPENDIX — SRS Mixed-µ</div>
       <div class="kf-t">SRS mixed-µ: gNB analog of UE TX-priority problem</div>
       <p>When µ=1+µ=2+µ=3 SRS arrive simultaneously, gNB must process
          µ=3 first (250µs hard deadline, SRS takes 213µs).
@@ -2773,14 +2947,14 @@ gNB (no blind decoding → no false alarm check needed):
     <div class="app-title">A3 — Task Timing Estimation Methodology</div>
     <div class="method-box">
       <h4>How SW and HW task times were estimated</h4>
-      <p style="font-size:10px;color:var(--dim);margin-bottom:12px">
+      <p style="font-size:10px;color:#111111;margin-bottom:12px">
         Absolute timings are order-of-magnitude estimates. Relative comparisons
         (SW vs HW, QC vs Company-B, O(CC) vs O(CC^0.4)) are the credible findings.
       </p>
 
       <div class="method-row">
         <div class="method-src src-hard">DIRECT ✓</div>
-        <div class="method-desc">
+        <div class="method-desc" style="color:#111111 !important;font-size:13px;font-weight:500;line-height:1.6">
           Company-A DU100 core count, TCM size, clock rate, stall rate, L1/L2 handover cycles,
           NoC topology, coprocessor list — from direct engineering experience
           as RISC core owner and LDPC/Turbo HW designer at Company-A O-RAN DU.
@@ -2790,7 +2964,7 @@ gNB (no blind decoding → no false alarm check needed):
 
       <div class="method-row">
         <div class="method-src src-derived">DERIVED ✓</div>
-        <div class="method-desc">
+        <div class="method-desc" style="color:#111111 !important;font-size:13px;font-weight:500;line-height:1.6">
           PUCCH F0 ZC SW time: 2 × 12-point complex dot products at 1.2GHz RISC
           ≈ 180 MACs / (2 ops/cycle) × (1/1200MHz) + loop overhead ≈ 8–15µs.
           HW estimate: fixed-latency dot product in silicon ≈ 0.5µs (no iteration).
@@ -2802,7 +2976,7 @@ gNB (no blind decoding → no false alarm check needed):
 
       <div class="method-row">
         <div class="method-src src-lit">LITERATURE ✓</div>
-        <div class="method-desc">
+        <div class="method-desc" style="color:#111111 !important;font-size:13px;font-weight:500;line-height:1.6">
           GPU cuBLAS GEMM benchmarks (256×256 complex: ~50µs on A100).
           MegaStation paper (NSDI 2025): channel est 44.2% + precoding 42.7% of GPU time
           — used to validate relative task weighting.
@@ -2813,7 +2987,7 @@ gNB (no blind decoding → no false alarm check needed):
 
       <div class="method-row">
         <div class="method-src src-est">ESTIMATED ⚠</div>
-        <div class="method-desc">
+        <div class="method-desc" style="color:#111111 !important;font-size:13px;font-weight:500;line-height:1.6">
           UE count scaling: assumed O(N_UE^0.7) (sub-linear — some work is per-CC, not per-UE).
           Numerology scaling: µ=1→µ=2→µ=3 assumed 1.0×, 1.15×, 1.35×.
           Company-B GPU LDPC (GPU-PHY software stack): ~150µs per batch of 256 CBs — flat latency model.
@@ -3008,13 +3182,13 @@ function calcPower(cfg) {
 function updatePower(cfg){
   const pw = calcPower(cfg);
   const gap = (pw.perSectorW/35).toFixed(1);
-  const gapCol = pw.perSectorW<80?'var(--green)':pw.perSectorW<150?'var(--amber)':'var(--red)';
+  const gapCol = pw.perSectorW<80?'#1a4d35':pw.perSectorW<150?'#7a3d04':'#7a1525';
   const savings_w = Math.max(0, pw.baseTotal - pw.totalW);
 
   // Summary cards
   const $=id=>document.getElementById(id);
   if($('pwr-total')){
-    const totCol = pw.totalW<250?'var(--green)':pw.totalW<320?'var(--amber)':'var(--red)';
+    const totCol = pw.totalW<250?'#1a4d35':pw.totalW<320?'#7a3d04':'#7a1525';
     $('pwr-total').textContent = Math.round(pw.totalW)+'W';
     $('pwr-total').style.color = totCol;
     $('pwr-sector').textContent = Math.round(pw.perSectorW)+'W';
@@ -3058,16 +3232,16 @@ function updatePower(cfg){
   const tbody = $('pwr-knob-body');
   if(tbody){
     tbody.innerHTML = pw.knobDeltas.map(d=>{
-      const netCol = d.net>0?'var(--green)':d.net>-2?'var(--dim)':'var(--red)';
+      const netCol = d.net>0?'#1a4d35':d.net>-2?'#111111':'#7a1525';
       const activeMark = d.active?'●':'○';
-      const activeCol = d.active?'var(--green)':'var(--dim2)';
+      const activeCol = d.active?'#1a4d35':'#333333';
       return `<tr>
         <td><span style="color:${activeCol}">${activeMark}</span> ${d.label}</td>
-        <td style="color:var(--amber);font-family:var(--mono)">+${d.coprCost.toFixed(0)}W</td>
-        <td style="color:var(--green);font-family:var(--mono)">-${d.gpuSaved_w.toFixed(0)}W</td>
-        <td style="color:${netCol};font-family:var(--mono);font-weight:700">
+        <td style="color:#7a3d04;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500">+${d.coprCost.toFixed(0)}W</td>
+        <td style="color:#1a4d35;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-weight:500">-${d.gpuSaved_w.toFixed(0)}W</td>
+        <td style="color:${netCol};font-family:'SF Mono','Fira Code','Consolas','Courier New',monospace;font-weight:700">
           ${d.net>=0?'-':'+'}${Math.abs(d.net).toFixed(0)}W</td>
-        <td style="color:var(--blue)">${d.roi}</td>
+        <td style="color:#1a3d6b">${d.roi}</td>
       </tr>`;
     }).join('');
   }
@@ -3099,7 +3273,7 @@ function updateTCO(savings_w_arg){
     : annual>1e3
     ? `$${(annual/1e3).toFixed(0)}K/yr saved`
     : `$${annual.toFixed(0)}/yr saved`;
-  resEl.style.color = savings_w>0?'var(--green)':'var(--dim2)';
+  resEl.style.color = savings_w>0?'#1a4d35':'#333333';
 }
 
 function toggleCaveat(){
@@ -3179,7 +3353,7 @@ function render(){
   // Scheduler bar
   const sv=schedLat(cfg,ai),pb=cfg.slot_us*2,mx=Math.max(pb*3,sv*1.2,200);
   const sp=Math.min(sv/mx*100,98),sdp=pb/mx*100,spas=sv<=pb;
-  const sc2=spas?'var(--green)':sv<=pb*2?'var(--amber)':'var(--red)';
+  const sc2=spas?'#1a4d35':sv<=pb*2?'#7a3d04':'#7a1525';
   $('tf-s').style.cssText=`width:${sp}%;background:${sc2}20;border:1px solid ${sc2}40`;
   $('tf-s').innerHTML=`<span style="color:${sc2}">${sv.toFixed(0)}µs</span>`;
   $('td-s').style.left=sdp+'%';
@@ -3188,7 +3362,7 @@ function render(){
   // LDPC bar
   const ub=cfg.pusch_budget,umx=Math.max(ub*4,r.pusch_p99*1.2);
   const up=Math.min(r.pusch_p99/umx*100,98),udp=ub/umx*100;
-  const uc=r.pusch_p99<=ub?'var(--green)':'var(--red)';
+  const uc=r.pusch_p99<=ub?'#1a4d35':'#7a1525';
   $('tf-p').style.cssText=`width:${up}%;background:${uc}20;border:1px solid ${uc}40`;
   $('tf-p').innerHTML=`<span style="color:${uc}">${r.pusch_p99.toFixed(0)}µs</span>`;
   $('td-p').style.left=udp+'%';
@@ -3228,7 +3402,7 @@ function render(){
   // GPU budget stacked bar
   const gb = gpuBudget(cfg);
   const headPct = gb.headroom/gb.deadline*100;
-  const headCol = headPct>50?'var(--green)':headPct>20?'var(--amber)':'var(--red)';
+  const headCol = headPct>50?'#1a4d35':headPct>20?'#7a3d04':'#7a1525';
   let barHtml = gb.tasks.map(t=>{
     if(t.used_us<=0) return '';
     const w=Math.min(t.used_us/gb.deadline*100,100);
@@ -3259,12 +3433,12 @@ function render(){
     const kd=D.knobs[k];if(!kd)return'';
     const meta=KNOB_META[k]||{};
     const r2=ind[k],miss=r2?r2.miss_pdcch:base,delta=base-miss;
-    const col=miss<0.1?'var(--green)':miss<5?'var(--amber)':'var(--red)';
+    const col=miss<0.1?'#1a4d35':miss<5?'#7a3d04':'#7a1525';
     const on=ks[k];
-    const hrtcBadge=meta.hrtc===true?'<span style="font-size:7px;color:var(--red);font-weight:700">HRTC</span> ':
-                    meta.hrtc===false?'<span style="font-size:7px;color:var(--dim)">pre-c</span> ':'';
+    const hrtcBadge=meta.hrtc===true?'<span style="font-size:7px;color:#7a1525;font-weight:700">HRTC</span> ':
+                    meta.hrtc===false?'<span style="font-size:7px;color:#111111">pre-c</span> ':'';
     return`<div class="ic ${on?'active':''}" onclick="toggleK('${k}')"
-      style="${on?'border-color:'+(meta.hrtc?'var(--red)':'var(--dim2)')+';background:'+(meta.hrtc?'rgba(232,85,85,.08)':'rgba(90,104,128,.08)'):''}">
+      style="${on?'border-color:'+(meta.hrtc?'#7a1525':'#333333')+';background:'+(meta.hrtc?'rgba(232,85,85,.08)':'rgba(90,104,128,.08)'):''}">
       <div class="ic-v" style="color:${col}">${miss<0.1?'<0.1':miss.toFixed(1)}%</div>
       <div class="ic-l">${hrtcBadge}${meta.label||kd.label||k}</div>
       <div class="ic-d">${delta>0.3?'−'+delta.toFixed(1)+'%':'—'}</div>
@@ -3370,11 +3544,11 @@ function buildRow(k, groupClass){
   const kd=D.knobs[k];if(!kd)return'';
   const meta=KNOB_META[k]||{};
   const l2=kd.layer===2;
-  const col=meta.hrtc===true?'var(--red)':meta.hrtc===false?'var(--dim2)':'var(--green)';
+  const col=meta.hrtc===true?'#7a1525':meta.hrtc===false?'#333333':'#1a4d35';
   const badge=meta.hrtc===true?'<span class="hrtc h" style="font-size:7px">HRTC</span>':
-              meta.hrtc===false?'<span style="font-size:7px;color:var(--dim);font-weight:600">pre-c</span>':
+              meta.hrtc===false?'<span style="font-size:7px;color:#111111;font-weight:600">pre-c</span>':
               '<span class="hrtc n" style="font-size:7px">non-HRTC</span>';
-  const note=meta.note?`<div style="font-size:8px;color:var(--dim);line-height:1.3;margin-top:1px">${meta.note.split('·')[0].trim()}</div>`:'';
+  const note=meta.note?`<div style="font-size:8px;color:#111111;line-height:1.3;margin-top:1px">${meta.note.split('·')[0].trim()}</div>`:'';
   return`<div class="krow" onclick="toggleK('${k}')">
     <div class="kl">
       <div class="kico" style="background:${col}22;color:${col};font-size:11px">${meta.icon||'•'}</div>
@@ -3402,7 +3576,7 @@ function toggleK(k){
   if(t){
     t.classList.toggle('on',ks[k]);
     const meta=KNOB_META[k]||{};
-    const col=meta.hrtc===true?'var(--red)':meta.hrtc===false?'var(--dim2)':'var(--green)';
+    const col=meta.hrtc===true?'#7a1525':meta.hrtc===false?'#333333':'#1a4d35';
     t.style.background=ks[k]?col:'';
     t.style.borderColor=ks[k]?col:'';
   }
@@ -3734,18 +3908,18 @@ function drawPUCCH(){
   const gpuZC    = tasks.find(t=>t.name==='PUCCH F0 ZC');
   const gpuFails = gpuTotal>budget;
   note.style.borderColor = gpuFails?'#7a1525':'#1a4d35';
-  note.style.color='var(--dim)';
+  note.style.color='#111111';
   const fmt=(v,b)=>{
     const ok=v<=b, col=ok?'#1a4d35':'#7a1525';
     const tag=ok?'✓ PASS':'✗ FAIL +'+Math.round(v-b)+'µs';
     return `<span style="color:${col};font-weight:700">${v.toFixed(0)}µs — ${tag}</span>`;
   };
   note.innerHTML=
-    `<strong style="color:var(--tx)">PUCCH F0 vs ${budget}µs budget:</strong> &nbsp;`+
+    `<strong style="color:#000000">PUCCH F0 vs ${budget}µs budget:</strong> &nbsp;`+
     `SW ${fmt(swTotal,budget)} &nbsp;|&nbsp; `+
     `HW ${fmt(hwTotal,budget)} &nbsp;|&nbsp; `+
     `GPU ${fmt(gpuTotal,budget)}<br>`+
-    `<span style="font-size:9px">GPU ZC in GPU compute: ~${gpuZC?gpuZC.gpu:18}µs (kernel launch dominated, no tensor core benefit). `+
+    `<span style="font-size:11px">GPU ZC in GPU compute: ~${gpuZC?gpuZC.gpu:18}µs (kernel launch dominated, no tensor core benefit). `+
     (budget>=500
       ? `FR1 500µs budget absorbs kernel launch overhead — GPU passes.`
       : gpuFails

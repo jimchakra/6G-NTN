@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ka-Band Link Budget — High-MCS DPD/Shaper</title>
 <style>
 :root{
-  --bg:#0a0e14;--panel:#111720;--border:#1e2a3a;--accent:#00c9a7;--amber:#f5a623;
-  --red:#e05252;--dim:#4a6070;--text:#d0dde8;--sub:#7a92a8;--white:#eaf2f8;
-  --mono:'JetBrains Mono','Fira Mono',monospace;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --bg:#f4f6f9;--panel:#ffffff;--border:#d0d8e4;--accent:#2C5282;--amber:#C05E00;
+  --red:#c0392b;--dim:#6b7a99;--text:#1a2233;--sub:#4a5568;--white:#0a0f1e;
+  --mono:'IBM Plex Mono','JetBrains Mono',monospace;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;min-height:100vh}
 /* header */
-.hdr{padding:14px 24px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:16px;background:#0d1520}
-.hdr-title{font-size:15px;font-weight:700;color:var(--white);letter-spacing:.02em}
-.hdr-sub{font-size:10px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase}
-.badge{background:rgba(0,201,167,.12);color:var(--accent);
+.hdr{padding:14px 24px;border-bottom:3px solid rgba(255,255,255,0.3);border-top:3px solid #f5a623;
+  display:flex;align-items:center;gap:16px;background:#1e3a5f}
+.hdr-title{font-size:15px;font-weight:700;color:#ffffff;letter-spacing:.02em}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,0.65);letter-spacing:.06em;text-transform:uppercase}
+.badge{background:rgba(255,255,255,.2);color:#ffffff;
   font-size:9px;padding:2px 8px;border-radius:3px;letter-spacing:.08em;font-weight:600}
 /* layout */
 .layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 49px)}
@@ -26,7 +28,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .sidebar{background:var(--panel);border-right:1px solid var(--border);
   overflow-y:auto;padding:0}
 .sec{border-bottom:1px solid var(--border);padding:12px 14px}
-.sec-label{font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;
+.sec-label{font-size:9px;color:#4a5568;letter-spacing:.1em;text-transform:uppercase;
   margin-bottom:8px;font-weight:600}
 .row{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:6px;gap:8px}
@@ -34,39 +36,39 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
 .row .val{font-size:10px;color:var(--accent);font-family:var(--mono);
   min-width:44px;text-align:right}
 input[type=range]{flex:1;accent-color:var(--accent);height:3px}
-select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
+select{background:#eef2fa;color:var(--text);border:1px solid var(--border);
   padding:3px 6px;border-radius:3px;font-size:10px;width:100%}
 /* DPD cards */
 .dpd-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px}
-.dpd-card{background:#0d1a26;border:1px solid var(--border);border-radius:4px;
+.dpd-card{background:#eef2fa;border:1px solid var(--border);border-radius:4px;
   padding:6px 8px;cursor:pointer;transition:.15s}
 .dpd-card:hover{border-color:var(--dim)}
-.dpd-card.active{border-color:var(--accent);background:rgba(0,201,167,.06)}
-.dpd-card .cn{font-size:10px;font-weight:600;color:var(--white);margin-bottom:2px}
-.dpd-card .cd{font-size:9px;color:var(--sub);line-height:1.4}
+.dpd-card.active{border-color:var(--accent);background:rgba(27,79,216,.06)}
+.dpd-card .cn{font-size:10px;font-weight:600;color:#111111;margin-bottom:2px}
+.dpd-card .cd{font-size:9px;color:rgba(255,255,255,0.65);line-height:1.4}
 .dpd-card.active .cn{color:var(--accent)}
-.arch-note{font-size:9px;color:var(--dim);line-height:1.5;
+.arch-note{font-size:9px;color:#4a5568;line-height:1.5;
   padding:6px 8px;background:rgba(255,255,255,.02);border-radius:3px;margin-top:4px}
 /* KPI row */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
-  padding:14px 18px;background:#0d1520;border-bottom:1px solid var(--border)}
+  padding:14px 18px;background:#1e3a5f;border-bottom:1px solid var(--border)}
 .kpi{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:10px 12px}
-.kpi .kl{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.kpi .kl{font-size:9px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .kpi .kv{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1}
-.kpi .ku{font-size:10px;color:var(--dim);margin-top:2px}
+.kpi .ku{font-size:10px;color:#4a5568;margin-top:2px}
 .ok{color:var(--accent)}.warn{color:var(--amber)}.bad{color:var(--red)}
 /* main */
 .main{overflow-y:auto}
 .content{padding:16px 18px}
 /* EVM budget */
 .evm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.evm-box{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:12px}
-.evm-title{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.evm-box{background:#f8faff;border:1px solid #d0d8e4;border-radius:4px;padding:12px}
+.evm-title{font-size:10px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
 .evm-bar-row{margin-bottom:6px}
 .evm-bar-label{display:flex;justify-content:space-between;margin-bottom:2px}
 .evm-bar-label span{font-size:9px;color:var(--sub)}
 .evm-bar-label .ev{font-family:var(--mono);color:var(--text)}
-.evm-bar-bg{background:#0d1a26;border-radius:2px;height:5px;overflow:hidden}
+.evm-bar-bg{background:#eef2fa;border-radius:2px;height:5px;overflow:hidden}
 .evm-bar-fill{height:100%;border-radius:2px;transition:.3s}
 .evm-total{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);
   display:flex;justify-content:space-between;align-items:center}
@@ -74,7 +76,7 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
 .evm-total .tv{font-size:16px;font-weight:700;font-family:var(--mono)}
 /* MCS table */
 .mcs-table{width:100%;border-collapse:collapse;font-size:10px}
-.mcs-table th{text-align:left;padding:5px 8px;color:var(--dim);
+.mcs-table th{text-align:left;padding:5px 8px;color:#4a5568;
   font-size:9px;letter-spacing:.06em;text-transform:uppercase;
   border-bottom:1px solid var(--border)}
 .mcs-table td{padding:5px 8px;border-bottom:1px solid rgba(30,42,58,.5)}
@@ -85,29 +87,102 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
 /* budget table */
 .budget-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:12px}
 .budget-table td{padding:5px 8px;border-bottom:1px solid rgba(30,42,58,.4)}
-.budget-table .cat{color:var(--dim);font-size:9px;text-transform:uppercase;
+.budget-table .cat{color:#4a5568;font-size:9px;text-transform:uppercase;
   letter-spacing:.06em;padding-top:10px;padding-bottom:3px}
 .budget-table .param{color:var(--sub)}
 .budget-table .val{text-align:right;font-family:var(--mono);color:var(--text)}
 .budget-table .val.pos{color:var(--accent)}.budget-table .val.neg{color:var(--red)}
-.budget-table .val.bold{color:var(--white);font-weight:700}
+.budget-table .val.bold{color:#111111;font-weight:700}
 /* PA savings */
 .savings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
 .sav-card{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:10px 12px}
-.sav-card .sl{font-size:9px;color:var(--sub);margin-bottom:4px}
+.sav-card .sl{font-size:9px;color:rgba(255,255,255,0.65);margin-bottom:4px}
 .sav-card .sv{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--accent)}
-.sav-card .sd{font-size:9px;color:var(--dim);margin-top:2px}
+.sav-card .sd{font-size:9px;color:#4a5568;margin-top:2px}
 /* tabs */
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:#0d1520}
-.tab{padding:8px 16px;font-size:11px;cursor:pointer;color:var(--sub);
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:#1e3a5f}
+.tab{padding:8px 16px;font-size:11px;cursor:pointer;color:rgba(255,255,255,0.7);
   border-bottom:2px solid transparent;transition:.15s}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab.active{color:#ffffff;border-bottom-color:#ffffff}
 .tab-content{display:none}.tab-content.active{display:block}
 /* radio group */
 .radio-group{display:flex;flex-direction:column;gap:3px}
 .radio-group label{display:flex;align-items:center;gap:6px;
-  font-size:10px;color:var(--sub);cursor:pointer}
+  font-size:10px;color:rgba(255,255,255,0.65);cursor:pointer}
 .radio-group input[type=radio]{accent-color:var(--accent)}
+
+/* ── CONTRAST ENFORCEMENT ── */
+* { color: #1a1a1a !important; }
+
+/* Header: white on dark blue */
+.hdr, .hdr *, .hdr-title, .hdr-sub { color: #ffffff !important; }
+.badge { color: #ffffff !important; }
+
+/* Tab bar: white on dark blue */
+.tabs *, .tab { color: rgba(255,255,255,0.7) !important; }
+.tab.active { color: #ffffff !important; }
+
+/* KPI row: dark text on light bg */
+.kpi-row * { color: #1a1a1a !important; }
+.kpi .kv.ok   { color: #1a5c35 !important; }
+.kpi .kv.bad  { color: #8b1a1a !important; }
+.kpi .kv.warn { color: #7a4000 !important; }
+.kpi .kv.info { color: #1e3a5f !important; }
+
+/* Status colors — preserve everywhere */
+.ok  { color: #1a5c35 !important; }
+.bad { color: #8b1a1a !important; }
+.warn{ color: #7a4000 !important; }
+
+/* Accent values in sidebar */
+.val { color: #1e3a5f !important; }
+
+/* DPD card active state */
+.dpd-card.active .cn { color: #2C5282 !important; }
+</style>
+
+<style>
+/* Force all inline color styles to dark — catches JS-generated innerHTML */
+#tab-power [style*="color:#"] { color: #1a1a1a !important; }
+#tab-notes [style*="color:#"] { color: #1a1a1a !important; }
+#tab-saving [style*="color:#"] { color: #1a1a1a !important; }
+
+/* Specific known light elements */
+.evm-bar-label span { color: #1a1a1a !important; font-size: 10px !important; }
+.evm-bar-label .ev { color: #111111 !important; font-weight: 600 !important; }
+.evm-title { color: #333333 !important; font-weight: 600 !important; }
+.evm-total .tl { color: #333333 !important; }
+
+/* KPI labels */
+.kl { color: #444444 !important; font-weight: 600 !important; font-size: 10px !important; }
+.ku { color: #555555 !important; font-weight: 500 !important; }
+
+/* Sidebar labels */
+.row label { color: #1a1a1a !important; font-weight: 500 !important; }
+.sec-label { color: #2C5282 !important; font-weight: 700 !important; }
+.note-box, .arch-note { color: #222222 !important; }
+.cd { color: #222222 !important; }
+.cn { color: #111111 !important; font-weight: 600 !important; }
+
+/* Budget table */
+.budget-table .cat { color: #2C5282 !important; font-weight: 700 !important; }
+.budget-table .param { color: #333333 !important; }
+.budget-table .val { color: #111111 !important; }
+.budget-table .val.pos { color: #1a5c35 !important; }
+.budget-table .val.neg { color: #8b1a1a !important; }
+.budget-table .val.bold { color: #111111 !important; font-weight: 700 !important; }
+
+/* MCS table */
+.mcs-table th, .mcs-table td { color: #1a1a1a !important; }
+.mcs-table .mcs-row-label { color: #111111 !important; font-weight: 500 !important; }
+.mcs-table tr.blocked td { color: #777777 !important; }
+
+/* Savings cards */
+.sav-card .sl { color: #444444 !important; }
+.sav-card .sd { color: #444444 !important; }
+
+/* Insight boxes */
+.insight { color: #1a1a1a !important; font-size: 11px !important; }
 </style>
 </head>
 <body>
@@ -134,7 +209,7 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
       <option value="starlink_v3">Starlink V3 (570km, Ka 20GHz, 2×EIRP est.)</option>
     </select>
   </div>
-  <div style="font-size:9px;color:var(--dim);margin:4px 0 8px;line-height:1.5" id="preset-note">
+  <div style="font-size:9px;color:#4a5568;margin:4px 0 8px;line-height:1.5" id="preset-note">
     Kuiper: 590/610/630km shells, 3,236 sats. Sat antenna: ~5m² panel est.
     Terminal 1Gbps: 50.5×77.8cm dual array (confirmed DSEI 2025).
   </div>
@@ -157,10 +232,10 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
   <div class="row" style="margin-top:6px"><label>BW (MHz)</label><span class="val" id="v-bw">200</span></div>
   <input type="range" id="bw" min="50" max="500" value="200" step="10" oninput="render()">
   <div class="row" style="margin-top:6px"><label>SCS (kHz)</label>
-    <select id="scs" onchange="render()">
-      <option value="30">30 kHz</option>
-      <option value="60" selected>60 kHz (4K FFT → 208MHz)</option>
-      <option value="120">120 kHz</option>
+    <select id="scs" onchange="onSCSChange()">
+      <option value="30">30 kHz (→ 100 MHz BW)</option>
+      <option value="60" selected>60 kHz (→ 200 MHz BW)</option>
+      <option value="120">120 kHz (→ 200 MHz BW)</option>
     </select>
   </div>
 </div>
@@ -175,7 +250,7 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
       <option value="starlink_v3_sat">Starlink V3 sat (est. ~8000 elem, 35m² est.)</option>
     </select>
   </div>
-  <div style="font-size:9px;color:var(--dim);margin-bottom:8px;line-height:1.5" id="array-note">
+  <div style="font-size:9px;color:#4a5568;margin-bottom:8px;line-height:1.5" id="array-note">
     Element counts estimated from antenna panel area and Ka-band ~λ/2 spacing.
     At 28GHz: λ/2 = 5.4mm → ~344 elem/m². Starlink V2 Mini: 11.07m² confirmed.
   </div>
@@ -208,18 +283,19 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
     </div>
     <div class="dpd-card active" id="dc-esn" onclick="setDPD('esn')">
       <div class="cn">Sub-array ESN ★</div>
-      <div class="cd">K=16 ESNs. Fixed reservoir (ROM). Only output weights adapt. DBF ADC reused.</div>
+      <div class="cd">Generic random reservoir (ROM). W_out adapts every 100ms via Cortex-M linear regression. No cal terminal needed. Works from day 1. PA EVM ~1.8%.</div>
     </div>
     <div class="dpd-card" id="dc-esn2" onclick="setDPD('esn2')">
       <div class="cn">ESN well-tuned</div>
-      <div class="cd">N_res=500, optimal spectral radius. Enables 1024-QAM at LEO.</div>
+      <div class="cd">GRU-NN offline (NOC server) characterises PA from precision cal terminal IQ samples → informs reservoir design. Burned at tape-out — cannot field-upgrade. PA EVM ~1.2%. Prerequisite: cal terminal network.</div>
     </div>
     <div class="dpd-card" id="dc-gru" onclick="setDPD('gru')">
       <div class="cn">GRU-NN DPD</div>
-      <div class="cd">Best linearisation. 22nm 250 MSps (ISCAS 2025). 1024-QAM comfortable.</div>
+      <div class="cd">Runs OFFLINE on NOC server only — never on satellite. Trains on precision cal terminal IQ. Output: optimal ESN reservoir for next tape-out. 13× heavier than ESN — not viable as real-time satellite DPD.</div>
     </div>
   </div>
-  <div class="arch-note">All DPD models are SISO. Topology choice (per-element / sub-array / OTA) is independent of model. Per-element infeasible at N&gt;64. Sub-array ESN reuses DBF Rx ADC — incremental HW cost ~$30 (couplers + switch) per satellite.</div>
+  <div class="arch-note">All DPD models are SISO. ESN standard: no calibration needed, works day 1. ESN well-tuned: GRU-NN-informed reservoir, bench PA + OTP at integration. GRU-NN: offline design tool only — never runs on satellite. <span style="color:#2C5282;cursor:pointer" onclick="showTab('notes')">→ DPD Notes tab</span></div>
+  <div style="font-size:9px;color:#2C5282;margin-top:6px;padding:4px 6px;cursor:pointer" onclick="showTab('notes')">→ See DPD Notes tab for full explanation</div>
 </div>
 
 <div class="sec">
@@ -234,7 +310,7 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
       <option value="starlink_std">Starlink Standard (~36dBi est.)</option>
     </select>
   </div>
-  <div style="font-size:9px;color:var(--dim);margin-bottom:8px;line-height:1.5" id="term-note">
+  <div style="font-size:9px;color:#4a5568;margin-bottom:8px;line-height:1.5" id="term-note">
     Kuiper terminal sizes confirmed (DSEI 2025). Rx gain estimated from aperture area at 20GHz.
     Gain = η × (πD/λ)² where η≈0.6, D = effective diameter.
   </div>
@@ -246,15 +322,6 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
   <input type="range" id="rain" min="0" max="15" value="2" step="0.5" oninput="onManual()">
 </div>
 
-<div class="sec">
-  <div class="sec-label">PNT Waveform Overhead</div>
-  <div class="radio-group">
-    <label><input type="radio" name="pnt" value="0" onchange="render()"> None (data only)</label>
-    <label><input type="radio" name="pnt" value="0.357" onchange="render()"> SSB only (0.36%)</label>
-    <label><input type="radio" name="pnt" value="0.42" onchange="render()" checked> M1+M2+M5 (0.42%) ★</label>
-    <label><input type="radio" name="pnt" value="0.50" onchange="render()"> Full PNT: SSB+PRS+PTRS (0.50%)</label>
-  </div>
-</div>
 
 </div><!-- end sidebar -->
 
@@ -275,6 +342,7 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
   <div class="tab" onclick="showTab('budget')">Link Budget</div>
   <div class="tab" onclick="showTab('saving')">PA Power Saving</div>
   <div class="tab" onclick="showTab('power')">Power at MCS</div>
+  <div class="tab" onclick="showTab('notes')">DPD Notes</div>
 </div>
 
 <div class="content">
@@ -299,8 +367,8 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
       </div>
     </div>
   </div>
-  <div id="evm-insight" style="font-size:10px;color:var(--sub);line-height:1.7;
-    background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:12px"></div>
+  <div id="evm-insight" style="font-size:10px;color:rgba(255,255,255,0.65);line-height:1.7;
+    background:#f8faff;border:1px solid #d0d8e4;border-radius:4px;padding:12px"></div>
 </div>
 
 <!-- MCS tab -->
@@ -318,8 +386,8 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
 <!-- PA saving tab -->
 <div class="tab-content" id="tab-saving">
   <div class="savings-grid" id="savings-grid"></div>
-  <div id="saving-detail" style="font-size:10px;color:var(--sub);line-height:1.7;
-    background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:12px"></div>
+  <div id="saving-detail" style="font-size:10px;color:rgba(255,255,255,0.65);line-height:1.7;
+    background:#f8faff;border:1px solid #d0d8e4;border-radius:4px;padding:12px"></div>
 </div>
 
 <!-- Power at MCS tab -->
@@ -327,11 +395,30 @@ select{background:#0d1a26;color:var(--text);border:1px solid var(--border);
   <div id="power-content"></div>
 </div>
 
+<!-- DPD Notes tab -->
+<div class="tab-content" id="tab-notes">
+  <div id="notes-content" style="max-width:820px"></div>
+</div>
+
 </div><!-- content -->
 </div><!-- main -->
 </div><!-- layout -->
 
 <script>
+function onSCSChange(){
+  const scs = +document.getElementById('scs').value;
+  // SCS determines practical BW given standard FFT sizes
+  // 30kHz: 4K FFT → 122.88MHz useful → set BW=100MHz
+  // 60kHz: 4K FFT → 245.76MHz → ~200MHz with guard bands
+  // 120kHz: 4K FFT → 491.52MHz but limited by Ka band → 200MHz
+  const bwMap = {30: 100, 60: 200, 120: 200};
+  const newBW = bwMap[scs] || 200;
+  document.getElementById('bw').value = newBW;
+  document.getElementById('v-bw').textContent = newBW;
+  document.getElementById('preset').value = 'custom';
+  render();
+}
+
 
 // ── CONSTELLATION PRESETS ─────────────────────────────────────────────────────
 // Data sources:
@@ -500,7 +587,7 @@ function compute(){
   const alt=gv('alt'), el=gv('el'), freq=+gsel('freq'), bw=gv('bw');
   const N=gv('nel'), psat=gv('psat'), obo=gv('obo');
   const rx=gv('rx'), ts=gv('ts'), rain=gv('rain');
-  const pnt_oh=grad('pnt');
+  const pnt_oh=0; // PNT OH in PNT tool
   const dpd=DPD[dpd_key];
 
   // EIRP
@@ -647,7 +734,7 @@ function renderEVMbars(r){
   const total_1024=rss(r.pa_evm,0.3,0.2,0.15,0.15,0.2,0.2);
   const ok256=total_256<=3.5, ok1024=total_1024<=1.5;
   document.getElementById('evm-insight').innerHTML=
-    `<b style="color:var(--white)">${r.dpd.label}</b> — PA residual EVM: <b>${r.pa_evm?r.pa_evm.toFixed(1):pa_evm_base(r.eff_obo).toFixed(1)}%</b><br><br>`+
+    `<b style="color:#111111">${r.dpd.label}</b> — PA residual EVM: <b>${r.pa_evm?r.pa_evm.toFixed(1):pa_evm_base(r.eff_obo).toFixed(1)}%</b><br><br>`+
     `<b style="color:${ok256?'var(--accent)':'var(--red)'}">256-QAM: ${ok256?'✓ PASSES':'✗ FAILS'}</b> (total ${total_256.toFixed(2)}% vs limit 3.5%)<br>`+
     `<b style="color:${ok1024?'var(--accent)':'var(--red)'}">1024-QAM: ${ok1024?'✓ PASSES':'✗ FAILS'}</b> (total ${total_1024.toFixed(2)}% vs limit 1.5%)<br><br>`+
     `<span style="color:var(--dim)">All DPD models are SISO (single input → single output). Sub-array ESN reuses the DBF Rx ADC path — `+
@@ -699,7 +786,7 @@ function renderBudget(r){
     {cat:'Result'},
     {p:'Shannon capacity',v:(r.shannon/1000).toFixed(2)+' Gbps',cls:'pos'},
     {p:'Best MCS SE',v:(r.best?r.best.se:0)+' bits/s/Hz (net)',cls:''},
-    {p:'PNT overhead',v:r.pnt_oh+'%',cls:''},
+    
     {p:'Throughput',v:(r.tput/1000).toFixed(3)+' Gbps',cls:'bold '+(r.tput>=1000?'pos':'warn')},
     {p:'Shannon efficiency',v:r.tput>0?(r.tput/r.shannon*100).toFixed(1)+'%':'—',cls:''},
     {p:'Slant range',v:r.slant.toFixed(0)+' km',cls:''},
@@ -730,19 +817,82 @@ function renderSavings(r){
 
   const esn_mW=182;
   document.getElementById('saving-detail').innerHTML=
-    `<b style="color:var(--white)">ESN DPD power cost: ${esn_mW} mW total</b><br>`+
+    `<b style="color:#111111">ESN DPD power cost: ${esn_mW} mW total</b><br>`+
     `84 mW inference ASIC (hardwired sparse MAC array, 22nm) + `+
     `48 mW DBF-integrated ADC (K=16 sub-arrays, Rx ADC reused via RF switch) + `+
     `50 mW incremental CPU (existing control CPU, background LS solve every 100ms)<br><br>`+
-    `<b style="color:var(--white)">ROI at 64-QAM: ${r.roi.toFixed(0)}× </b>— ESN pays back its own power cost ${r.roi.toFixed(0)} times over in PA savings.<br><br>`+
+    `<b style="color:#111111">ROI at 64-QAM: ${r.roi.toFixed(0)}× </b>— ESN pays back its own power cost ${r.roi.toFixed(0)} times over in PA savings.<br><br>`+
     `<span style="color:var(--dim)">ESN inference runs synchronously at DAC rate (~500 MSps) → requires hardwired datapath, not DSP. `+
     `ESN learning (coefficient update, 100ms period) runs on existing Prometheus control CPU (Cortex-M class). `+
     `Reservoir is fixed SRAM burned at tape-out — only output weights (20 per sub-array) adapt in flight. `+
     `New satellite HW: 16 passive directional couplers + 16 RF switches ≈ ~\$30 BOM cost per satellite.</span>`;
 }
 
+function renderNotes(){
+  const el=document.getElementById('notes-content');
+  if(!el||el.innerHTML.length>100) return;
+
+  const sec=(title,body)=>`
+    <div style="margin-bottom:20px;padding:16px;background:#fff;
+      border:1px solid #d0d8e4;border-left:4px solid #2C5282;border-radius:4px">
+      <div style="font-size:11px;font-weight:600;color:#2C5282;
+        text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">${title}</div>
+      <div style="font-size:12px;color:#1a1a1a;line-height:1.75">${body}</div>
+    </div>`;
+
+  const row=(label,text,col='#1a1a1a')=>
+    `<div style="display:grid;grid-template-columns:180px 1fr;gap:8px;
+      padding:7px 0;border-bottom:1px solid #eef2fa">
+      <div style="font-size:11px;font-weight:600;color:${col}">${label}</div>
+      <div style="font-size:11px;color:#333;line-height:1.6">${text}</div>
+    </div>`;
+
+  const note=(icon,text,col='#2C5282')=>
+    `<div style="display:flex;gap:8px;padding:8px 10px;margin-top:6px;
+      background:${col}11;border-radius:4px;font-size:11px;color:#1a1a1a;line-height:1.6">
+      <span style="color:${col};font-weight:700;flex-shrink:0">${icon}</span>
+      <span>${text}</span>
+    </div>`;
+
+  el.innerHTML=`
+
+    ${sec('ESN DPD — three modes compared',`
+      ${row('ESN sub-array (standard)','Generic random reservoir (W_res, W_in) generated from RNG at design time. Spectral radius ~0.9 from ESN literature — a safe value that works for a broad class of nonlinear systems. No PA measurement of any kind needed. W_out (the only trained part, ~20 weights per sub-array) adapts every 100ms in orbit via coupling port feedback and linear regression on the Cortex-M. Works from day 1. PA EVM ~1.8%.','#1a5c35')}
+      ${row('ESN well-tuned','GRU-NN runs offline on an NOC/engineering server using IQ samples captured from the actual flight PA on a bench (TVAC environment, pre-launch). Produces optimal reservoir design: N_res=500, spectral radius matched to this PA memory depth, input scaling matched to P1dB. Burned into OTP at satellite integration. Cannot be updated in orbit — fixed for satellite lifetime. PA EVM ~1.2%.','#2C5282')}
+      ${row('GRU-NN DPD','Not a satellite runtime component. Runs offline on a ground server only. 13× heavier than ESN at inference (300 mW vs 24 mW at 500 MSps). Training via BPTT takes 3+ seconds — cannot track 30-second eclipse thermal transients. Role: offline PA characterisation tool that produces the optimal ESN reservoir for the next tape-out.','#7a4000')}
+      ${note('⚠','Reservoir = weight matrix (W_res, W_in) in ML terms. Fixed after OTP burn. W_out = the actual DPD coefficients — the only part that adapts in orbit.')}
+    `)}
+
+    ${sec('Why ESN well-tuned, not GRU-NN directly?',`
+      <p style="margin-bottom:10px">GRU-NN cannot run on the satellite in real time. Inference alone is ~300 mW (13× ESN) at 500 MSps DAC rate. ESN is always the runtime algorithm — GRU-NN is a design tool that makes the ESN reservoir better.</p>
+      <p style="margin-bottom:12px"><b>"Well-tuned"</b> = three prerequisites converging at N3E (2028). Remove any one and ESN loses 0.2–0.4% EVM:</p>
+      ${note('①','<b>Larger reservoir</b> — N_res=500 fits in N3E area budget (vs N_res=100 at 5nm). Without this, GRU-NN better characterisation has nowhere to go — EVM stays ~1.5%. The reservoir must be large enough to approximate this PA Volterra kernel precisely.')}
+      ${note('②','<b>GRU-NN offline</b> — informs optimal spectral radius, sparsity, and input scaling for this specific PA. A random reservoir at N_res=500 gives ~1.4%; GRU-NN-informed reservoir gives 1.2%. The difference is whether the random basis functions happen to match the PA nonlinearity order and memory depth.')}
+      ${note('③','<b>OTP burned at integration</b> — GRU-NN runs on bench IQ samples during TVAC (pre-launch). No chicken-egg problem: the bench PA exists before the satellite flies. Cal terminal validates post-launch drift but does not change the reservoir.')}
+      ${note('✓','All three together → PA EVM 1.2% → total EVM ~1.3% → comfortable 1024-QAM margin (limit 1.5%).',  '#1a5c35')}
+    `)}
+
+    ${sec('Shaper / PAPR clip — retained with ESN',`
+      <p style="margin-bottom:10px">Shaper and ESN are complementary — they fix different problems at different points in the chain.</p>
+      ${row('Shaper role','Pre-conditions the signal before the PA. Clips rare large peaks that would push the PA into deep compression. Pure software in Prometheus baseband — essentially free. Reduces the dynamic range the ESN must model.')}
+      ${row('ESN role','Corrects the PA AM-AM / AM-PM nonlinearity at its normal operating point. Benefits from shaper having already removed the extreme peaks — easier fit, lower EVM floor.')}
+      ${row('Combined EVM','sqrt(clip_evm² + PA_residual² + fixed²) = sqrt(0.5² + 1.5² + 0.77²) ≈ 1.74% with ESN standard + shaper. Better than either alone.')}
+      ${note('→','Shaper is always retained in all ESN configurations. It is not competing — it is a free pre-conditioner that makes ESN job easier by narrowing the PA operating range.')}
+    `)}
+
+    ${sec('ESN signal chain and terminology',`
+      ${row('Reservoir (W_res, W_in)','Fixed weight matrices — equivalent to a hidden-layer weight matrix in ML. Randomly initialised (standard) or GRU-NN-informed (well-tuned). Burned into OTP. Never updated in orbit.')}
+      ${row('Reservoir state x[n]','Hidden layer activations — computed each sample from the input signal and previous state. Rich nonlinear feature set used by W_out.')}
+      ${row('W_out','Output layer weight matrix — the actual DPD coefficients. ~20 weights per sub-array. Updated every 100ms via linear regression (Cortex-M, 55ms solve). These directly produce the pre-distortion correction.')}
+      ${row('Spectral radius','Largest eigenvalue of W_res. Controls how long the reservoir "remembers" past inputs. Must be <1 for stability. GRU-NN tunes it to match the PA electrical memory depth (~25 samples at 500 MSps).')}
+      ${row('Coupling port feedback','Directional coupler taps ~1% of PA output power. Routes to DBF Rx ADC (reused via RF switch). Provides the observed PA output needed to solve for W_out. Incremental satellite HW: 16 passive couplers + 16 RF switches ≈ $30 BOM.')}
+      ${note('→','GRU-NN → informs reservoir design → ESN well-tuned. GRU-NN itself never runs on the satellite. The sequence: bench IQ capture → GRU-NN on server → optimal W_res/W_in → OTP burn at integration → ESN inference in orbit.')}
+    `)}
+  `;
+}
+
 function showTab(name){
-  const names=['evm','mcs','budget','saving','power'];
+  const names=['evm','mcs','budget','saving','power','notes'];
   document.querySelectorAll('.tab').forEach((t,i)=>{
     t.classList.toggle('active',names[i]===name);
   });
@@ -750,6 +900,7 @@ function showTab(name){
     c.classList.toggle('active',c.id==='tab-'+name);
   });
   if(name==='power') renderPowerAtMCS(lastResult);
+  if(name==='notes') renderNotes();
 }
 
 function renderPowerAtMCS(r){
@@ -812,7 +963,7 @@ function renderPowerAtMCS(r){
         <span style="display:inline-block;width:10px;height:10px;border-radius:2px;
           background:${m.color};margin-right:6px;vertical-align:middle"></span>
         <b style="color:${m.color};font-size:11px">${m.label}</b>
-        <div style="font-size:9px;color:var(--dim);margin-top:2px">${m.bits} bits/sym · EVM &lt;${m.evm_lim}%</div>
+        <div style="font-size:9px;color:#4a5568;margin-top:2px">${m.bits} bits/sym · EVM &lt;${m.evm_lim}%</div>
       </td>
       <td style="padding:8px 10px;font-size:10px;color:var(--sub)">
         OBO ${m.obo_no_dpd}dB → η${eta_no.toFixed(0)}%<br>
@@ -838,15 +989,15 @@ function renderPowerAtMCS(r){
     const bar_w_dpd = Math.min(100, dc_dpd/30);
     chart_bars += `<div style="margin-bottom:14px">
       <div style="font-size:10px;color:${m.color};margin-bottom:4px;font-weight:600">${m.label}</div>
-      <div style="font-size:9px;color:var(--sub);margin-bottom:3px">Without ${dpd.label}:</div>
-      <div style="background:#0d1a26;border-radius:3px;height:18px;overflow:hidden;margin-bottom:3px">
+      <div style="font-size:9px;color:rgba(255,255,255,0.65);margin-bottom:3px">Without ${dpd.label}:</div>
+      <div style="background:#eef2fa;border-radius:3px;height:18px;overflow:hidden;margin-bottom:3px">
         <div style="height:100%;border-radius:3px;background:rgba(74,184,245,.35);width:${bar_w_no.toFixed(1)}%;
           display:flex;align-items:center;padding:0 6px;min-width:60px">
           <span style="font-size:9px;font-family:var(--mono);color:var(--text)">${(dc_no/1000).toFixed(2)} kW</span>
         </div>
       </div>
-      <div style="font-size:9px;color:var(--sub);margin-bottom:3px">With ${dpd.label} (+${dpd.obo}dB OBO recovery):</div>
-      <div style="background:#0d1a26;border-radius:3px;height:18px;overflow:hidden;margin-bottom:3px">
+      <div style="font-size:9px;color:rgba(255,255,255,0.65);margin-bottom:3px">With ${dpd.label} (+${dpd.obo}dB OBO recovery):</div>
+      <div style="background:#eef2fa;border-radius:3px;height:18px;overflow:hidden;margin-bottom:3px">
         <div style="height:100%;border-radius:3px;background:${m.color}88;width:${bar_w_dpd.toFixed(1)}%;
           display:flex;align-items:center;padding:0 6px;min-width:60px">
           <span style="font-size:9px;font-family:var(--mono);color:var(--text)">${(dc_dpd/1000).toFixed(2)} kW</span>
@@ -863,25 +1014,90 @@ function renderPowerAtMCS(r){
   const saved_64   = dc_power(N, psat, psat-best_saving.obo_no_dpd, best_saving.obo_no_dpd)
                    - dc_power(N, psat, psat-best_saving.obo_no_dpd, obo_64_dpd);
 
+  // ── Battery CT roadmap section ──────────────────────────────────────────────
+  const roadmap = [
+    {year:'2025', power:'~18 W', form:'Table-mount 50×78cm',
+     mcs:'256-QAM', tput:'1 Gbps', dpd:'Shaper + OTA',
+     node:'7nm', highlight:false, note:'Today. Kuiper 1Gbps terminal (confirmed DSEI 2025). Generic ESN or shaper only.'},
+    {year:'2026', power:'~12 W', form:'Compact 30×30cm',
+     mcs:'256-QAM', tput:'400 Mbps', dpd:'Sub-array ESN ★',
+     node:'5nm', highlight:false, note:'ESN standard (generic reservoir, no cal terminal). 4.5dB OBO recovery. No tape-out dependency.'},
+    {year:'2028', power:'~8 W', form:'Portable 20×20cm',
+     mcs:'1024-QAM', tput:'200 Mbps', dpd:'GRU-NN + N3E PA',
+     node:'3nm N3E', highlight:true, note:'ESN well-tuned: requires precision cal terminal network + GRU-NN offline run before tape-out. Reservoir burned at N3E tape-out — cannot field-upgrade. PA EVM 1.2%, 1024-QAM comfortable.'},
+    {year:'2030', power:'~5 W', form:'Handheld 15×15cm',
+     mcs:'1024-QAM', tput:'100 Mbps', dpd:'GRU-NN + 2nm modem',
+     node:'<2nm', highlight:false, note:'2nd-gen well-tuned ESN, GRU-NN re-characterises aged PA. Cal terminal verifies in-orbit drift. 2nm modem ~0.9W.'},
+  ];
+
+  let rmRows='';
+  roadmap.forEach(row=>{
+    rmRows+=`<tr style="background:${row.highlight?'rgba(44,82,130,.07)':''}">
+      <td style="padding:8px 10px;font-weight:700;font-family:monospace;font-size:12px;
+        color:${row.highlight?'#2C5282':'#1a1a1a'}">${row.year}</td>
+      <td style="padding:8px 10px">
+        <div style="font-size:13px;font-weight:700;color:${row.highlight?'#2C5282':'#1a1a1a'}">${row.power}</div>
+        <div style="font-size:9px;color:#555;margin-top:1px">${row.form}</div>
+      </td>
+      <td style="padding:8px 10px;font-size:11px">${row.mcs}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#2C5282;font-weight:600">${row.tput}</td>
+      <td style="padding:8px 10px;font-size:11px">${row.dpd}</td>
+      <td style="padding:8px 10px;font-size:9px;color:#333">${row.node}</td>
+      <td style="padding:8px 10px;font-size:9px;color:#555">${row.note}</td>
+    </tr>`;
+  });
+
+  const roadmapHtml = `
+  <div style="background:#fff;border:1px solid #d0d8e4;border-radius:5px;
+    overflow:hidden;margin-top:14px">
+    <div style="padding:10px 14px;border-bottom:1px solid #d0d8e4;background:#f8faff;
+      display:flex;align-items:baseline;gap:12px">
+      <div style="font-size:9px;color:#2C5282;text-transform:uppercase;
+        letter-spacing:.08em;font-weight:700">Roadmap to Battery-Operated Handheld CT · 2025–2030</div>
+      <div style="font-size:10px;color:#555">DPD + PA efficiency + process node enable ~8–10W portable Ka terminal by 2028</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <tr style="border-bottom:1px solid #d0d8e4">
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">Year</th>
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">Total power</th>
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">MCS</th>
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">Throughput</th>
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">DPD</th>
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">Process</th>
+        <th style="padding:6px 10px;text-align:left;color:#555;font-weight:600">Notes</th>
+      </tr>
+      ${rmRows}
+    </table>
+    <div style="padding:10px 14px;border-top:1px solid #d0d8e4;font-size:10px;
+      color:#333;line-height:1.7;background:#f8faff">
+      <b>Power breakdown at 8W portable target (2028):</b>
+      TX array 64-elem × 50mW RF × (1/PAE at 1dB OBO): <b>~4.0W</b> ·
+      RX array 15×15cm passive: <b>~1.5W</b> ·
+      3nm modem (ESN/GRU integrated): <b>~1.8W</b> ·
+      PMIC + overhead: <b>~0.7W</b> = <b style="color:#2C5282">~8W total</b><br>
+      <b>Why DPD is the critical enabler:</b> without DPD, 1024-QAM requires OBO=10dB → PA efficiency 13% → 64-elem TX array consumes ~24W alone. With ESN well-tuned (OBO=1dB, N3E PAE=52%) → 64-elem TX = <b>6.9W</b>. DPD reduces TX array power by <b>3.5×</b>.<br><b>ESN well-tuned is a tape-out decision, not a software update.</b> The GRU-NN characterisation pipeline (precision cal terminals → NOC server → optimal reservoir design) must complete <i>before</i> the N3E tape-out. Satellites launched with a generic random reservoir (ESN standard) cannot be upgraded to ESN well-tuned in orbit — a new satellite generation is required.
+    </div>
+  </div>`;
+
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;margin-bottom:14px">
       <div style="background:var(--panel);border:1px solid var(--border);border-radius:5px;overflow:hidden">
         <div style="padding:10px 14px;border-bottom:1px solid var(--border);
-          font-size:9px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase">
+          font-size:9px;color:#4a5568;letter-spacing:.08em;text-transform:uppercase">
           DC Power Comparison — No DPD vs ${dpd.label} · N=${N} elements · P_sat=${psat}dBm/elem
         </div>
         <table style="width:100%;border-collapse:collapse">
           <tr style="border-bottom:1px solid var(--border)">
-            <th style="padding:6px 10px;text-align:left;font-size:9px;color:var(--dim);font-weight:400">MCS TARGET</th>
-            <th style="padding:6px 10px;text-align:left;font-size:9px;color:var(--dim);font-weight:400">NO DPD</th>
-            <th style="padding:6px 10px;text-align:left;font-size:9px;color:var(--dim);font-weight:400">WITH DPD</th>
-            <th style="padding:6px 10px;text-align:right;font-size:9px;color:var(--dim);font-weight:400">DC SAVED</th>
-            <th style="padding:6px 10px;text-align:right;font-size:9px;color:var(--dim);font-weight:400">ROI</th>
-            <th style="padding:6px 10px;font-size:9px;color:var(--dim);font-weight:400">EVM STATUS</th>
+            <th style="padding:6px 10px;text-align:left;font-size:9px;color:#4a5568;font-weight:400">MCS TARGET</th>
+            <th style="padding:6px 10px;text-align:left;font-size:9px;color:#4a5568;font-weight:400">NO DPD</th>
+            <th style="padding:6px 10px;text-align:left;font-size:9px;color:#4a5568;font-weight:400">WITH DPD</th>
+            <th style="padding:6px 10px;text-align:right;font-size:9px;color:#4a5568;font-weight:400">DC SAVED</th>
+            <th style="padding:6px 10px;text-align:right;font-size:9px;color:#4a5568;font-weight:400">ROI</th>
+            <th style="padding:6px 10px;font-size:9px;color:#4a5568;font-weight:400">EVM STATUS</th>
           </tr>
           ${rows}
         </table>
-        <div style="padding:10px 14px;font-size:9px;color:var(--dim);border-top:1px solid var(--border);line-height:1.6">
+        <div style="padding:10px 14px;font-size:9px;color:#4a5568;border-top:1px solid var(--border);line-height:1.6">
           Model: η(OBO) = η_sat × 10^(−OBO/20), η_sat = 40% (Ka-band GaAs class AB).
           DC power = P_rf_output / η(OBO) × N. ESN DPD system cost: 182mW total
           (84mW inference ASIC + 48mW DBF-integrated ADC switch + 50mW CPU).
@@ -889,15 +1105,15 @@ function renderPowerAtMCS(r){
         </div>
       </div>
       <div style="background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:14px">
-        <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
+        <div style="font-size:9px;color:#4a5568;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
           Power Bar Chart — kW DC total
         </div>
         ${chart_bars}
       </div>
     </div>
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:12px;
-      font-size:10px;color:var(--sub);line-height:1.7">
-      <b style="color:var(--white)">Key insight: same RF output, less DC power.</b>
+    <div style="background:#f8faff;border:1px solid #d0d8e4;border-radius:4px;padding:12px;
+      font-size:10px;color:rgba(255,255,255,0.65);line-height:1.7">
+      <b style="color:#111111">Key insight: same RF output, less DC power.</b>
       DPD allows the PA to run at lower OBO for the same MCS target — the RF output delivered to the
       antenna is identical, but the PA operates at a more efficient point on its P_in→P_out curve.
       The saved power was previously dissipated as heat (wasted backoff). With ${dpd.label}
@@ -906,7 +1122,8 @@ function renderPowerAtMCS(r){
       saving <b style="color:var(--accent)">${saved_64.toFixed(0)}W</b> DC across the array.
       The ESN DPD system consumes only ${(esn_total_W*1000).toFixed(0)}mW —
       ROI = ${(saved_64/esn_total_W).toFixed(0)}× at 64-QAM. PA savings scale linearly with N.
-    </div>`;
+    </div>
+    ${roadmapHtml}`;
 }
 
 let lastResult = null;
