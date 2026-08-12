@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>6G NTN · Ka-Band RF & SoC Architecture Studies</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  background:#f4f6f9;color:#111;line-height:1.6}
+
+.hdr{background:#1e3a5f;border-top:4px solid #C05E00;padding:28px 32px 24px}
+.hdr h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.hdr p{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px}
+.badge{display:inline-block;background:rgba(255,255,255,.15);color:#fff;
+  font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 10px;border-radius:3px;margin-top:10px}
+
+.main{max-width:1000px;margin:0 auto;padding:36px 24px 60px}
+
+.intro{font-size:14px;color:#333;line-height:1.8;margin-bottom:32px;
+  max-width:720px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+
+.card{background:#fff;border:1px solid #d0d8e4;border-radius:8px;
+  overflow:hidden;text-decoration:none;display:block;
+  transition:box-shadow .15s,transform .15s}
+.card:hover{box-shadow:0 4px 20px rgba(30,58,95,.12);transform:translateY(-2px)}
+
+.card-stripe{height:4px}
+.card-body{padding:20px 22px 18px}
+.card-tag{font-size:9px;font-weight:700;color:#2C5282;text-transform:uppercase;
+  letter-spacing:.1em;margin-bottom:8px}
+.card-title{font-size:16px;font-weight:800;color:#111;margin-bottom:8px;
+  line-height:1.3}
+.card-desc{font-size:12.5px;color:#444;line-height:1.7;margin-bottom:14px}
+.card-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px}
+.tab-chip{background:#f0f4ff;color:#2C5282;font-size:10px;font-weight:600;
+  padding:2px 8px;border-radius:3px}
+.card-link{display:inline-block;background:#1e3a5f;color:#fff;font-size:12px;
+  font-weight:600;padding:7px 16px;border-radius:4px;text-decoration:none}
+.card-link:hover{background:#2C5282}
+
+.new-badge{background:#1a5c35;color:#fff;font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:3px;margin-left:8px;vertical-align:middle;
+  text-transform:uppercase;letter-spacing:.06em}
+
+.footer{text-align:center;font-size:12px;color:#888;padding:24px;
+  border-top:1px solid #e0e6f0;margin-top:40px}
+.footer a{color:#2C5282;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>6G NTN · Ka-Band RF &amp; SoC Architecture Studies</h1>
+  <p>Interactive simulation tools — Ka-band LEO link budget, GNSS-free acquisition,
+     RAN DU hardware acceleration, and NTN DRX power saving</p>
+  <div class="badge">SESSION FINDINGS · AUG 2026 · PATENT PENDING</div>
+</div>
+
+<div class="main">
+
+<p class="intro">
+  Four self-contained browser tools covering Ka-band LEO satellite system design
+  from RF link budget through SoC co-design methodology. Each opens directly —
+  no install, no server, no dependencies. Built as a technical portfolio
+  for 6G UE silicon architecture work.
+</p>
+
+<div class="grid">
+
+  <!-- Tool 1 -->
+  <a class="card" href="ka_link_budget.html">
+    <div class="card-stripe" style="background:#C05E00"></div>
+    <div class="card-body">
+      <div class="card-tag">Ka-Band · DL Link Budget</div>
+      <div class="card-title">Ka-Band Link Budget &amp; DPD/Shaper</div>
+      <div class="card-desc">
+        MCS ceiling for Ka LEO phased arrays. Sub-array ESN DPD architecture,
+        OBO recovery, DC power savings at 16/64/256/1024-QAM.
+        2025–2030 battery CT roadmap. Kuiper &amp; Starlink presets.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">EVM Budget</span>
+        <span class="tab-chip">MCS Feasibility</span>
+        <span class="tab-chip">Link Budget</span>
+        <span class="tab-chip">PA Power Saving</span>
+        <span class="tab-chip">Power at MCS</span>
+        <span class="tab-chip">DPD Notes</span>
+      </div>
+      <span class="card-link">Open tool →</span>
+    </div>
+  </a>
+
+  <!-- Tool 2 -->
+  <a class="card" href="ka_pnt_acquisition.html">
+    <div class="card-stripe" style="background:#1e3a5f"></div>
+    <div class="card-body">
+      <div class="card-tag">Ka-Band · GPS-Free Acquisition</div>
+      <div class="card-title">GNSS-Free Acquisition · M1–M5 Framework</div>
+      <div class="card-desc">
+        GPS-free initial access for Ka proprietary waveform. Wide-beam SSB +
+        CW Doppler pre-cal + ephemeris-in-PBCH → ~400ms cold-start TTFF.
+        Cross-shell CW collision simulation. Rain &amp; downpour cold-start analysis.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">M1–M5 Proposals</span>
+        <span class="tab-chip">TTFF Timeline</span>
+        <span class="tab-chip">CW Collision</span>
+        <span class="tab-chip">Sync Design</span>
+        <span class="tab-chip">Acq. Link Budget</span>
+        <span class="tab-chip">Rain &amp; Cold-Start</span>
+      </div>
+      <span class="card-link">Open tool →</span>
+    </div>
+  </a>
+
+  <!-- Tool 3 -->
+  <a class="card" href="6g_du_rd_ai.html">
+    <div class="card-stripe" style="background:#1a4d35"></div>
+    <div class="card-body">
+      <div class="card-tag">5G/6G · RAN DU Architecture</div>
+      <div class="card-title">5G gNB / 6G aNB RAN DU &amp; HW Acceleration</div>
+      <div class="card-desc">
+        Simulation-driven DU sizing: SimPy Monte Carlo contention, static latency,
+        DVFS, VU tradeoff, O-RAN partition. Concurrent RTL/FW/DV co-design
+        methodology from YAML micro-arch spec.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">Co-Design Flow</span>
+        <span class="tab-chip">Methodology</span>
+        <span class="tab-chip">Envelope</span>
+        <span class="tab-chip">Contention Sim</span>
+        <span class="tab-chip">DVFS</span>
+        <span class="tab-chip">O-RAN</span>
+      </div>
+      <span class="card-link">Open tool →</span>
+    </div>
+  </a>
+
+  <!-- Tool 4 — NEW -->
+  <a class="card" href="ntn_drx_nn.html">
+    <div class="card-stripe" style="background:#6b21a8"></div>
+    <div class="card-body">
+      <div class="card-tag">NTN · DRX Power Saving
+        <span class="new-badge">New</span>
+      </div>
+      <div class="card-title">NTN DRX · CW-Aided Sync &amp; NN Channel Prediction</div>
+      <div class="card-desc">
+        Evidence-based simulation: why standard DRX fails in NTN (TA drift
+        dominates), CW pilot tone as LP-WUR reference (patent pending),
+        geometry-aided NN channel prediction trained in-browser.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">DRX Baseline</span>
+        <span class="tab-chip">Sync Drift Sim</span>
+        <span class="tab-chip">CW-Aided DRX</span>
+        <span class="tab-chip">NN Prediction</span>
+        <span class="tab-chip">Power Budget</span>
+      </div>
+      <span class="card-link">Open tool →</span>
+    </div>
+  </a>
+
+</div><!-- grid -->
+
+</div><!-- main -->
+
+<div class="footer">
+  All tools open in any modern browser · No install required ·
+  Source: <a href="https://github.com/jimchakra/6G-NTN">github.com/jimchakra/6G-NTN</a>
+  · Session findings Aug 2026 · Patent Pending 64/131,622
+</div>
+
+</body>
+</html>
