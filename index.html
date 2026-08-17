@@ -64,10 +64,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
 <div class="main">
 
 <p class="intro">
-  Four self-contained browser tools covering Ka-band LEO satellite system design
-  from RF link budget through SoC co-design methodology. Each opens directly —
-  no install, no server, no dependencies. Built as a technical portfolio
-  for 6G UE silicon architecture work.
+  Six self-contained browser tools covering LEO satellite system design across
+  Ka-band and S-band — RF link budget, GNSS-free acquisition, SoC co-design
+  methodology, NTN power saving, direct-to-device link budgets, and
+  GNSS-independent positioning. Each opens directly — no install, no server,
+  no dependencies. Built as a technical portfolio for 6G UE silicon
+  architecture work.
 </p>
 
 <div class="grid">
@@ -160,6 +162,58 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
         <span class="tab-chip">CW-Aided DRX</span>
         <span class="tab-chip">NN Prediction</span>
         <span class="tab-chip">Power Budget</span>
+      </div>
+      <span class="card-link">Open tool →</span>
+    </div>
+  </a>
+
+  <!-- Tool 5 — NEW -->
+  <a class="card" href="sband_d2d_link_budget.html">
+    <div class="card-stripe" style="background:#0e7490"></div>
+    <div class="card-body">
+      <div class="card-tag">S-Band · D2D Link Budget
+        <span class="new-badge">New</span>
+      </div>
+      <div class="card-title">S-Band LEO D2D Link Budget Tool</div>
+      <div class="card-desc">
+        Full DL/UL link budget for direct-to-smartphone service at S-band.
+        UE antenna scenarios (linear vs. circular/QHA), rain attenuation,
+        pocket/body-blocked analysis, satellite power &amp; thermal budget,
+        DPD impact on radiator sizing.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">Parameters</span>
+        <span class="tab-chip">Downlink</span>
+        <span class="tab-chip">Uplink</span>
+        <span class="tab-chip">DPD/PA Efficiency</span>
+        <span class="tab-chip">CW &amp; DRX</span>
+        <span class="tab-chip">Sat Power &amp; Thermal</span>
+      </div>
+      <span class="card-link">Open tool →</span>
+    </div>
+  </a>
+
+  <!-- Tool 6 — NEW -->
+  <a class="card" href="sband_guardband_pnt.html">
+    <div class="card-stripe" style="background:#6b21a8"></div>
+    <div class="card-body">
+      <div class="card-tag">S-Band · Guard-Band PNT
+        <span class="new-badge">New</span>
+      </div>
+      <div class="card-title">Guard-Band PNT · CW-Reused Positioning &amp; Timing</div>
+      <div class="card-desc">
+        Standalone GNSS-independent positioning design reusing D2D acquisition
+        infrastructure. Spread-spectrum ranging code sized to fit unused
+        license margin, constellation geometry analysis, and market context
+        for resilient PNT.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">Overview</span>
+        <span class="tab-chip">Guard Band</span>
+        <span class="tab-chip">CW Multi-Use</span>
+        <span class="tab-chip">PNT Signal Design</span>
+        <span class="tab-chip">Link Budget</span>
+        <span class="tab-chip">Market Context</span>
       </div>
       <span class="card-link">Open tool →</span>
     </div>

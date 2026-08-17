@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S-Band Guard-Band PNT · CW-Reused Positioning &amp; Timing</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--bd:#d0d8e4;
+  --navy:#1e3a5f;--blue:#2C5282;--amber:#C05E00;
+  --green:#1a5c35;--red:#8b1a1a;--orange:#7a4000;--purple:#6b21a8;
+  --tx:#111;--sub:#4a5568;--dim:#6b7a99;
+  --mono:'IBM Plex Mono','Fira Code',monospace;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;color:#111}
+body{background:var(--bg);font-family:var(--sans);font-size:13px;line-height:1.7}
+.hdr{background:var(--navy);border-top:3px solid var(--purple);padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hdr-title{font-size:15px;font-weight:700;color:#fff}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.65);margin-top:2px}
+.badge{background:rgba(255,255,255,.18);color:#fff;font-size:9px;
+  padding:3px 10px;border-radius:3px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.nav-wrap{position:sticky;top:0;background:rgba(248,247,244,.97);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--bd);z-index:100}
+.nav-inner{display:flex;overflow-x:auto;max-width:1100px;margin:0 auto}
+.tnav{padding:10px 14px;font-size:12px;color:#333;cursor:pointer;font-weight:500;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .12s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.tnav.on{color:var(--purple);border-bottom-color:var(--purple);font-weight:700}
+.main{max-width:1100px;margin:0 auto;padding:0 24px 60px}
+.sec{padding:32px 0 16px;border-bottom:1px solid var(--bd)}
+.sec:last-child{border-bottom:none}
+.sec-lbl{font-size:9px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.sec-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.sec-sub{font-size:13px;color:#333;line-height:1.75;max-width:780px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.card-hdr{padding:8px 16px;background:#f8f6ff;border-bottom:1px solid var(--bd);
+  font-size:9px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.08em}
+.card-body{padding:14px 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+@media(max-width:640px){.kpi-row{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:5px;padding:10px 12px}
+.kpi .kv{font-size:18px;font-weight:800;color:var(--purple);font-family:var(--mono)}
+.kpi .kl{font-size:9.5px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:6px 10px;text-align:left;color:var(--sub);font-weight:600;
+  border-bottom:1px solid var(--bd);background:#f8f6ff}
+.tbl td{padding:6px 10px;border-bottom:1px solid #eef2fa}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.hl td{background:#f4f0fc;font-weight:600}
+.ok{color:var(--green)!important;font-weight:700}
+.bad{color:var(--red)!important;font-weight:700}
+.warn2{color:var(--orange)!important;font-weight:700}
+.insight{background:#f6f3fc;border:1px solid #d8c8f0;border-left:4px solid var(--purple);
+  border-radius:4px;padding:10px 14px;font-size:12px;line-height:1.8;margin-top:10px}
+.mono{font-family:var(--mono);font-size:11px;background:#f5f7fa;padding:8px 12px;
+  border-radius:4px;border:1px solid var(--bd);white-space:pre;overflow-x:auto;margin-top:8px}
+.footnote{font-size:10.5px;color:var(--dim);margin-top:8px;line-height:1.6}
+canvas{border:1px solid var(--bd);border-radius:4px;background:#fff;display:block;width:100%}
+.spectrum-bar{position:relative;height:60px;background:#eef2fa;border-radius:4px;border:1px solid var(--bd);margin:14px 0;overflow:hidden}
+.spectrum-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.spectrum-labels{display:flex;justify-content:space-between;font-size:9.5px;color:var(--dim);margin-top:4px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">S-Band Guard-Band PNT · CW-Reused Positioning &amp; Timing</div>
+    <div class="hdr-sub">STANDALONE SIGNAL DESIGN &middot; GENERIC S-BAND MSS SPECTRUM &middot; LEO D2D SYSTEM CONTEXT</div>
+  </div>
+  <div class="badge">AUG 2026 &middot; TECHNICAL NOTE</div>
+</div>
+
+<div class="nav-wrap">
+  <div class="nav-inner">
+    <button class="tnav on" onclick="navTo('overview')">&#9312; Overview</button>
+    <button class="tnav" onclick="navTo('guardband')">&#9313; Guard Band</button>
+    <button class="tnav" onclick="navTo('cw')">&#9314; CW Multi-Use</button>
+    <button class="tnav" onclick="navTo('pnt')">&#9315; PNT Signal Design</button>
+    <button class="tnav" onclick="navTo('linkbudget')">&#9316; Link Budget</button>
+    <button class="tnav" onclick="navTo('market')">&#9317; Market Context</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══ SEC 1: OVERVIEW ══════════════════════════════════════════════════ -->
+<div class="sec" id="overview">
+<div class="sec-lbl">Section 1 &middot; Overview</div>
+<div class="sec-title">Reusing D2D Infrastructure for GPS-Independent PNT</div>
+<div class="sec-sub">
+  Any LEO direct-to-device (D2D) system operating in licensed S-band mobile-satellite
+  service (MSS) spectrum ends up with a small amount of unused guard-band margin at the
+  edge of its channel &mdash; a byproduct of fitting a standardized NR channel bandwidth
+  inside a slightly larger raw spectrum license. This note works through a concrete design
+  for putting that margin to use: a continuous-wave (CW) pilot tone already needed for
+  D2D acquisition and power-saving, extended into a standalone GNSS-independent
+  positioning, navigation, and timing (PNT) capability &mdash; at near-zero incremental
+  spectrum or hardware cost.
+</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr">The core idea, in one picture</div>
+  <div class="card-body">
+    <div class="mono">Licensed S-band spectrum (illustrative, ~16-17 MHz)
+┌────────────────────────────────────────────┐
+│  Deployed NR data channel (15 MHz)   │ guard │
+│  D2D messaging / voice / data        │ ~1.5  │
+│                                       │  MHz  │
+└────────────────────────────────────────────┘
+                                          ↑
+                          Repurposed for CW pilot +
+                          PNT ranging code + nav message
+                          — zero 3GPP standardization
+                          dependency, zero extra spectrum</div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">Why this is worth doing</div>
+  <div class="card-body">
+    <ul style="padding-left:18px;line-height:2">
+      <li><b>De-risks standardization:</b> works even if in-band CW proposals never
+      reach 3GPP consensus</li>
+      <li><b>Near-zero cost:</b> reuses the same low-power CW monitor already
+      needed for D2D acquisition/DRX</li>
+      <li><b>Genuine market:</b> resilient/alternative PNT is a fast-growing,
+      policy-backed category (Section 6)</li>
+      <li><b>System-level payoff:</b> the satellite operator's own infrastructure
+      (orbit determination, ground timing) often depends on GNSS too</li>
+    </ul>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ══ SEC 2: GUARD BAND ═══════════════════════════════════════════════ -->
+<div class="sec" id="guardband">
+<div class="sec-lbl">Section 2 &middot; Guard-Band Feasibility</div>
+<div class="sec-title">Why Licensed Spectrum Has Unused Margin at All</div>
+<div class="sec-sub">
+  3GPP NR only defines a discrete set of standardized channel bandwidths per numerology
+  &mdash; there is no channel bandwidth option matching an arbitrary raw spectrum license.
+  Real MSS-adjacent licenses in this frequency range are often a few MHz wider than any
+  single standard NR channel, which is precisely what creates usable margin.
+</div>
+
+<div class="card">
+  <div class="card-hdr">Illustrative worked example</div>
+  <div class="card-body">
+    <div class="spectrum-bar">
+      <div class="spectrum-seg" style="left:0;width:12%;background:#94a3b8">ISM-adjacent</div>
+      <div class="spectrum-seg" style="left:12%;width:76%;background:var(--blue)">15 MHz standard NR channel (D2D data)</div>
+      <div class="spectrum-seg" style="left:88%;width:12%;background:var(--purple)">Guard &middot; CW/PNT</div>
+    </div>
+    <div class="spectrum-labels">
+      <span>Lower license edge</span><span>&mdash;</span><span>Upper license edge (adjacent licensee)</span>
+    </div>
+    <div class="mono">Standard 3GPP NR channel bandwidths at 15kHz SCS (TS 38.101-1 / 38.104):
+  5, 10, 15, 20, 25, 30, 35, 40, 45, 50 MHz
+
+A raw license of ~16-17 MHz does not match any of these exactly.
+Rounding UP to the next standard size (e.g. 20 MHz) would exceed the
+license and risk interference into the adjacent licensee's spectrum.
+Rounding DOWN to 15 MHz fits comfortably, leaving ~1-1.5 MHz margin.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Guard bands are a standard, regulator-endorsed interference tool</div>
+  <div class="card-body">
+    <p style="line-height:1.9">
+    This is not a novel workaround &mdash; regulators in this frequency range have
+    historically created explicit guard-band allocations of their own to separate MSS
+    spectrum from adjacent mobile broadband allocations, precisely because out-of-band
+    emissions (OOBE) are highest immediately adjacent to a transmit channel and decay with
+    frequency separation. A guard band gives that natural roll-off room to happen before
+    reaching a protected neighboring licensee &mdash; and a narrow, tightly power-controlled
+    CW tone is a far gentler occupant of that space than trying to squeeze additional
+    wideband data traffic into it.
+    </p>
+    <div class="insight">
+    <b>Engineering consequence:</b> less guard margin forces a stricter close-in emission
+    mask, which in turn demands sharper output filtering and/or more aggressive PA
+    linearization (backoff, predistortion) to suppress spectral regrowth near the boundary.
+    More guard margin relaxes that requirement. The 1-1.5 MHz recovered here is effectively
+    a substitute for some of that filtering/linearity effort &mdash; and putting a CW tone
+    there, rather than leaving it idle, gets productive use out of spectrum that would
+    otherwise sit completely unused.
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SEC 3: CW MULTI-USE ═════════════════════════════════════════════ -->
+<div class="sec" id="cw">
+<div class="sec-lbl">Section 3 &middot; CW Pilot, Three Uses</div>
+<div class="sec-title">One Signal, Reused Three Times</div>
+<div class="sec-sub">
+  The same continuous-wave pilot tone already needed for D2D system functions extends
+  cleanly into a fourth role &mdash; standalone PNT &mdash; without new waveform
+  overhead at any stage.
+</div>
+
+<table class="tbl">
+<tr><th>Use</th><th>Mechanism</th><th>Marginal cost</th></tr>
+<tr><td><b>GPS-free acquisition</b></td><td>CW gives instant Doppler measurement, replacing a blind frequency search during cold-start sync</td><td>Zero &mdash; already transmitted</td></tr>
+<tr><td><b>DRX / sleep extension</b></td><td>Ephemeris-predicted CW frequency lets a low-power monitor confirm sync without waking the main radio</td><td>~2-5 mW always-on monitor</td></tr>
+<tr><td><b>Antenna pointing assist</b></td><td>Real-time CW SNR gives hot/cold feedback for directional UE antennas, no GNSS/compass needed</td><td>Software only, reuses DRX monitor hardware</td></tr>
+<tr class="hl"><td><b>Standalone PNT (this note)</b></td><td>CW as Doppler/velocity reference, extended with a ranging code for position fixes</td><td>Guard-band spectrum already unused</td></tr>
+</table>
+
+<div class="insight" style="margin-top:12px">
+Each row depends only on the row above it being true &mdash; the PNT capability is a
+natural extension of infrastructure a D2D system needs anyway, not a separate build.
+</div>
+</div>
+
+<!-- ══ SEC 4: PNT SIGNAL DESIGN ═════════════════════════════════════════ -->
+<div class="sec" id="pnt">
+<div class="sec-lbl">Section 4 &middot; Signal Design</div>
+<div class="sec-title">A GPS-Style Ranging Code Within &lt;1.5 MHz</div>
+<div class="sec-sub">
+  CW alone gives Doppler-only positioning (the classic 1960s Transit satnav approach) &mdash;
+  workable, but slow, needing minutes of pass tracking per fix. Adding a spread-spectrum
+  ranging code, GPS-style, upgrades this to fast, direct time-of-flight positioning.
+</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr">Ranging code parameters</div>
+  <div class="card-body">
+<div class="mono">GPS L1 C/A reference:     1.023 Mchip/s → 2.046 MHz (too wide)
+Designed for guard band:  0.60 Mchip/s → 1.20 MHz (fits)
+
+Chip length:              1.67 microseconds
+Raw code resolution:      ~500 m before tracking refinement
+                           (GPS itself starts from a similar
+                           order chip length and refines to
+                           meter-level via code + carrier
+                           tracking loops)
+
+Structure:  Code-division (CDMA), not frequency-division
+  All satellites share the same ~1.2MHz ranging slice
+  Each satellite: unique Gold code / PRN sequence (as GPS SVs)
+  Receiver correlates against known PRNs to separate satellites
+  → resolves satellite identity independent of Doppler,
+    a more fundamental fix than frequency-separated CW tones
+    for the zenith Doppler-collision case</div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">Navigation message overlay</div>
+  <div class="card-body">
+    <p style="line-height:1.9">GPS's navigation message runs at just 50 bps, BPSK-modulated
+    directly onto the ranging code. The same technique carries ephemeris, clock
+    corrections, and satellite health &mdash; at <b>zero additional bandwidth</b>
+    beyond the ranging code itself.</p>
+    <div class="mono">1.5 MHz guard band budget:
+  ~1.2 MHz  ranging code (all satellites, CDMA)
+  ~0.3 MHz  margin / CW tones alongside
+  0 MHz     nav message (rides on ranging code)</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ══ SEC 5: LINK BUDGET ═══════════════════════════════════════════════ -->
+<div class="sec" id="linkbudget">
+<div class="sec-lbl">Section 5 &middot; Link Budget &amp; Geometry</div>
+<div class="sec-title">Does It Close? Yes, With Very Large Margin</div>
+<div class="sec-sub">
+  Two independent questions: does the ranging signal reach the ground with enough SNR
+  to detect and track, and does the constellation provide enough <em>simultaneous</em>
+  satellites in view for a real position fix (not just one satellite's Doppler curve)?
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kv ok">~102 dB</div><div class="kl">Post-correlation SNR (illustrative 64m² array, el=30&deg;)</div></div>
+  <div class="kpi"><div class="kv">4</div><div class="kl">Satellites needed for 3D+time fix</div></div>
+  <div class="kpi"><div class="kv ok">12-24</div><div class="kl">Typically visible, el&gt;25-35&deg;, dense LEO D2D constellation</div></div>
+  <div class="kpi"><div class="kv">0.6 Mchip/s</div><div class="kl">Ranging code rate, fits guard band</div></div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Link budget walkthrough</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><th>Step</th><th>Value</th><th>Note</th></tr>
+      <tr><td>Satellite EIRP</td><td>~85 dBW</td><td>Illustrative: 64m&sup2; array, sub-array beamforming</td></tr>
+      <tr><td>Free-space path loss</td><td class="bad">~161 dB</td><td>500km altitude, 30&deg; elevation</td></tr>
+      <tr><td>Received power</td><td>~-78 dBW</td><td>Modest &minus;3 dBi ground antenna assumed</td></tr>
+      <tr><td>Raw SNR in 0.6MHz</td><td>~61 dB</td><td>Well above any detection threshold already</td></tr>
+      <tr><td>Despreading processing gain</td><td>~41 dB</td><td>From code correlation against known PRN</td></tr>
+      <tr class="hl"><td><b>Post-correlation SNR</b></td><td class="ok">~102 dB</td><td><b>Closes with enormous margin &mdash; not power-limited</b></td></tr>
+    </table>
+    <div class="footnote">Figures are illustrative, based on a representative sub-array phased array satellite
+    and a dense (thousands-of-satellites) LEO constellation. They scale with actual array size, altitude,
+    and elevation angle for any specific system.</div>
+  </div>
+</div>
+
+<div class="insight">
+<b>Why constellation density matters here specifically:</b> GPS needs 4 simultaneously
+visible satellites for a full position+time fix (3, if altitude is already known &mdash;
+common for ground-based use). A dense LEO D2D constellation sized for global messaging
+coverage typically provides well beyond that minimum at usable elevation angles, which
+a sparse constellation optimized purely for occasional communication passes would
+struggle to guarantee. The same density the communication mission needs anyway is what
+makes fast, accurate ranging-based PNT geometrically realistic as a side capability.
+</div>
+</div>
+
+<!-- ══ SEC 6: MARKET ════════════════════════════════════════════════════ -->
+<div class="sec" id="market">
+<div class="sec-lbl">Section 6 &middot; Market Context</div>
+<div class="sec-title">Resilient PNT Is a Real, Fast-Growing, Policy-Backed Category</div>
+<div class="sec-sub">
+  This isn't a speculative use case. GNSS jamming and spoofing have grown sharply,
+  multiple well-funded companies already sell GPS-independent PNT commercially, and
+  government policy is actively pushing toward alternatives.
+</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr">Threat trend (2023-2025)</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><td>GPS jamming incidents</td><td class="bad">+67%</td></tr>
+      <tr><td>GPS spoofing incidents</td><td class="bad">+193%</td></tr>
+      <tr><td>Estimated daily global incidents</td><td>700-1,000+</td></tr>
+      <tr><td>European air traffic affected</td><td>~40%</td></tr>
+    </table>
+    <div class="footnote">Source: industry aviation safety reporting, 2025-2026 period. Worst-affected
+    regions: Baltic/Scandinavia, Eastern Mediterranean, Middle East, Black Sea.</div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">Market size (2026)</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><td>Assured PNT (defense-led)</td><td>$15.5B, 9.8% CAGR</td></tr>
+      <tr><td>PNT infrastructure technology</td><td>$1.1B, 32%+ CAGR</td></tr>
+      <tr><td>Resilient PNT ground stations</td><td>$2.1B, ~10% CAGR</td></tr>
+    </table>
+    <div class="footnote">Defense accounts for roughly half of assured-PNT spending. Fastest-growing
+    sub-segment: alternative PNT technologies, including LEO-based navigation.</div>
+  </div>
+</div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Existing commercial players (context, not exhaustive)</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><th>Approach</th><th>Notes</th></tr>
+      <tr><td>Existing LEO comms constellation + PNT overlay</td><td>Proven model &mdash; commercially operating for 8+ years, protects regulated financial-market infrastructure among other customers</td></tr>
+      <tr><td>Dedicated purpose-built PNT constellation</td><td>Well-funded new entrants targeting centimeter-level accuracy, government R&amp;D backing</td></tr>
+      <tr><td>Broadband LEO constellation + PNT overlay</td><td>Leverages an existing large satellite fleet built for a different primary mission</td></tr>
+      <tr><td>Ground-based alternative</td><td>Non-satellite architecture, local transmitter network</td></tr>
+    </table>
+    <div class="footnote">This landscape shows real, validated demand for GNSS-independent PNT across
+    multiple architectures &mdash; the guard-band approach in this note is a low-incremental-cost way
+    for any existing LEO D2D operator to participate, riding on infrastructure already built for
+    the communications mission.</div>
+  </div>
+</div>
+
+<div class="insight">
+<b>The reframe:</b> the strongest case for building this isn't "compete for PNT market
+share" &mdash; it's that an operator's own ground infrastructure and satellite operations
+(orbit determination, precise timing) often already depend on GNSS today, at a moment
+when jamming/spoofing is growing sharply. A guard-band PNT signal, riding on
+infrastructure the D2D mission needs anyway, is close to free insurance against that
+dependency &mdash; with a genuine, already-validated external market as a secondary
+upside, not the primary justification.
+</div>
+
+</div>
+
+</div><!-- main -->
+
+<script>
+function navTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.tnav').forEach(t=>
+    t.classList.toggle('on', t.getAttribute('onclick').includes(id)));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S-Band LEO D2D Link Budget Tool</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--bd:#d0d8e4;
+  --navy:#1e3a5f;--blue:#2C5282;--amber:#C05E00;
+  --green:#1a5c35;--red:#8b1a1a;--orange:#7a4000;
+  --tx:#111;--sub:#4a5568;--dim:#6b7a99;
+  --mono:'IBM Plex Mono','Fira Code',monospace;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;color:#111}
+body{background:var(--bg);font-family:var(--sans);font-size:13px;line-height:1.7}
+.hdr{background:var(--navy);border-top:3px solid var(--amber);padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hdr-title{font-size:15px;font-weight:700;color:#fff}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.65);margin-top:2px}
+.badge{background:rgba(255,255,255,.18);color:#fff;font-size:9px;
+  padding:3px 10px;border-radius:3px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.nav-wrap{position:sticky;top:0;background:rgba(248,247,244,.97);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--bd);z-index:100}
+.nav-inner{display:flex;overflow-x:auto;max-width:1100px;margin:0 auto}
+.tnav{padding:10px 14px;font-size:12px;color:#333;cursor:pointer;font-weight:500;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .12s}
+.tnav.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.main{max-width:1100px;margin:0 auto;padding:0 24px 60px}
+.sec{padding:32px 0 16px;border-bottom:1px solid var(--bd)}
+.sec:last-child{border-bottom:none}
+.sec-lbl{font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.sec-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.sec-sub{font-size:13px;color:#333;line-height:1.75;max-width:780px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.card-hdr{padding:8px 16px;background:#f8faff;border-bottom:1px solid var(--bd);
+  font-size:9px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em}
+.card-body{padding:14px 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ctrl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 0;font-size:12px}
+.ctrl-row label{font-weight:600;color:#333;white-space:nowrap}
+.ctrl-row input[type=range]{width:110px;accent-color:var(--blue)}
+.ctrl-row select{padding:3px 8px;border:1px solid var(--bd);border-radius:4px;font-size:11px;background:#fff}
+.val-badge{background:#eef4ff;color:var(--blue);font-weight:700;font-size:11px;
+  padding:2px 8px;border-radius:3px;min-width:56px;text-align:center;font-family:var(--mono)}
+canvas{border:1px solid var(--bd);border-radius:4px;background:#fff;display:block;width:100%}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:6px 10px;text-align:left;color:var(--sub);font-weight:600;
+  border-bottom:1px solid var(--bd);background:#f8faff}
+.tbl td{padding:6px 10px;border-bottom:1px solid #eef2fa}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.hl td{background:#eef8f0;font-weight:600}
+.tbl tr.warn td{background:#fff8ee}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:5px;padding:10px 12px}
+.kpi .kv{font-size:20px;font-weight:800;color:var(--blue);font-family:var(--mono)}
+.kpi .kl{font-size:10px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.ok{color:var(--green)!important;font-weight:700}
+.bad{color:var(--red)!important;font-weight:700}
+.warn2{color:var(--orange)!important;font-weight:700}
+.insight{background:#f0f8f4;border:1px solid #b8d8c8;border-left:4px solid var(--blue);
+  border-radius:4px;padding:10px 14px;font-size:12px;line-height:1.8;margin-top:10px}
+.mono{font-family:var(--mono);font-size:11px;background:#f5f7fa;padding:8px 12px;
+  border-radius:4px;border:1px solid var(--bd);white-space:pre;overflow-x:auto;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">S-Band LEO D2D Link Budget Tool</div>
+    <div class="hdr-sub">GENERIC S-BAND MSS SPECTRUM · 2483.5–2500 MHz ILLUSTRATIVE · 15 MHz DEPLOYABLE NR CHANNEL · 500 KM LEO · D2D DIRECT-TO-SMARTPHONE</div>
+  </div>
+  <div class="badge">AUG 2026 · TECHNICAL NOTE</div>
+</div>
+
+<div class="nav-wrap">
+  <div class="nav-inner">
+    <div class="tnav on" onclick="navTo('params')">① Parameters</div>
+    <div class="tnav" onclick="navTo('dl')">② Downlink Budget</div>
+    <div class="tnav" onclick="navTo('ul')">③ Uplink Budget</div>
+    <div class="tnav" onclick="navTo('dpd')">④ DPD / PA Efficiency</div>
+    <div class="tnav" onclick="navTo('cw')">⑤ CW &amp; DRX</div>
+    <div class="tnav" onclick="navTo('thermal')">⑥ Sat Power &amp; Thermal</div>
+    <div class="tnav" onclick="navTo('summary')">⑦ System Summary</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══ SEC 1: PARAMETERS ══════════════════════════════════════════════════ -->
+<div class="sec" id="params">
+<div class="sec-lbl">Section 1 · System Parameters</div>
+<div class="sec-title">S-Band D2D System Configuration</div>
+<div class="sec-sub">Configure the satellite and terminal parameters. Defaults reflect a representative dense LEO D2D constellation (~5,000 satellites, generic S-band MSS spectrum, ~500km altitude) and a publicly-documented reference phased array architecture.</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr">Constellation &amp; Orbit</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>Altitude (km)</label>
+      <input type="range" id="alt" min="400" max="700" value="500" oninput="compute()">
+      <span class="val-badge" id="alt-v">500</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Min elevation (°)</label>
+      <input type="range" id="el" min="10" max="60" value="25" oninput="compute()">
+      <span class="val-badge" id="el-v">25</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Num satellites</label>
+      <select id="nsat" onchange="compute()">
+        <option value="24">24 (legacy MSS constellation)</option>
+        <option value="100">100</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+        <option value="3236">3,236 (broadband-class constellation)</option>
+        <option value="5105" selected>5,105 (dense D2D-class constellation)</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>Frequency</label>
+      <select id="freq_sel" onchange="compute()">
+        <option value="2.49e9" selected>S-band center (2.4935 GHz)</option>
+        <option value="2.4835e9">S-band lower (2.4835 GHz)</option>
+        <option value="2.495e9">S-band upper (2.495 GHz)</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>S-band spectrum</label>
+      <select id="bw_sel" onchange="applyBandwidth()">
+        <option value="11.5">3GPP standard (11.5 MHz, 2483.5&ndash;2495.0 MHz)</option>
+        <option value="15" selected>Deployable NR channel (15 MHz, standard bandwidth)</option>
+      </select>
+    </div>
+    <div class="ctrl-row" style="font-size:11px;color:var(--dim)" id="bw-note">
+      A representative S-band MSS license might request ~16.5 MHz (2483.5&ndash;2500.0 MHz), but 16.5 MHz isn't a standardized
+      NR channel bandwidth. 15 MHz is the largest standard off-the-shelf option that fits within the
+      license without bleeding into an adjacent licensee's spectrum &mdash; ~1.5 MHz reserved as edge guard.
+    </div>
+    <div id="geo-result" class="mono" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Satellite Antenna (Sub-Array Architecture)</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>Array area (m²)</label>
+      <select id="array_area" onchange="compute()">
+        <option value="6">6 m² (small sat)</option>
+        <option value="20">20 m² (mid-class)</option>
+        <option value="64" selected>64 m² (published reference array class)</option>
+        <option value="100">100 m² (custom)</option>
+        <option value="223">223 m² (large next-gen array class)</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>Sub-array size</label>
+      <select id="subarray" onchange="compute()">
+        <option value="4">2×2 = 4 elements/sub-array</option>
+        <option value="16" selected>4×4 = 16 elements/sub-array</option>
+        <option value="64">8×8 = 64 elements/sub-array</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>PA power/element (mW)</label>
+      <input type="range" id="pa_power" min="100" max="2000" value="500" step="50" oninput="compute()">
+      <span class="val-badge" id="pa_power-v">500</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Aperture efficiency</label>
+      <input type="range" id="eta" min="40" max="80" value="60" oninput="compute()">
+      <span class="val-badge" id="eta-v">60%</span>
+    </div>
+    <div id="ant-result" class="mono" style="margin-top:10px"></div>
+  </div>
+</div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <div class="card-hdr">Phone / UE Parameters</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>UE TX power (dBm)</label>
+      <select id="ue_pwr" onchange="compute()">
+        <option value="20">20 dBm (100mW, low power)</option>
+        <option value="23" selected>23 dBm (200mW, max class 3)</option>
+        <option value="26">26 dBm (400mW, enhanced)</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>UE antenna type</label>
+      <select id="ant_type" onchange="applyScenario()">
+        <option value="linear">Terrestrial baseline (linear, current phones)</option>
+        <option value="qha">D2D-optimized QHA (circular, elevation-shaped)</option>
+      </select>
+    </div>
+    <div class="ctrl-row" style="font-size:11px;color:var(--dim)" id="ant-type-note">
+      Standard linear phone antenna — polarization mismatch vs circular satellite downlink included in scenario gain values below.
+    </div>
+    <div class="ctrl-row">
+      <label>UE scenario</label>
+      <select id="ue_scenario" onchange="applyScenario()">
+        <option value="0,0">Open sky — face up (0 dBi, 0 dB body)</option>
+        <option value="-3,2" selected>3GPP TR38.811 reference (-3 dBi, 2 dB body)</option>
+        <option value="-7,3">Upright handheld (-7 dBi, 3 dB body)</option>
+        <option value="-10,3">AST FCC design point (-10 dBi, 3 dB body)</option>
+        <option value="-10,5">Light jacket pocket (-10 dBi, 5 dB body)</option>
+        <option value="-15,8">Deep front pocket (-15 dBi, 8 dB body)</option>
+        <option value="-15,12">Back pocket (-15 dBi, 12 dB body)</option>
+        <option value="-15,15">Backpack inner pocket (-15 dBi, 15 dB body)</option>
+      </select>
+    </div>
+    <div class="ctrl-row" style="font-size:11px;color:var(--dim)">
+      <span id="scenario-note">3GPP TR38.811 standard handheld NTN reference</span>
+    </div>
+    <input type="hidden" id="ue_gain" value="-3">
+    <div class="ctrl-row">
+      <label>UE noise figure (dB)</label>
+      <input type="range" id="ue_nf" min="5" max="10" value="7" step="0.5" oninput="compute()">
+      <span class="val-badge" id="ue_nf-v">7.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Body loss (dB)</label>
+      <input type="range" id="body_loss" min="0" max="15" value="2" step="0.5" oninput="compute()">
+      <span class="val-badge" id="body_loss-v">2.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Rain condition</label>
+      <select id="rain_rate" onchange="compute()">
+        <option value="0">Clear sky (0 mm/hr)</option>
+        <option value="1" selected>Light drizzle (1 mm/hr)</option>
+        <option value="5">Moderate rain (5 mm/hr)</option>
+        <option value="25">Heavy rain (25 mm/hr)</option>
+        <option value="50">Tropical downpour (50 mm/hr)</option>
+        <option value="100">Extreme / 0.01% (100 mm/hr)</option>
+      </select>
+    </div>
+    <div id="rain-note" class="insight" style="margin-top:6px;font-size:11px;padding:6px 10px">
+      S-band (2.5 GHz) rain attenuation is essentially negligible vs Ka-band (20 GHz).
+      Heavy rain (25 mm/hr): S-band ~0.04 dB vs Ka-band ~10-15 dB — a 250x advantage.
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SEC 2: DOWNLINK ═══════════════════════════════════════════════════ -->
+<div class="sec" id="dl">
+<div class="sec-lbl">Section 2 · Downlink Budget</div>
+<div class="sec-title">Satellite → Phone (DL)</div>
+<div class="sec-sub">Full downlink budget from satellite PA through free space to unmodified smartphone. DL is typically easier than UL because the satellite can generate large EIRP with its array.</div>
+
+<div class="kpi-row" id="dl-kpis"></div>
+<div class="card">
+  <div class="card-hdr">DL budget table</div>
+  <div class="card-body">
+    <table class="tbl" id="dl-table"></table>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">DL throughput vs elevation angle</div>
+  <div class="card-body">
+    <canvas id="dl-canvas" height="200"></canvas>
+    <div style="margin-top:6px;font-size:11px;color:var(--dim)">
+      MCS thresholds (3GPP NR, 3dB implementation margin applied)
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SEC 3: UPLINK ═════════════════════════════════════════════════════ -->
+<div class="sec" id="ul">
+<div class="sec-lbl">Section 3 · Uplink Budget</div>
+<div class="sec-title">Phone → Satellite (UL)</div>
+<div class="sec-sub">The uplink is the binding constraint for D2D — the phone is power-limited at 23 dBm with no phased array. The satellite's massive receive aperture (G/T) is the only lever.</div>
+
+<div class="kpi-row" id="ul-kpis"></div>
+<div class="card">
+  <div class="card-hdr">UL budget table</div>
+  <div class="card-body">
+    <table class="tbl" id="ul-table"></table>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">UL SNR vs elevation — sensitivity to array size</div>
+  <div class="card-body">
+    <canvas id="ul-canvas" height="220"></canvas>
+  </div>
+</div>
+</div>
+
+<!-- ══ SEC 4: DPD ════════════════════════════════════════════════════════ -->
+<div class="sec" id="dpd">
+<div class="sec-lbl">Section 4 · PA Efficiency &amp; DPD</div>
+<div class="sec-title">PA Power Budget &amp; DPD Impact</div>
+<div class="sec-sub">At S-band, LDMOS PAs offer 45-60% PAE vs Ka-band GaAs at 13%. Shaper/CFR reduces PAPR, DPD recovers OBO. Combined effect: satellite thermal and DC power budget.</div>
+
+<div class="card">
+  <div class="card-hdr">PA efficiency controls</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>PA type</label>
+      <select id="pa_type" onchange="computeDPD()">
+        <option value="ldmos">LDMOS (S-band, peak PAE 55%)</option>
+        <option value="gan_s">GaN S-band (peak PAE 65%)</option>
+        <option value="gan_ka">GaN Ka-band (peak PAE 35%)</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>OBO without DPD (dB)</label>
+      <input type="range" id="obo" min="4" max="12" value="8" step="0.5" oninput="computeDPD()">
+      <span class="val-badge" id="obo-v">8.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Shaper PAPR reduction (dB)</label>
+      <input type="range" id="shaper" min="0" max="5" value="3" step="0.5" oninput="computeDPD()">
+      <span class="val-badge" id="shaper-v">3.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>DPD OBO recovery (dB)</label>
+      <input type="range" id="dpd_gain" min="0" max="5" value="4" step="0.5" oninput="computeDPD()">
+      <span class="val-badge" id="dpd_gain-v">4.0</span>
+    </div>
+  </div>
+</div>
+
+<div class="kpi-row" id="dpd-kpis"></div>
+<div class="card">
+  <div class="card-hdr">PAE vs OBO curve</div>
+  <div class="card-body">
+    <canvas id="dpd-canvas" height="220"></canvas>
+  </div>
+</div>
+<div id="dpd-insight" class="insight"></div>
+</div>
+
+<!-- ══ SEC 5: CW & DRX ═══════════════════════════════════════════════════ -->
+<div class="sec" id="cw">
+<div class="sec-lbl">Section 5 · CW Pilot &amp; DRX</div>
+<div class="sec-title">CW Pilot Tone at S-Band — DRX Extension</div>
+<div class="sec-sub">S-band Doppler rate is 8× slower than Ka-band, making CW-aided DRX even more effective. Expected CW frequency is pre-computed from ephemeris; a 10Hz FFT bin monitors drift continuously.</div>
+
+<div class="card">
+  <div class="card-hdr">CW Doppler tracking simulation</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>Ephemeris age (min)</label>
+      <input type="range" id="eph_age" min="0" max="10" value="2" step="0.5" oninput="computeCW()">
+      <span class="val-badge" id="eph_age-v">2</span>
+      <label style="margin-left:16px">FFT bin (Hz)</label>
+      <select id="fft_bin" onchange="computeCW()">
+        <option value="5">5 Hz (200ms)</option>
+        <option value="10" selected>10 Hz (100ms)</option>
+        <option value="20">20 Hz (50ms)</option>
+      </select>
+    </div>
+    <canvas id="cw-canvas" height="220"></canvas>
+    <div id="cw-insight" class="insight" style="margin-top:10px;font-size:11px"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">DRX sleep cycle comparison</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr>
+        <th>Mode</th><th>Sleep cycle</th><th>On-duration</th><th>MR duty cycle</th><th>Rel. power</th><th>S-band note</th>
+      </tr>
+      <tr><td>iDRX standard</td><td>320ms–2.56s</td><td>1–2 sf</td><td>~2%</td><td>0.06×</td><td>Crystal drift limited</td></tr>
+      <tr><td>NTN naive (no correction)</td><td>~100ms</td><td>3–5 slots</td><td>~20%</td><td>0.35×</td><td>TA drift 45µs/s</td></tr>
+      <tr><td>NTN + ephemeris only</td><td>2–10s</td><td>1–2 slots</td><td>~2%</td><td>0.05×</td><td>TA corrected at wake</td></tr>
+      <tr class="hl"><td><b>NTN + CW-DRX (S-band)</b></td><td><b>30–120s</b></td><td><b>1 slot</b></td><td><b>&lt;1%</b></td><td class="ok"><b>0.01×</b></td><td><b>8× slower Doppler rate → longer sleep</b></td></tr>
+      <tr><td>NTN + CW-DRX (Ka-band)</td><td>10–60s</td><td>1 slot</td><td>&lt;1%</td><td>0.02×</td><td>Reference comparison</td></tr>
+      <tr><td>3GPP Rel-19 LP-WUS</td><td>Extended</td><td>WUR only</td><td>&lt;1%</td><td>~0.01×</td><td>Separate signal required</td></tr>
+    </table>
+    <div class="insight" style="margin-top:10px">
+      <b>S-band advantage:</b> Doppler rate of change at 2.5GHz is ~50 Hz/s at el=10° vs ~400 Hz/s at Ka-band.
+      CW moves only ~5Hz during a 100ms integration window at S-band — well within the 10Hz FFT bin.
+      Combined with SCS=15kHz CP of 4.8µs (vs 2.4µs at Ka), S-band CW-aided DRX sleep cycles
+      can reach 30–120s — approaching terrestrial eDRX performance without any additional waveform overhead.
+      <b>Patent Claim Sets B and C apply directly and are stronger at S-band than Ka-band.</b>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ SEC 6: SATELLITE POWER & THERMAL ═════════════════════════════════ -->
+<div class="sec" id="thermal">
+<div class="sec-lbl">Section 6 · Satellite Payload Power &amp; Thermal</div>
+<div class="sec-title">Realistic Satellite Power Budget &amp; Radiator Sizing</div>
+<div class="sec-sub">
+  Grounded to real satellite-class power budgets (~4kW total for a representative modern LEO comms-class
+  LEO comms satellite — each 60-satellite Starlink launch batch adds ~240kW solar power
+  to orbit, i.e. ~4kW/satellite). DPD/shaper directly determines how much array and EIRP
+  fit within this realistic power envelope, and how large a radiator the satellite needs.
+</div>
+
+<div class="card">
+  <div class="card-hdr">Satellite power budget</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>Total satellite power (W)</label>
+      <input type="range" id="sat_total_pwr" min="1500" max="8000" value="4000" step="250" oninput="computeThermal()">
+      <span class="val-badge" id="sat_total_pwr-v">4000</span>
+    </div>
+    <div class="ctrl-row">
+      <label>D2D RF payload allocation (%)</label>
+      <input type="range" id="d2d_alloc_pct" min="10" max="60" value="25" step="5" oninput="computeThermal()">
+      <span class="val-badge" id="d2d_alloc_pct-v">25%</span>
+    </div>
+    <div class="ctrl-row">
+      <label>PA peak PAE (%)</label>
+      <input type="range" id="th_peak_pae" min="30" max="70" value="55" step="5" oninput="computeThermal()">
+      <span class="val-badge" id="th_peak_pae-v">55%</span>
+    </div>
+    <div class="ctrl-row">
+      <label>OBO without DPD (dB)</label>
+      <input type="range" id="th_obo" min="4" max="12" value="8" step="0.5" oninput="computeThermal()">
+      <span class="val-badge" id="th_obo-v">8.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Shaper PAPR reduction (dB)</label>
+      <input type="range" id="th_shaper" min="0" max="5" value="3" step="0.5" oninput="computeThermal()">
+      <span class="val-badge" id="th_shaper-v">3.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>DPD OBO recovery (dB)</label>
+      <input type="range" id="th_dpd" min="0" max="5" value="4" step="0.5" oninput="computeThermal()">
+      <span class="val-badge" id="th_dpd-v">4.0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Per-element PA power (mW)</label>
+      <input type="range" id="th_el_pwr" min="25" max="300" value="75" step="25" oninput="computeThermal()">
+      <span class="val-badge" id="th_el_pwr-v">75</span>
+    </div>
+  </div>
+</div>
+
+<div class="kpi-row" id="thermal-kpis"></div>
+
+<div class="card">
+  <div class="card-hdr">DC power / RF output / achievable array — by scenario</div>
+  <div class="card-body">
+    <table class="tbl" id="thermal-table"></table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Radiator sizing (Stefan-Boltzmann)</div>
+  <div class="card-body">
+    <div class="ctrl-row">
+      <label>Radiator emissivity</label>
+      <input type="range" id="th_eps" min="60" max="95" value="85" step="5" oninput="computeThermal()">
+      <span class="val-badge" id="th_eps-v">0.85</span>
+      <label style="margin-left:16px">Operating temp (K)</label>
+      <input type="range" id="th_temp" min="280" max="360" value="320" step="5" oninput="computeThermal()">
+      <span class="val-badge" id="th_temp-v">320</span>
+    </div>
+    <canvas id="thermal-canvas" height="200"></canvas>
+  </div>
+</div>
+
+<div id="thermal-insight" class="insight"></div>
+</div>
+
+<!-- ══ SEC 7: SUMMARY ════════════════════════════════════════════════════ -->
+<div class="sec" id="summary">
+<div class="sec-lbl">Section 7 · System Summary</div>
+<div class="sec-title">S-Band D2D Complete System Assessment</div>
+
+<div class="kpi-row" id="sum-kpis"></div>
+<div class="card">
+  <div class="card-hdr">Link closure summary — all MCS levels</div>
+  <div class="card-body">
+    <table class="tbl" id="sum-table"></table>
+  </div>
+</div>
+<div id="sum-insight" class="insight"></div>
+</div>
+
+</div><!-- main -->
+
+<script>
+const C=3e8, K_B=1.38e-23, R_E=6371e3;
+let BW_SBAND=15e6; // S-band bandwidth — mutable, set by spectrum selector (default: realistic deployable 15MHz NR channel)
+
+function applyBandwidth(){
+  const sel = document.getElementById('bw_sel');
+  BW_SBAND = parseFloat(sel.value) * 1e6;
+  const note = document.getElementById('bw-note');
+  if (sel.value === '11.5'){
+    note.innerHTML = '3GPP-standardized terrestrial band definition (2483.5&ndash;2495.0 MHz) for this frequency range. Narrower than a representative MSS operator\'s actual filed spectrum.';
+  } else {
+    note.innerHTML = 'A representative S-band MSS license might request ~16.5 MHz (2483.5&ndash;2500.0 MHz), but 16.5 MHz isn\'t a standardized NR channel bandwidth. 15 MHz is the largest standard off-the-shelf option that fits within such a license without bleeding into an adjacent licensee\'s spectrum &mdash; ~1.5 MHz reserved as edge guard.';
+  }
+  compute();
+}
+
+function navTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.tnav').forEach(t=>
+    t.classList.toggle('on',t.getAttribute('onclick').includes(id)));
+}
+
+function gv(id){return parseFloat(document.getElementById(id).value);}
+
+function qhaGain_dBi(el_deg){
+  // Elevation-shaped QHA gain model, based on published QHA patterns:
+  // ~4 dBi peak at zenith, ~0 dBi near 30 deg, steeper rolloff below 30 deg
+  if (el_deg >= 30){
+    return 0 + (4-0)*(el_deg-30)/(90-30);
+  } else {
+    return -0.15*(30-el_deg);
+  }
+}
+const QHA_POL_BONUS_dB = 3.0; // recovers avg polarization mismatch loss vs linear ref
+
+function applyScenario(){
+  const sel = document.getElementById('ue_scenario');
+  const [ant, body] = sel.value.split(',').map(Number);
+  const antType = document.getElementById('ant_type').value;
+  document.getElementById('ue_gain').value = ant; // baseline stored; overridden per-elevation if QHA
+  document.getElementById('body_loss').value = body;
+  sv('body_loss-v', body.toFixed(1));
+  const noteEl = document.getElementById('ant-type-note');
+  if (antType === 'qha'){
+    noteEl.innerHTML = '<b>QHA active:</b> gain becomes elevation-dependent (~0dBi at 30&deg; rising to ~4dBi at zenith) '+
+      '+ 3dB polarization match bonus (circular vs circular). Body/pocket loss from scenario still applies.';
+  } else {
+    noteEl.textContent = 'Standard linear phone antenna — polarization mismatch vs circular satellite downlink included in scenario gain values below.';
+  }
+  // Update note
+  const notes = {
+    '0,0':   'Phone face-up on ground/rock, clear sky view above',
+    '-3,2':  '3GPP TR38.811 standard handheld NTN reference assumption',
+    '-7,3':  'Normal upright use, antenna lobe mismatch for elevation signal',
+    '-10,3': 'AST SpaceMobile FCC filing design point — robust coverage target',
+    '-10,5': 'Light fabric jacket pocket, some body absorption',
+    '-15,8': 'Deep front jeans pocket, partial body blockage',
+    '-15,12':'Back pocket, full body between phone and satellite',
+    '-15,15':'Inside backpack, fabric + body + bag material',
+  };
+  document.getElementById('scenario-note').textContent = notes[sel.value] || '';
+  compute();
+}
+
+function rainAtten_dB(rain_rate_mm_hr, el_deg){
+  // ITU-R P.838-3 at 2.4935 GHz
+  const k = 0.000202, alpha = 0.9719;
+  const gamma = k * Math.pow(rain_rate_mm_hr, alpha); // dB/km
+  const rain_height_km = 4.0;
+  const L_rain = rain_height_km / Math.sin(el_deg * Math.PI/180);
+  return gamma * L_rain;
+}
+function sv(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function el2(id){return document.getElementById(id);}
+
+function slant(alt_m, el_deg){
+  const el=el_deg*Math.PI/180, Re=R_E;
+  return Math.sqrt(Math.pow(Re*Math.sin(el),2)+alt_m*alt_m+2*Re*alt_m)-Re*Math.sin(el);
+}
+function fspl(freq_hz, dist_m){
+  return 20*Math.log10(4*Math.PI*dist_m*freq_hz/C);
+}
+function ta_drift_ns_s(alt_m, el_deg){
+  const v=Math.sqrt(3.986e14/(R_E+alt_m));
+  const v_r=v*Math.cos(el_deg*Math.PI/180);
+  return 2*v_r/C*1e9;
+}
+function doppler_hz(freq, alt_m, el_deg){
+  const v=Math.sqrt(3.986e14/(R_E+alt_m));
+  return freq*v*Math.cos(el_deg*Math.PI/180)/C;
+}
+function mcs_label(snr_eff){
+  if(snr_eff>=22) return {label:'256-QAM 3/4',se:5.55,color:'#1a5c35'};
+  if(snr_eff>=18) return {label:'64-QAM 3/4',se:4.52,color:'#2C5282'};
+  if(snr_eff>=13) return {label:'16-QAM 3/4',se:3.00,color:'#4a90d9'};
+  if(snr_eff>=6)  return {label:'QPSK 3/4',se:1.50,color:'#f5a623'};
+  if(snr_eff>=1)  return {label:'QPSK 1/2',se:1.00,color:'#e05252'};
+  if(snr_eff>=-5) return {label:'QPSK 1/4',se:0.50,color:'#c0392b'};
+  return {label:'Below threshold',se:0,color:'#888'};
+}
+
+let lastDL={}, lastUL={};
+
+function compute(){
+  const alt_km=gv('alt'), el_deg=gv('el');
+  const freq=gv('freq_sel');
+  const A=gv('array_area'), eta=gv('eta')/100;
+  const sub=gv('subarray');
+  const pa_mw=gv('pa_power');
+  const ue_pwr_dBm=gv('ue_pwr');
+  const antType=document.getElementById('ant_type').value;
+  const ue_gain = (antType==='qha') ? (qhaGain_dBi(el_deg)+QHA_POL_BONUS_dB) : gv('ue_gain');
+  const ue_nf=gv('ue_nf');
+  const body_loss=gv('body_loss');
+  const alt_m=alt_km*1e3;
+
+  sv('alt-v',alt_km+'km'); sv('el-v',el_deg+'°');
+  sv('eta-v',Math.round(gv('eta'))+'%');
+  sv('pa_power-v',pa_mw+'mW');
+  sv('ue_nf-v',ue_nf.toFixed(1));
+  sv('body_loss-v',body_loss.toFixed(1));
+
+  const lam=C/freq;
+  // Sub-array architecture: analog beamforming within sub-array
+  // One PA per element, phase shifter per element within sub-array
+  // One ADC/DAC per sub-array (digital combining between sub-arrays)
+  const el_spacing=lam/2; // half-wavelength
+  const n_el_total=A/(el_spacing*el_spacing); // total elements
+  const n_subarrays=n_el_total/sub;
+  const G_total_linear=eta*4*Math.PI*A/(lam*lam);
+  const G_total_dBi=10*Math.log10(G_total_linear);
+  const beamwidth_deg=(180/Math.PI)*lam/Math.sqrt(A);
+
+  // Satellite TX power
+  const P_per_el_dBW=10*Math.log10(pa_mw/1000);
+  const P_total_dBW=P_per_el_dBW+10*Math.log10(n_el_total);
+  const EIRP_dBW=P_total_dBW+G_total_dBi;
+
+  // Geometry
+  const sl=slant(alt_m, el_deg);
+  const v_sat=Math.sqrt(3.986e14/(R_E+alt_m));
+  const dop=doppler_hz(freq, alt_m, el_deg);
+  const ta_rate=ta_drift_ns_s(alt_m, el_deg);
+
+  // Coverage
+  const earth_area=4*Math.PI*R_E*R_E;
+  const fp_r=sl*Math.tan((90-el_deg)*Math.PI/180)*0.8; // approx footprint radius
+  const fp_area=Math.PI*fp_r*fp_r;
+  const sats_for_coverage=Math.ceil(earth_area/fp_area*1.5);
+  const n_sat=gv('nsat');
+
+  el2('geo-result').textContent=
+    `Altitude:      ${alt_km} km\n`+
+    `Slant range:   ${(sl/1e3).toFixed(0)} km  (el=${el_deg}°)\n`+
+    `Orbital vel:   ${(v_sat/1e3).toFixed(2)} km/s\n`+
+    `Max Doppler:   ±${(dop/1e3).toFixed(1)} kHz\n`+
+    `TA drift:      ${ta_rate.toFixed(0)} ns/s = ${(ta_rate/1e3).toFixed(1)} µs/s\n`+
+    `Sats for coverage at el>${el_deg}°: ~${sats_for_coverage}\n`+
+    `Your constellation: ${parseInt(n_sat).toLocaleString()} sats  `+
+    (parseInt(n_sat)>=sats_for_coverage?'✓ sufficient coverage':'⚠ partial coverage');
+
+  el2('ant-result').textContent=
+    `Array area:      ${A} m²\n`+
+    `Wavelength:      ${(lam*100).toFixed(1)} cm\n`+
+    `λ/2 spacing:     ${(el_spacing*100).toFixed(1)} cm\n`+
+    `Total elements:  ${Math.round(n_el_total).toLocaleString()}\n`+
+    `Sub-arrays:      ${Math.round(n_subarrays).toLocaleString()} (${sub} el each)\n`+
+    `Antenna gain:    ${G_total_dBi.toFixed(1)} dBi\n`+
+    `3dB beamwidth:   ${beamwidth_deg.toFixed(2)}°\n`+
+    `Total TX power:  ${(pa_mw*n_el_total/1000).toFixed(1)} W RF\n`+
+    `EIRP:            ${EIRP_dBW.toFixed(1)} dBW  (${(EIRP_dBW+30).toFixed(1)} dBm)`;
+
+  // ── DOWNLINK ──
+  const FSPL=fspl(freq, sl);
+  const rain_rate=gv('rain_rate');
+  const RAIN=rainAtten_dB(rain_rate, el_deg);
+  const ATMO=0.3 + RAIN; // gaseous 0.3dB + rain
+  const TOTAL_PATH=FSPL+ATMO;
+  const P_rx_phone=EIRP_dBW-TOTAL_PATH+ue_gain-body_loss;
+  const T_phone=290*Math.pow(10,ue_nf/10);
+  const N0_phone=10*Math.log10(K_B*T_phone);
+  const N_phone=N0_phone+10*Math.log10(BW_SBAND);
+  const SNR_dl=P_rx_phone-N_phone;
+  const SNR_dl_eff=SNR_dl-3; // 3dB implementation margin
+  const mcs_dl=mcs_label(SNR_dl_eff);
+  const tput_dl=(mcs_dl.se*BW_SBAND/1e6).toFixed(1);
+
+  lastDL={EIRP_dBW,FSPL,ATMO,P_rx_phone,N0_phone,N_phone,SNR_dl,SNR_dl_eff,mcs_dl,tput_dl,lam,G_total_dBi,n_el_total,P_total_dBW};
+
+  el2('dl-kpis').innerHTML=`
+    <div class="kpi"><div class="kv">${EIRP_dBW.toFixed(1)} dBW</div><div class="kl">Satellite EIRP</div></div>
+    <div class="kpi"><div class="kv">${P_rx_phone.toFixed(1)} dBW</div><div class="kl">Phone Rx power</div></div>
+    <div class="kpi"><div class="kv">${SNR_dl_eff.toFixed(1)} dB</div><div class="kl">Effective SNR</div></div>
+    <div class="kpi"><div class="kv" style="color:${mcs_dl.color}">${mcs_dl.label}</div><div class="kl">DL MCS → ${tput_dl} Mbps</div></div>
+  `;
+
+  el2('dl-table').innerHTML=`
+    <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+    <tr><td>Satellite EIRP</td><td class="ok">${EIRP_dBW.toFixed(1)} dBW</td><td>${(EIRP_dBW+30).toFixed(1)} dBm</td></tr>
+    <tr><td>Free space path loss</td><td class="bad">${FSPL.toFixed(1)} dB</td><td>Slant ${(sl/1e3).toFixed(0)} km at el=${el_deg}°</td></tr>
+    <tr><td>Atmospheric + rain loss</td><td>${ATMO.toFixed(2)} dB</td><td>Gaseous 0.3dB + rain ${rain_rate}mm/hr = ${RAIN.toFixed(3)}dB (ITU-R P.838)</td></tr>
+    <tr><td>UE antenna gain</td><td class="${antType==='qha'?'ok':''}">${ue_gain.toFixed(1)} dBi</td><td>${antType==='qha'?'QHA, el='+el_deg+'&deg; + 3dB pol. match':'Unmodified smartphone (isotropic)'}</td></tr>
+    <tr><td>Body loss</td><td>-${body_loss} dB</td><td>In-pocket / body shadowing</td></tr>
+    <tr><td>UE received power</td><td>${P_rx_phone.toFixed(1)} dBW</td><td>${(P_rx_phone+30).toFixed(1)} dBm</td></tr>
+    <tr><td>UE noise floor (${BW_SBAND/1e6} MHz)</td><td>${N_phone.toFixed(1)} dBW</td><td>NF=${ue_nf}dB, T=290K</td></tr>
+    <tr><td>Raw SNR</td><td>${SNR_dl.toFixed(1)} dB</td><td></td></tr>
+    <tr><td>Implementation margin</td><td>3.0 dB</td><td>Standard 3GPP assumption</td></tr>
+    <tr class="hl"><td><b>Effective SNR</b></td><td class="${SNR_dl_eff>6?'ok':'bad'}">${SNR_dl_eff.toFixed(1)} dB</td><td><b>→ ${mcs_dl.label} → ${tput_dl} Mbps</b></td></tr>
+  `;
+
+  // ── UPLINK ──
+  const EIRP_phone=(ue_pwr_dBm-30)+ue_gain-body_loss; // dBW
+  const P_rx_sat=EIRP_phone-TOTAL_PATH;
+  const T_sat_lna=150+20+10; // sky+LNA+feed
+  const T_sat=T_sat_lna;
+  const N0_sat=10*Math.log10(K_B*T_sat);
+  const G_rx_sat=G_total_dBi; // same aperture used for receive
+  const G_over_T=G_rx_sat-10*Math.log10(T_sat);
+  const N_sat=N0_sat+10*Math.log10(BW_SBAND);
+  const SNR_ul=P_rx_sat+G_rx_sat-N_sat;
+  const SNR_ul_eff=SNR_ul-3;
+  const mcs_ul=mcs_label(SNR_ul_eff);
+  const tput_ul=(mcs_ul.se*BW_SBAND/1e6).toFixed(1);
+
+  lastUL={EIRP_phone,FSPL,P_rx_sat,G_rx_sat,G_over_T,N0_sat,N_sat,SNR_ul,SNR_ul_eff,mcs_ul,tput_ul,T_sat};
+
+  el2('ul-kpis').innerHTML=`
+    <div class="kpi"><div class="kv">${EIRP_phone.toFixed(1)} dBW</div><div class="kl">Phone EIRP</div></div>
+    <div class="kpi"><div class="kv">${G_over_T.toFixed(1)} dB/K</div><div class="kl">Satellite G/T</div></div>
+    <div class="kpi"><div class="kv">${SNR_ul_eff.toFixed(1)} dB</div><div class="kl">Effective UL SNR</div></div>
+    <div class="kpi"><div class="kv" style="color:${mcs_ul.color}">${mcs_ul.label}</div><div class="kl">UL MCS → ${tput_ul} Mbps</div></div>
+  `;
+
+  el2('ul-table').innerHTML=`
+    <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+    <tr><td>Phone TX power</td><td>${ue_pwr_dBm} dBm</td><td>${Math.pow(10,(ue_pwr_dBm-30)/10).toFixed(0)}mW max class 3</td></tr>
+    <tr><td>Phone antenna gain</td><td class="${antType==='qha'?'ok':''}">${ue_gain.toFixed(1)} dBi</td><td>${antType==='qha'?'QHA, el='+el_deg+'&deg; + 3dB pol. match':'Isotropic smartphone'}</td></tr>
+    <tr><td>Body loss</td><td>-${body_loss} dB</td><td></td></tr>
+    <tr><td>Phone EIRP</td><td>${EIRP_phone.toFixed(1)} dBW</td><td>${(EIRP_phone+30).toFixed(1)} dBm</td></tr>
+    <tr><td>Free space path loss</td><td class="bad">${FSPL.toFixed(1)} dB</td><td></td></tr>
+    <tr><td>Received at satellite</td><td>${P_rx_sat.toFixed(1)} dBW</td><td>Pre-combining</td></tr>
+    <tr><td>Satellite array gain (Rx)</td><td class="ok">${G_rx_sat.toFixed(1)} dBi</td><td>Same aperture as TX</td></tr>
+    <tr><td>Satellite Tsys</td><td>${T_sat} K</td><td>LNA + feed + sky</td></tr>
+    <tr><td>Satellite G/T</td><td class="ok">${G_over_T.toFixed(1)} dB/K</td><td>Key UL figure of merit</td></tr>
+    <tr><td>Sat noise floor (${BW_SBAND/1e6} MHz)</td><td>${N_sat.toFixed(1)} dBW</td><td></td></tr>
+    <tr><td>Raw UL SNR</td><td>${SNR_ul.toFixed(1)} dB</td><td></td></tr>
+    <tr class="hl"><td><b>Effective UL SNR</b></td><td class="${SNR_ul_eff>6?'ok':SNR_ul_eff>1?'warn2':'bad'}">${SNR_ul_eff.toFixed(1)} dB</td><td><b>→ ${mcs_ul.label} → ${tput_ul} Mbps</b></td></tr>
+    <tr class="warn"><td colspan="3">UL is binding constraint — phone power-limited at ${ue_pwr_dBm} dBm, no array gain</td></tr>
+  `;
+
+  // Update rain note
+  const rr=gv('rain_rate');
+  const rn=document.getElementById('rain-note');
+  if(rn){
+    const rain_db=rainAtten_dB(rr,el_deg);
+    rn.innerHTML=`S-band rain at ${rr}mm/hr: <b>${rain_db.toFixed(3)} dB</b> path loss
+      (ITU-R P.838-3, ${el_deg}° elevation, 4km rain layer).
+      Ka-band equivalent: ~${(rain_db*25).toFixed(1)} dB — <b>S-band is ${rr>0?(rain_db>0?Math.round(rain_db*25/rain_db):0):1}× more rain-resilient</b>.`;
+  }
+  drawDLcurve(alt_m, freq, G_total_dBi, P_total_dBW, ue_gain, body_loss, ue_nf, antType);
+  drawULcurve(alt_m, freq, ue_pwr_dBm, ue_gain, body_loss, T_sat, ue_nf, antType);
+  updateSummary(SNR_dl_eff, SNR_ul_eff, mcs_dl, mcs_ul, tput_dl, tput_ul, G_over_T, EIRP_dBW, n_el_total, A, lam);
+  computeDPD();
+  computeCW();
+}
+
+function drawDLcurve(alt_m, freq, G_dBi, P_tx_dBW, ue_gain, body_loss, ue_nf, antType){
+  const cv=el2('dl-canvas'); cv.width=cv.parentElement.clientWidth||600; cv.height=200;
+  const cx=cv.getContext('2d');
+  cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  const pad={l:50,r:20,t:15,b:30}, W=cv.width-pad.l-pad.r, H=cv.height-pad.t-pad.b;
+  const els=Array.from({length:50},(_,i)=>10+i*80/49);
+  const snrs=els.map(el=>{
+    const sl=slant(alt_m,el), fp=fspl(freq,sl)+0.5;
+    const gain_here = (antType==='qha') ? (qhaGain_dBi(el)+QHA_POL_BONUS_dB) : ue_gain;
+    const prx=P_tx_dBW+G_dBi-fp+gain_here-body_loss;
+    const T=290*Math.pow(10,ue_nf/10);
+    const N=10*Math.log10(K_B*T*BW_SBAND);
+    return prx-N-3;
+  });
+  const ymin=-10, ymax=35;
+  const xp=i=>pad.l+W*i/49;
+  const yp=v=>pad.t+H*(1-(v-ymin)/(ymax-ymin));
+  // Grid
+  cx.strokeStyle='#eef2fa'; cx.lineWidth=0.5;
+  [-5,0,6,13,18,22].forEach(v=>{
+    cx.beginPath(); cx.moveTo(pad.l,yp(v)); cx.lineTo(pad.l+W,yp(v)); cx.stroke();
+    cx.fillStyle='#aaa'; cx.font='9px sans-serif';
+    cx.fillText(v+'dB',pad.l-32,yp(v)+3);
+  });
+  // MCS threshold lines
+  const thresholds=[{v:22,l:'256QAM',c:'#1a5c35'},{v:18,l:'64QAM',c:'#2C5282'},
+    {v:13,l:'16QAM',c:'#4a90d9'},{v:6,l:'QPSK3/4',c:'#f5a623'},{v:1,l:'QPSK1/2',c:'#e05252'}];
+  thresholds.forEach(t=>{
+    cx.strokeStyle=t.c+'44'; cx.lineWidth=1; cx.setLineDash([4,3]);
+    cx.beginPath(); cx.moveTo(pad.l,yp(t.v)); cx.lineTo(pad.l+W,yp(t.v)); cx.stroke();
+    cx.setLineDash([]); cx.fillStyle=t.c; cx.font='8px sans-serif';
+    cx.fillText(t.l,pad.l+W-38,yp(t.v)-2);
+  });
+  // SNR curve
+  cx.strokeStyle='#2C5282'; cx.lineWidth=2; cx.setLineDash([]);
+  cx.beginPath();
+  snrs.forEach((s,i)=>{const y=yp(Math.max(ymin,Math.min(ymax,s)));i?cx.lineTo(xp(i),y):cx.moveTo(xp(i),y)});
+  cx.stroke();
+  // X axis labels
+  cx.fillStyle='#555'; cx.font='9px sans-serif';
+  [10,20,30,40,50,60,70,80,90].forEach(e=>{
+    const x=pad.l+W*(e-10)/80;
+    cx.fillText(e+'°',x-6,pad.t+H+14);
+  });
+  cx.save(); cx.translate(10,pad.t+H/2); cx.rotate(-Math.PI/2);
+  cx.fillText('SNR (dB)',0,0); cx.restore();
+  cx.fillStyle='#555'; cx.fillText('Elevation angle →',pad.l+W/2-30,pad.t+H+28);
+  cx.fillStyle='#2C5282'; cx.fillText('DL SNR (eff.)',pad.l+4,pad.t+10);
+}
+
+function drawULcurve(alt_m, freq, ue_pwr_dBm, ue_gain, body_loss, T_sat, ue_nf, antType){
+  const cv=el2('ul-canvas'); cv.width=cv.parentElement.clientWidth||600; cv.height=220;
+  const cx=cv.getContext('2d');
+  cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  const pad={l:50,r:20,t:20,b:35}, W=cv.width-pad.l-pad.r, H=cv.height-pad.t-pad.b;
+  // EIRP_ph computed per-elevation below when QHA active
+  const areas=[6,20,64,223];
+  const colors=['#888','#f5a623','#2C5282','#1a5c35'];
+  const els=Array.from({length:50},(_,i)=>10+i*80/49);
+  const ymin=-15, ymax=30;
+  const xp=i=>pad.l+W*i/49;
+  const yp=v=>pad.t+H*(1-(v-ymin)/(ymax-ymin));
+  // Grid
+  cx.strokeStyle='#eef2fa'; cx.lineWidth=0.5;
+  [-10,-5,0,6,13,18].forEach(v=>{
+    cx.beginPath(); cx.moveTo(pad.l,yp(v)); cx.lineTo(pad.l+W,yp(v)); cx.stroke();
+    cx.fillStyle='#aaa'; cx.font='9px sans-serif';
+    cx.fillText(v,pad.l-24,yp(v)+3);
+  });
+  const lam=C/freq;
+  areas.forEach((A,ai)=>{
+    const G=10*Math.log10(0.6*4*Math.PI*A/(lam*lam));
+    const snrs=els.map(el=>{
+      const sl=slant(alt_m,el), fp=fspl(freq,sl)+0.5;
+      const gain_here = (antType==='qha') ? (qhaGain_dBi(el)+QHA_POL_BONUS_dB) : ue_gain;
+      const EIRP_ph_here = (ue_pwr_dBm-30)+gain_here-body_loss;
+      const prx=EIRP_ph_here-fp+G;
+      const N=10*Math.log10(K_B*T_sat*BW_SBAND);
+      return prx-N-3;
+    });
+    cx.strokeStyle=colors[ai]; cx.lineWidth=2;
+    cx.beginPath();
+    snrs.forEach((s,i)=>{const y=yp(Math.max(ymin,Math.min(ymax,s)));i?cx.lineTo(xp(i),y):cx.moveTo(xp(i),y)});
+    cx.stroke();
+    cx.fillStyle=colors[ai]; cx.font='9px sans-serif';
+    cx.fillText(A+'m²',pad.l+W+2,yp(snrs[49])+3);
+  });
+  // Threshold lines
+  [{v:13,l:'16QAM',c:'#4a90d9'},{v:6,l:'QPSK3/4',c:'#f5a623'},{v:1,l:'QPSK1/2',c:'#e05252'}].forEach(t=>{
+    cx.strokeStyle=t.c+'55'; cx.lineWidth=1; cx.setLineDash([4,3]);
+    cx.beginPath(); cx.moveTo(pad.l,yp(t.v)); cx.lineTo(pad.l+W,yp(t.v)); cx.stroke();
+    cx.setLineDash([]); cx.fillStyle=t.c; cx.font='8px sans-serif';
+    cx.fillText(t.l,pad.l+4,yp(t.v)-2);
+  });
+  cx.fillStyle='#555'; cx.font='9px sans-serif';
+  [10,20,30,40,50,60,70,80,90].forEach(e=>{cx.fillText(e+'°',pad.l+W*(e-10)/80-6,pad.t+H+14)});
+  cx.fillText('Elevation angle →',pad.l+W/2-30,pad.t+H+28);
+  cx.save(); cx.translate(10,pad.t+H/2); cx.rotate(-Math.PI/2);
+  cx.fillText('UL SNR (dB)',0,0); cx.restore();
+}
+
+function computeDPD(){
+  const pa_type=el2('pa_type').value;
+  const obo=gv('obo'), shaper=gv('shaper'), dpd=gv('dpd_gain');
+  sv('obo-v',obo.toFixed(1)); sv('shaper-v',shaper.toFixed(1)); sv('dpd_gain-v',dpd.toFixed(1));
+  // Peak PAE by PA type
+  const peak_pae={ldmos:0.55, gan_s:0.65, gan_ka:0.35}[pa_type];
+  // PAE vs OBO: Rapp model approximation
+  function pae_at_obo(obo_dB){
+    const backoff=Math.pow(10,-obo_dB/10);
+    return peak_pae*backoff*Math.sqrt(1+backoff);
+  }
+  const net_obo=Math.max(0, obo-shaper-dpd);
+  const pae_no_dpd=pae_at_obo(obo);
+  const pae_shaper=pae_at_obo(obo-shaper);
+  const pae_dpd=pae_at_obo(net_obo);
+
+  const A=gv('array_area'), lam=C/gv('freq_sel');
+  const el_sp=lam/2;
+  const n_el=A/(el_sp*el_sp);
+  const pa_rf_w=gv('pa_power')/1000;
+  const total_rf_w=n_el*pa_rf_w;
+
+  const dc_no_dpd=total_rf_w/pae_no_dpd;
+  const dc_shaper=total_rf_w/pae_shaper;
+  const dc_dpd=total_rf_w/pae_dpd;
+
+  el2('dpd-kpis').innerHTML=`
+    <div class="kpi"><div class="kv">${(pae_no_dpd*100).toFixed(1)}%</div><div class="kl">PAE (no DPD)</div></div>
+    <div class="kpi"><div class="kv ok">${(pae_dpd*100).toFixed(1)}%</div><div class="kl">PAE (DPD+Shaper)</div></div>
+    <div class="kpi"><div class="kv bad">${(dc_no_dpd/1000).toFixed(1)} kW</div><div class="kl">DC power (no DPD)</div></div>
+    <div class="kpi"><div class="kv ok">${(dc_dpd/1000).toFixed(1)} kW</div><div class="kl">DC power (DPD+Shaper)</div></div>
+  `;
+
+  el2('dpd-insight').innerHTML=
+    `<b>Array: ${Math.round(n_el).toLocaleString()} elements × ${gv('pa_power')}mW = ${(total_rf_w/1000).toFixed(1)} kW RF</b><br>
+    Without DPD: PAE=${(pae_no_dpd*100).toFixed(1)}% → DC=${(dc_no_dpd/1000).toFixed(1)} kW, heat=${((dc_no_dpd-total_rf_w)/1000).toFixed(1)} kW<br>
+    Shaper only (${shaper}dB PAPR reduction): PAE=${(pae_shaper*100).toFixed(1)}% → DC=${(dc_shaper/1000).toFixed(1)} kW<br>
+    Shaper + DPD (+${dpd}dB OBO): PAE=${(pae_dpd*100).toFixed(1)}% → DC=${(dc_dpd/1000).toFixed(1)} kW, heat=${((dc_dpd-total_rf_w)/1000).toFixed(1)} kW<br>
+    <b>DC saving: ${((dc_no_dpd-dc_dpd)/1000).toFixed(1)} kW (${(100*(1-dc_dpd/dc_no_dpd)).toFixed(0)}% reduction)</b>
+    — equivalent radiator area saved.`;
+
+  drawDPDcurve(pa_type, obo, shaper, dpd, peak_pae);
+}
+
+function drawDPDcurve(pa_type, obo_ref, shaper, dpd, peak_pae){
+  const cv=el2('dpd-canvas'); cv.width=cv.parentElement.clientWidth||600; cv.height=220;
+  const cx=cv.getContext('2d');
+  cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  const pad={l:50,r:100,t:20,b:35}, W=cv.width-pad.l-pad.r, H=cv.height-pad.t-pad.b;
+  const obos=Array.from({length:60},(_,i)=>i*15/59);
+  const ymax=peak_pae*100*1.1;
+  const xp=v=>pad.l+W*(v/15);
+  const yp=v=>pad.t+H*(1-v/(ymax));
+  function pae_curve(o){
+    const b=Math.pow(10,-o/10);
+    return peak_pae*b*Math.sqrt(1+b)*100;
+  }
+  // Grid
+  cx.strokeStyle='#eef2fa'; cx.lineWidth=0.5;
+  [10,20,30,40,50,60].forEach(v=>{
+    if(v>ymax) return;
+    cx.beginPath(); cx.moveTo(pad.l,yp(v)); cx.lineTo(pad.l+W,yp(v)); cx.stroke();
+    cx.fillStyle='#aaa'; cx.font='9px sans-serif';
+    cx.fillText(v+'%',pad.l-28,yp(v)+3);
+  });
+  // PAE curve
+  cx.strokeStyle='#888'; cx.lineWidth=1.5; cx.beginPath();
+  obos.forEach((o,i)=>{const y=yp(pae_curve(o));i?cx.lineTo(xp(o),y):cx.moveTo(xp(o),y)});
+  cx.stroke();
+  // Operating points
+  const pts=[
+    {o:obo_ref, c:'#e05252', l:'No DPD'},
+    {o:Math.max(0,obo_ref-shaper), c:'#f5a623', l:'Shaper'},
+    {o:Math.max(0,obo_ref-shaper-dpd), c:'#1a5c35', l:'DPD+Shaper'},
+  ];
+  pts.forEach(p=>{
+    const pae=pae_curve(p.o);
+    cx.fillStyle=p.c; cx.strokeStyle=p.c;
+    cx.beginPath(); cx.arc(xp(p.o),yp(pae),6,0,Math.PI*2); cx.fill();
+    cx.fillStyle=p.c; cx.font='10px sans-serif';
+    cx.fillText(`${p.l}: ${pae.toFixed(1)}%`,pad.l+W+4,yp(pae)+3);
+  });
+  cx.fillStyle='#555'; cx.font='9px sans-serif';
+  [0,3,6,9,12,15].forEach(o=>cx.fillText(o+'dB',xp(o)-8,pad.t+H+14));
+  cx.fillText('OBO (dB) →',pad.l+W/2-20,pad.t+H+28);
+  cx.save(); cx.translate(12,pad.t+H/2); cx.rotate(-Math.PI/2);
+  cx.fillText('PAE (%)',0,0); cx.restore();
+}
+
+function computeCW(){
+  const eph_age=gv('eph_age');
+  const fft_bin=gv('fft_bin');
+  const freq=gv('freq_sel');
+  const alt_m=gv('alt')*1e3;
+  sv('eph_age-v',eph_age+'min');
+
+  const cv=el2('cw-canvas'); cv.width=cv.parentElement.clientWidth||600; cv.height=220;
+  const cx=cv.getContext('2d');
+  cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  const pad={l:55,r:20,t:20,b:35}, W=cv.width-pad.l-pad.r, H=cv.height-pad.t-pad.b;
+
+  const T_MAX=60; // seconds
+  const ymax=200; // Hz prediction error
+  const xp=t=>pad.l+W*(t/T_MAX);
+  const yp=v=>pad.t+H*(1-Math.min(v,ymax)/ymax);
+
+  // Position error from ephemeris age → frequency error
+  const pos_err_m=eph_age*15; // ~15m per minute extrapolation
+  const v_err=pos_err_m/60;
+  const freq_err_hz=v_err/C*freq;
+
+  // Curves
+  // 1. No prediction: Doppler shifts at ~50Hz/s at S-band
+  const dop_rate=50; // Hz/s at S-band, el=20°
+  cx.strokeStyle='#e05252'; cx.lineWidth=2;
+  cx.beginPath();
+  for(let i=0;i<=100;i++){
+    const t=i/100*T_MAX;
+    const v=Math.min(dop_rate*t*0.7,ymax*1.05);
+    i?cx.lineTo(xp(t),yp(v)):cx.moveTo(xp(t),yp(v));
+  }
+  cx.stroke();
+
+  // 2. Ephemeris only
+  cx.strokeStyle='#f5a623'; cx.lineWidth=2;
+  cx.beginPath();
+  for(let i=0;i<=100;i++){
+    const t=i/100*T_MAX;
+    const v=freq_err_hz+0.3*t;
+    i?cx.lineTo(xp(t),yp(Math.min(v,ymax))):cx.moveTo(xp(t),yp(v));
+  }
+  cx.stroke();
+
+  // 3. CW monitoring: bounded by FFT bin
+  cx.strokeStyle='#2C5282'; cx.lineWidth=2.5;
+  cx.beginPath();
+  for(let i=0;i<=100;i++){
+    const t=i/100*T_MAX;
+    const v=fft_bin*(0.4+0.08*Math.sin(t*0.7));
+    i?cx.lineTo(xp(t),yp(v)):cx.moveTo(xp(t),yp(v));
+  }
+  cx.stroke();
+
+  // FFT bin line
+  cx.strokeStyle='#1a5c35'; cx.setLineDash([5,3]); cx.lineWidth=1.5;
+  cx.beginPath(); cx.moveTo(pad.l,yp(fft_bin)); cx.lineTo(pad.l+W,yp(fft_bin)); cx.stroke();
+  cx.setLineDash([]);
+  cx.fillStyle='#1a5c35'; cx.font='9px sans-serif';
+  cx.fillText('FFT bin ('+fft_bin+'Hz)',pad.l+4,yp(fft_bin)-3);
+
+  // Axes
+  [0,50,100,150,200].forEach(v=>{
+    cx.strokeStyle='#eee'; cx.lineWidth=0.5;
+    cx.beginPath(); cx.moveTo(pad.l,yp(v)); cx.lineTo(pad.l+W,yp(v)); cx.stroke();
+    cx.fillStyle='#aaa'; cx.font='9px sans-serif';
+    cx.fillText(v+'Hz',pad.l-36,yp(v)+3);
+  });
+  [0,10,20,30,40,50,60].forEach(t=>{
+    cx.fillStyle='#555'; cx.font='9px sans-serif';
+    cx.fillText(t+'s',xp(t)-8,pad.t+H+14);
+  });
+  cx.fillText('Sleep duration →',pad.l+W/2-30,pad.t+H+28);
+  cx.save(); cx.translate(14,pad.t+H/2); cx.rotate(-Math.PI/2);
+  cx.fillText('CW freq error (Hz)',0,0); cx.restore();
+  // Legend
+  [{c:'#e05252',l:'No prediction'},{c:'#f5a623',l:'Ephemeris only'},{c:'#2C5282',l:'CW monitoring'}].forEach((e,i)=>{
+    cx.fillStyle=e.c; cx.fillRect(pad.l+4,pad.t+4+i*14,10,8);
+    cx.fillStyle='#333'; cx.font='9px sans-serif';
+    cx.fillText(e.l,pad.l+18,pad.t+11+i*14);
+  });
+
+  // S-band vs Ka comparison note
+  const sleep_ok=freq_err_hz<fft_bin?60:Math.max(0,(fft_bin-freq_err_hz)/0.3);
+
+  // Pocket analysis — respects antenna type toggle
+  // CW (DL) is naturally robust due to huge satellite EIRP.
+  // The binding failure case is UPLINK (phone->satellite), tested here.
+  const antType_cw = document.getElementById('ant_type').value;
+  const pkt_body = 8;
+  const pkt_ant = (antType_cw==='qha') ? (qhaGain_dBi(30)+QHA_POL_BONUS_dB) : -15;
+  const fcw = freq, lcw = C/fcw, Acw = gv('array_area');
+  const Gcw = 10*Math.log10(0.6*4*Math.PI*Acw/(lcw*lcw));
+  const nel_cw = Acw/Math.pow(lcw/2,2);
+  const Ptx_cw = 10*Math.log10(gv('pa_power')/1000)+10*Math.log10(nel_cw);
+  const Ecw = Ptx_cw+Gcw;
+  const slcw = slant(alt_m,30);
+  const fpcw = fspl(fcw,slcw)+0.3;
+
+  // CW detection (DL, narrow bin) — always robust
+  const Prx_cw = Ecw-fpcw+pkt_ant-pkt_body;
+  const N0cw = 10*Math.log10(1.38e-23*290*Math.pow(10,7/10));
+  const Nbin = N0cw+10*Math.log10(10);
+  const snr_cw_pkt = Prx_cw-Nbin;
+
+  // Uplink test (phone TX -> satellite) — this is what actually fails in pocket
+  const ue_pwr_pkt = 23; // dBm
+  const EIRP_ph_pkt = (ue_pwr_pkt-30) + pkt_ant - pkt_body;
+  const Prx_sat_pkt = EIRP_ph_pkt - fpcw + Gcw;
+  const T_sat_pkt = 180;
+  const N_ul_pkt = 10*Math.log10(1.38e-23*T_sat_pkt*BW_SBAND);
+  const snr_ul_pkt = Prx_sat_pkt - N_ul_pkt - 3;
+  const m_ul_pkt = mcs_label(snr_ul_pkt);
+
+  el2('cw-insight').innerHTML =
+    `<b>S-band CW tracking (eph age=${eph_age}min, antenna=${antType_cw==='qha'?'QHA':'linear baseline'}):</b>
+    Ephemeris position error ~${pos_err_m.toFixed(0)}m → CW prediction error <b>${freq_err_hz.toFixed(1)} Hz</b>.<br>
+    Doppler rate at S-band: ~50 Hz/s (vs ~400 Hz/s at Ka-band — <b>8x slower</b>).<br>
+    CW moves only <b>${(50*0.1).toFixed(0)} Hz in 100ms integration window</b> — well within ${fft_bin}Hz FFT bin.<br>
+    <b>CW-aided DRX sleep: 30-120s achievable</b> — eDRX class power saving at zero waveform overhead.<br><br>
+    <b>Pocket analysis (el=30&deg;, ${antType_cw==='qha'?'QHA '+pkt_ant.toFixed(1)+'dBi':'-15 dBi linear'}, -8 dB body):</b><br>
+    Satellite EIRP: ${Ecw.toFixed(1)} dBW<br>
+    <span style="color:var(--green)"><b>CW detection (DL, 10 Hz bin): SNR = ${snr_cw_pkt.toFixed(1)} dB — works easily in pocket</b></span><br>
+    <span style="color:${snr_ul_pkt>1?(snr_ul_pkt>6?'var(--green)':'var(--orange)'):'var(--red)'}"><b>Uplink (phone&rarr;satellite) in pocket: SNR = ${snr_ul_pkt.toFixed(1)} dB &rarr; ${m_ul_pkt.label} — ${snr_ul_pkt>1?'marginal':'FAILS, cannot send'}</b></span><br>
+    <b>This is the pocket WURs case:</b> satellite CAN reach the phone in pocket (DL/CW robust) but the
+    phone often CANNOT reply (UL power/antenna-limited). WURs vibrates the user to take the phone
+    out &rarr; UL link improves &rarr; SOS/acknowledgment can be sent.`;
+}
+
+function updateSummary(snr_dl, snr_ul, mcs_dl, mcs_ul, tput_dl, tput_ul, G_T, EIRP, n_el, A, lam){
+  el2('sum-kpis').innerHTML=`
+    <div class="kpi"><div class="kv" style="color:${mcs_dl.color}">${mcs_dl.label}</div><div class="kl">DL MCS (${tput_dl} Mbps)</div></div>
+    <div class="kpi"><div class="kv" style="color:${mcs_ul.color}">${mcs_ul.label}</div><div class="kl">UL MCS (${tput_ul} Mbps) ← binding</div></div>
+    <div class="kpi"><div class="kv">${EIRP.toFixed(1)} dBW</div><div class="kl">Satellite EIRP</div></div>
+    <div class="kpi"><div class="kv">${G_T.toFixed(1)} dB/K</div><div class="kl">Satellite G/T</div></div>
+  `;
+
+  const rows=[
+    {el:10},{el:20},{el:30},{el:40},{el:50},{el:60}
+  ].map(r=>{
+    const alt_m=gv('alt')*1e3, freq=gv('freq_sel');
+    const rr_s=parseFloat(document.getElementById('rain_rate')?document.getElementById('rain_rate').value:1)||0;
+    const sl=slant(alt_m,r.el), fp=fspl(freq,sl)+0.3+rainAtten_dB(rr_s,r.el);
+    const antType_s=document.getElementById('ant_type').value;
+    const ue_gain_base=gv('ue_gain'), bl=gv('body_loss'), ue_nf=gv('ue_nf');
+    const ue_gain = (antType_s==='qha') ? (qhaGain_dBi(r.el)+QHA_POL_BONUS_dB) : ue_gain_base;
+    const pa_mw=gv('pa_power');
+    const G=10*Math.log10(0.6*4*Math.PI*A/(lam*lam));
+    const n=A/((lam/2)*(lam/2));
+    const P_tx=10*Math.log10(pa_mw/1000)+10*Math.log10(n);
+    const EIRP=P_tx+G;
+    const prx_dl=EIRP-fp+ue_gain-bl;
+    const T_ue=290*Math.pow(10,ue_nf/10);
+    const N_dl=10*Math.log10(K_B*T_ue*BW_SBAND);
+    const snr_dl=prx_dl-N_dl-3;
+    const m_dl=mcs_label(snr_dl);
+    const ue_pwr=gv('ue_pwr');
+    const EIRP_ph=(ue_pwr-30)+ue_gain-bl;
+    const prx_ul=EIRP_ph-fp+G;
+    const T_sat=180;
+    const N_ul=10*Math.log10(K_B*T_sat*BW_SBAND);
+    const snr_ul=prx_ul-N_ul-3;
+    const m_ul=mcs_label(snr_ul);
+    const bind=m_ul.se<=m_dl.se?'UL':'DL';
+    const tput=(Math.min(m_dl.se,m_ul.se)*BW_SBAND/1e6).toFixed(1);
+    return `<tr class="${r.el==30?'hl':''}">
+      <td>${r.el}°</td>
+      <td>${(sl/1e3).toFixed(0)} km</td>
+      <td style="color:${m_dl.color}">${m_dl.label}</td>
+      <td>${snr_dl.toFixed(1)} dB</td>
+      <td style="color:${m_ul.color}">${m_ul.label}</td>
+      <td>${snr_ul.toFixed(1)} dB</td>
+      <td><b>${tput} Mbps</b></td>
+      <td>${bind} limited</td>
+    </tr>`;
+  });
+
+  el2('sum-table').innerHTML=`
+    <tr><th>Elevation</th><th>Slant</th><th>DL MCS</th><th>DL SNR</th><th>UL MCS</th><th>UL SNR</th><th>Throughput</th><th>Binding</th></tr>
+    ${rows.join('')}
+  `;
+
+  el2('sum-insight').innerHTML=
+    `<b>System assessment (${gv('array_area')}m² array, el=${gv('el')}°):</b><br>
+    DL closes at high MCS — satellite EIRP dominates. UL is binding at lower MCS due to phone TX power limit (${gv('ue_pwr')} dBm). 
+    This asymmetry is fundamental to D2D: design must optimize for UL coverage.
+    <b>Key levers:</b> (1) Increase array size → higher G/T → better UL SNR. 
+    (2) Reduce min elevation (more satellites) → shorter slant range → 4.5dB better path loss per halving of range.
+    (3) Narrower bandwidth (e.g. 5MHz instead of 11.5MHz) → 3.6dB better SNR but lower peak throughput.
+    (4) DPD + Shaper → more EIRP per watt → more satellites affordable → better elevation angle.`;
+}
+
+function computeThermal(){
+  const totalP = gv('sat_total_pwr');
+  const allocPct = gv('d2d_alloc_pct');
+  const peakPae = gv('th_peak_pae')/100;
+  const obo = gv('th_obo'), shaper = gv('th_shaper'), dpd = gv('th_dpd');
+  const elPwr_W = gv('th_el_pwr')/1000;
+  const eps = gv('th_eps')/100;
+  const T_hot = gv('th_temp');
+  const T_sink = 250;
+  const sigma = 5.67e-8;
+
+  sv('sat_total_pwr-v', totalP.toFixed(0));
+  sv('d2d_alloc_pct-v', allocPct.toFixed(0)+'%');
+  sv('th_peak_pae-v', gv('th_peak_pae').toFixed(0)+'%');
+  sv('th_obo-v', obo.toFixed(1));
+  sv('th_shaper-v', shaper.toFixed(1));
+  sv('th_dpd-v', dpd.toFixed(1));
+  sv('th_el_pwr-v', gv('th_el_pwr').toFixed(0));
+  sv('th_eps-v', eps.toFixed(2));
+  sv('th_temp-v', T_hot.toFixed(0));
+
+  const D2D_budget_W = totalP * allocPct/100;
+
+  function paeAtObo(obo_dB){
+    const bo = Math.pow(10, -obo_dB/10);
+    return peakPae * bo * Math.sqrt(1+bo);
+  }
+
+  const freq = gv('freq_sel');
+  const lam = C/freq;
+  const eta_ap = 0.6;
+
+  const scenarios = [
+    {name:'No DPD, no shaper', obo_net: obo},
+    {name:'Shaper only', obo_net: Math.max(0,obo-shaper)},
+    {name:'Shaper + DPD', obo_net: Math.max(0,obo-shaper-dpd)},
+  ];
+
+  let rows = [];
+  let radiatorAreas = [];
+  scenarios.forEach(s=>{
+    const pae = paeAtObo(s.obo_net);
+    const rfOut_W = D2D_budget_W * pae;
+    const heat_W = D2D_budget_W - rfOut_W;
+    const nEl = rfOut_W / elPwr_W;
+    const A_array = nEl * Math.pow(lam/2,2);
+    const G_dBi = 10*Math.log10(eta_ap*4*Math.PI*A_array/(lam*lam));
+    const A_rad = heat_W / (eps*sigma*(Math.pow(T_hot,4)-Math.pow(T_sink,4)));
+    radiatorAreas.push(A_rad);
+    rows.push({...s, pae, rfOut_W, heat_W, nEl, A_array, G_dBi, A_rad});
+  });
+
+  // KPIs — highlight the Shaper+DPD scenario
+  const best = rows[2], worst = rows[0];
+  el2('thermal-kpis').innerHTML = `
+    <div class="kpi"><div class="kv">${D2D_budget_W.toFixed(0)} W</div><div class="kl">D2D RF payload DC budget</div></div>
+    <div class="kpi"><div class="kv bad">${worst.A_rad.toFixed(2)} m²</div><div class="kl">Radiator (no DPD)</div></div>
+    <div class="kpi"><div class="kv ok">${best.A_rad.toFixed(2)} m²</div><div class="kl">Radiator (Shaper+DPD)</div></div>
+    <div class="kpi"><div class="kv">${(worst.A_rad/best.A_rad).toFixed(1)}x</div><div class="kl">Radiator area reduction</div></div>
+  `;
+
+  el2('thermal-table').innerHTML = `
+    <tr><th>Scenario</th><th>PAE</th><th>RF out</th><th>Heat</th><th>Elements</th><th>Array area</th><th>Gain</th><th>Radiator</th></tr>
+    ${rows.map(r=>`
+    <tr class="${r.name==='Shaper + DPD'?'hl':''}">
+      <td>${r.name}</td>
+      <td>${(r.pae*100).toFixed(1)}%</td>
+      <td>${r.rfOut_W.toFixed(0)} W</td>
+      <td class="${r.name==='No DPD, no shaper'?'bad':''}">${r.heat_W.toFixed(0)} W</td>
+      <td>${Math.round(r.nEl).toLocaleString()}</td>
+      <td>${r.A_array.toFixed(1)} m²</td>
+      <td>${r.G_dBi.toFixed(1)} dBi</td>
+      <td class="${r.name==='Shaper + DPD'?'ok':''}">${r.A_rad.toFixed(2)} m²</td>
+    </tr>`).join('')}
+  `;
+
+  drawThermalChart(rows);
+
+  el2('thermal-insight').innerHTML =
+    `<b>Realistic power budget: ${totalP.toFixed(0)}W total satellite, ${allocPct}% to D2D RF = ${D2D_budget_W.toFixed(0)}W DC.</b><br>
+    Without DPD/shaper: only ${worst.rfOut_W.toFixed(0)}W RF out (${(worst.pae*100).toFixed(0)}% PAE),
+    supporting a ${worst.A_array.toFixed(1)}m² array at ${worst.G_dBi.toFixed(1)}dBi — and needs a
+    <b>${worst.A_rad.toFixed(2)}m² radiator</b> for ${worst.heat_W.toFixed(0)}W of waste heat.<br>
+    With Shaper+DPD: ${best.rfOut_W.toFixed(0)}W RF out (${(best.pae*100).toFixed(0)}% PAE) — <b>${(best.rfOut_W/worst.rfOut_W).toFixed(1)}x more RF power
+    from the same DC budget</b> — supporting a ${best.A_array.toFixed(1)}m² array at ${best.G_dBi.toFixed(1)}dBi,
+    while needing only a <b>${best.A_rad.toFixed(2)}m² radiator</b> (${(worst.A_rad/best.A_rad).toFixed(1)}x smaller).<br>
+    <b>This reframes DPD's value at the satellite level:</b> it is not just an efficiency optimization —
+    it determines whether a given power/thermal budget can support a useful array size and EIRP at all,
+    and directly drives satellite mass, structural complexity, and cost via radiator area.`;
+}
+
+function drawThermalChart(rows){
+  const cv = el2('thermal-canvas');
+  cv.width = cv.parentElement.clientWidth || 600; cv.height = 200;
+  const cx = cv.getContext('2d');
+  cx.fillStyle = '#fff'; cx.fillRect(0,0,cv.width,cv.height);
+  const pad = {l:60,r:30,t:20,b:40}, W = cv.width-pad.l-pad.r, H = cv.height-pad.t-pad.b;
+
+  const maxRad = Math.max(...rows.map(r=>r.A_rad)) * 1.15;
+  const barW = W/(rows.length*2);
+  const colors = ['#e05252','#f5a623','#1a5c35'];
+
+  rows.forEach((r,i)=>{
+    const x = pad.l + (i+0.5)*(W/rows.length) - barW/2;
+    const h = (r.A_rad/maxRad)*H;
+    const y = pad.t + H - h;
+    cx.fillStyle = colors[i];
+    cx.fillRect(x,y,barW,h);
+    cx.fillStyle = '#333'; cx.font='11px sans-serif'; cx.textAlign='center';
+    cx.fillText(r.A_rad.toFixed(2)+'m²', x+barW/2, y-6);
+    cx.font='9px sans-serif'; cx.fillStyle='#666';
+    cx.fillText(r.name, x+barW/2, pad.t+H+16);
+    cx.textAlign='left';
+  });
+
+  // Y axis
+  cx.strokeStyle='#ddd'; cx.lineWidth=0.5;
+  for(let v=0; v<=maxRad; v+=Math.ceil(maxRad/4*10)/10){
+    const y = pad.t+H-(v/maxRad)*H;
+    cx.beginPath(); cx.moveTo(pad.l,y); cx.lineTo(pad.l+W,y); cx.stroke();
+    cx.fillStyle='#aaa'; cx.font='9px sans-serif';
+    cx.fillText(v.toFixed(1)+'m²', pad.l-42, y+3);
+  }
+  cx.save(); cx.translate(14,pad.t+H/2); cx.rotate(-Math.PI/2);
+  cx.fillStyle='#555'; cx.font='10px sans-serif'; cx.textAlign='center';
+  cx.fillText('Radiator area needed',0,0); cx.restore();
+}
+
+window.addEventListener('load',()=>{compute(); computeDPD(); computeCW(); computeThermal();});
+window.addEventListener('resize',()=>compute());
+</script>
+</body>
+</html>
