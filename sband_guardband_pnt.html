@@ -80,8 +80,9 @@ canvas{border:1px solid var(--bd);border-radius:4px;background:#fff;display:bloc
     <button class="tnav" onclick="navTo('guardband')">&#9313; Guard Band</button>
     <button class="tnav" onclick="navTo('cw')">&#9314; CW Multi-Use</button>
     <button class="tnav" onclick="navTo('pnt')">&#9315; PNT Signal Design</button>
-    <button class="tnav" onclick="navTo('linkbudget')">&#9316; Link Budget</button>
-    <button class="tnav" onclick="navTo('market')">&#9317; Market Context</button>
+    <button class="tnav" onclick="navTo('secure')">&#9316; Secure Tier</button>
+    <button class="tnav" onclick="navTo('linkbudget')">&#9317; Link Budget</button>
+    <button class="tnav" onclick="navTo('market')">&#9318; Market Context</button>
   </div>
 </div>
 
@@ -268,9 +269,102 @@ Structure:  Code-division (CDMA), not frequency-division
 </div>
 </div>
 
+<!-- ══ SEC 5: SECURE / DUAL-TIER ARCHITECTURE ═══════════════════════════ -->
+<div class="sec" id="secure">
+<div class="sec-lbl">Section 5 &middot; Secure Tier</div>
+<div class="sec-title">A Capable PNT Signal Is Dual-Use by Default &mdash; Unless Designed Otherwise</div>
+<div class="sec-sub">
+  Any PNT signal good enough to be useful to civilian and commercial users is, by the
+  same physics, useful to anyone else who can point a receiver at it &mdash; including a
+  capable adversary. GPS solved exactly this problem decades ago with a proven,
+  publicly-documented architecture. This section works through how the same guard-band
+  signal design extends to that architecture, and where the real limits of "selective
+  denial" actually sit.
+</div>
+
+<div class="card">
+  <div class="card-hdr">Three separate properties, not one</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><th>Property</th><th>Question it answers</th><th>Requires secrecy?</th></tr>
+      <tr><td><b>Jam resistance</b></td><td>Can an adversary drown out the signal?</td><td>No &mdash; processing gain, power, frequency diversity</td></tr>
+      <tr><td><b>Spoof resistance</b></td><td>Can an adversary fake a convincing signal?</td><td>No &mdash; public-key signatures verify authenticity openly</td></tr>
+      <tr class="hl"><td><b>Exclusive access</b></td><td>Can an adversary <em>use</em> the real signal for their own precision guidance?</td><td><b>Yes &mdash; the only property that fundamentally requires a secret key</b></td></tr>
+    </table>
+    <div class="footnote">Conflating these three is the most common mistake in "secure PNT" discussions &mdash; the first two can be solved on a fully open, public signal. Only the third requires restricting who can use it.</div>
+  </div>
+</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr">The proven template: GPS's own dual-tier design</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><th></th><th>Civilian tier</th><th>Secure tier</th></tr>
+      <tr><td>Access</td><td>Open, unencrypted</td><td>Encrypted spreading code</td></tr>
+      <tr><td>Usable by</td><td>Anyone with a receiver</td><td>Only holders of the cryptographic key</td></tr>
+      <tr><td>Spectral placement</td><td>Primary lobe</td><td>Placed at nulls of the civilian code &mdash; minimal mutual interference</td></tr>
+      <tr><td>Power</td><td>Standard</td><td>Substantially higher &mdash; added jam margin</td></tr>
+    </table>
+    <div class="footnote">This is not a hypothetical &mdash; it is the actual, currently-operational GPS architecture (civilian C/A code alongside the military M-Code signal).</div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">Authentication doesn't require restricting access</div>
+  <div class="card-body">
+    <p style="line-height:1.9">Modern civil-signal authentication schemes (Chimera for GPS, OSNMA for
+    Galileo) digitally sign the navigation message and cryptographically bind it to the
+    spreading code, so a spoofer cannot fabricate a convincing signal &mdash; while the
+    verification key remains <b>public</b>. Only the signing key, held by the operator,
+    is secret.</p>
+    <div class="mono">Open civilian tier + public-key signature:
+  Anyone can USE the signal
+  Anyone can VERIFY it's authentic
+  Nobody except the operator can FORGE it
+  → spoof-resistant without restricting access</div>
+  </div>
+</div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Extending the guard-band design: a reserved secure tier</div>
+  <div class="card-body">
+    <div class="spectrum-bar">
+      <div class="spectrum-seg" style="left:0;width:76%;background:var(--blue)">15 MHz standard NR channel (D2D data)</div>
+      <div class="spectrum-seg" style="left:76%;width:16%;background:var(--purple)">Open civilian PNT tier</div>
+      <div class="spectrum-seg" style="left:92%;width:8%;background:#7a1f3d">Reserved secure tier</div>
+    </div>
+    <div class="spectrum-labels">
+      <span>Lower license edge</span><span>&mdash;</span><span>Upper license edge</span>
+    </div>
+    <p style="line-height:1.9;margin-top:10px">The same guard-band margin that carries the open civilian ranging code
+    (Section 4) can reserve a further slice &mdash; spectrally placed the way M-Code sits at
+    the nulls of GPS's civilian code &mdash; for a future encrypted tier. The waveform and
+    spectral architecture can be built into a commercial system today; the tier stays
+    unpopulated (or carries only a placeholder/authentication capability) until loaded
+    with government-issued key material through proper channels.</p>
+  </div>
+</div>
+
+<div class="insight">
+<b>The honest limit on "selective denial":</b> a broadcast RF signal cannot distinguish
+one receiver from another in real time &mdash; there is no waveform-level way to deny a
+named adversary while preserving service for civilians and allies standing right next
+to them. Genuine selective access is a <b>key-management</b> question, resolved before
+the fact by who is issued cryptographic key material and when that access is revoked
+&mdash; not a real-time RF toggle. Regional power reduction is the blunter tool actually
+available for real-time adjustment, but it denies an entire geographic footprint,
+friend and civilian included &mdash; this was, in essence, GPS's deprecated Selective
+Availability policy (discontinued 2000). A commercial LEO operator can architect the
+reserved spectral tier and the authentication framework; actual exclusive-access key
+issuance is a government function, not something a commercial constellation operator
+does unilaterally.
+</div>
+</div>
+
 <!-- ══ SEC 5: LINK BUDGET ═══════════════════════════════════════════════ -->
 <div class="sec" id="linkbudget">
-<div class="sec-lbl">Section 5 &middot; Link Budget &amp; Geometry</div>
+<div class="sec-lbl">Section 6 &middot; Link Budget &amp; Geometry</div>
 <div class="sec-title">Does It Close? Yes, With Very Large Margin</div>
 <div class="sec-sub">
   Two independent questions: does the ranging signal reach the ground with enough SNR
@@ -316,7 +410,7 @@ makes fast, accurate ranging-based PNT geometrically realistic as a side capabil
 
 <!-- ══ SEC 6: MARKET ════════════════════════════════════════════════════ -->
 <div class="sec" id="market">
-<div class="sec-lbl">Section 6 &middot; Market Context</div>
+<div class="sec-lbl">Section 7 &middot; Market Context</div>
 <div class="sec-title">Resilient PNT Is a Real, Fast-Growing, Policy-Backed Category</div>
 <div class="sec-sub">
   This isn't a speculative use case. GNSS jamming and spoofing have grown sharply,
