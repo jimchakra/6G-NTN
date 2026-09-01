@@ -343,6 +343,7 @@ select{background:#eef2fa;color:var(--text);border:1px solid var(--border);
   <div class="tab" onclick="showTab('saving')">PA Power Saving</div>
   <div class="tab" onclick="showTab('power')">Power at MCS</div>
   <div class="tab" onclick="showTab('notes')">DPD Notes</div>
+  <div class="tab" onclick="showTab('scheduling')">Beam Scheduling</div>
 </div>
 
 <div class="content">
@@ -398,6 +399,53 @@ select{background:#eef2fa;color:var(--text);border:1px solid var(--border);
 <!-- DPD Notes tab -->
 <div class="tab-content" id="tab-notes">
   <div id="notes-content" style="max-width:820px"></div>
+</div>
+
+<div class="tab-content" id="tab-scheduling">
+  <div style="max-width:840px">
+    <div style="font-size:9px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Multi-Beam Scheduling — Band-Agnostic</div>
+    <p style="font-size:12px;color:var(--sub);line-height:1.8;margin-bottom:14px">This analysis applies equally to Ka-band and S-band DBF arrays &mdash;
+    the frequency-reuse combinatorics, ground/satellite split, and DPD-density mechanism don't depend on carrier frequency.</p>
+
+    <div style="background:#f8faff;border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">The two coupled problems</div>
+      <table class="budget-table">
+        <tr><td class="param" style="width:35%"><b>Frequency-reuse coordination</b></td><td class="val" style="text-align:left">Every same-frequency beam pair must clear a minimum angular separation (no two same-color beams within ~10&deg;) &mdash; O(N&sup2;) pairwise checks naively</td></tr>
+        <tr><td class="param"><b>Joint power allocation</b></td><td class="val" style="text-align:left">All active beams draw from one shared DC/thermal budget &mdash; O(N<sup>1.5</sup>) iterative convergence naively</td></tr>
+      </table>
+    </div>
+
+    <div style="background:#f8faff;border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">Ground/satellite split — an O-RAN-precedented refinement</div>
+      <p style="font-size:11.5px;line-height:1.8;margin-bottom:8px">Base frequency-reuse pattern and QoS-weighted allocation targets are geometry- and traffic-driven, not real-time-channel-driven &mdash;
+      computable on the <b>ground segment</b> with real lead time, uploaded via feeder link. Structurally the same split as O-RAN's Non-RT RIC (policy, &gt;1s) vs. Near-RT RIC (fast local control, 10ms&ndash;1s).</p>
+      <p style="font-size:11.5px;line-height:1.8;margin-bottom:10px">What stays on-satellite is the <b>residual</b>: reacting to what the ground baseline gets wrong (rain fade, real vs. predicted demand, interference).
+      Because frequency-reuse conflict checking is fundamentally local (bounded angular separation), the residual problem scales roughly <b>linearly</b> in N, not quadratically.</p>
+      <table class="budget-table">
+        <tr><td class="cat" colspan="3">N beams / full problem / residual (ground-assisted, est.)</td></tr>
+        <tr><td class="param">32</td><td class="val">19.9 &mu;s</td><td class="val pos">~1.1 &mu;s</td></tr>
+        <tr><td class="param">64</td><td class="val">71.7 &mu;s</td><td class="val pos">~2.0 &mu;s</td></tr>
+        <tr><td class="param">128</td><td class="val">263.5 &mu;s</td><td class="val pos">~4.3 &mu;s</td></tr>
+        <tr><td class="param">256</td><td class="val">986.7 &mu;s</td><td class="val pos">~9.7 &mu;s</td></tr>
+        <tr><td class="param">512</td><td class="val bold">~3.75 ms</td><td class="val pos">~23.2 &mu;s</td></tr>
+      </table>
+      <p style="font-size:10px;color:var(--dim);line-height:1.6;margin-top:8px">Illustrative model (~8% beams deviating at any moment, ~12-beam local neighborhood) &mdash; not measured/sourced.
+      Qualitative conclusion (linear beats quadratic once checking is local) is the robust part.</p>
+      <p style="font-size:11px;line-height:1.7;margin-top:8px"><b>Honest implication:</b> once the on-satellite problem shrinks this much, the case for a learned (NN) scheduler for this specific piece weakens &mdash;
+      residual rule-based correction may already be fast enough even at high beam counts.</p>
+    </div>
+
+    <div style="background:#f8faff;border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">How DPD affects achievable beam density</div>
+      <p style="font-size:11.5px;line-height:1.8;margin-bottom:8px"><b>Primary — spectral/frequency density:</b> better DPD linearization reduces ACLR/spectral regrowth,
+      requiring less guard-band between adjacent-frequency beams &mdash; more beams' worth of bandwidth fit the same spectrum allocation. DPD's main, well-grounded beam-density lever.</p>
+      <p style="font-size:11.5px;line-height:1.8;margin-bottom:8px"><b>Secondary — spatial/co-frequency reuse:</b> for same-frequency beams, interference is dominated by antenna spatial
+      sidelobe level &mdash; primarily an antenna/beamforming characteristic, not PA-linearity. DPD gives a smaller, secondary benefit here.</p>
+      <p style="font-size:11.5px;line-height:1.8">Connects to the ground/satellite split above: since the baseline reuse pattern is computed on ground, DPD's ACLR
+      improvement directly benefits <i>that computation</i> &mdash; a better-linearized system lets ground start from a denser baseline, needing less interference margin per beam.
+      DPD's beam-density benefit lands in the slow/ground-computed tier, not the fast/satellite-side residual correction.</p>
+    </div>
+  </div>
 </div>
 
 </div><!-- content -->
@@ -892,7 +940,7 @@ function renderNotes(){
 }
 
 function showTab(name){
-  const names=['evm','mcs','budget','saving','power','notes'];
+  const names=['evm','mcs','budget','saving','power','notes','scheduling'];
   document.querySelectorAll('.tab').forEach((t,i)=>{
     t.classList.toggle('active',names[i]===name);
   });

@@ -535,6 +535,62 @@ power allocation) in a fixed number of matrix operations, largely independent of
 combinatorially hard the underlying assignment problem is. Same structural advantage as
 GPU-based scheduling for terrestrial systems &mdash; a different N&sup2; being defeated.
 </div>
+
+<div class="card">
+  <div class="card-hdr">Ground/satellite scheduling split &mdash; a stronger refinement</div>
+  <div class="card-body">
+    <p style="line-height:1.9">The base frequency-reuse pattern and QoS-weighted allocation targets are
+    largely geometry- and traffic-driven, not real-time-channel-driven &mdash; computable on the
+    <b>ground segment</b>, with real lead time and no round-trip channel dependency, then uploaded
+    via the feeder link. This is structurally the same split O-RAN already uses between its
+    Non-RT RIC (policy, &gt;1s timescale) and Near-RT RIC (fast local control, 10ms&ndash;1s) &mdash;
+    a proven industry precedent, not a novel invention.</p>
+    <p style="line-height:1.9">What must stay on-satellite is the <b>residual</b>: reacting to what the
+    ground-computed baseline gets wrong &mdash; rain fade, real vs. predicted demand, unexpected
+    interference. Critically, frequency-reuse conflict checking is fundamentally <i>local</i>
+    (bounded by real angular-separation constraints, e.g. no same-color beams within
+    ~10&deg;) &mdash; so the on-satellite residual problem scales roughly <b>linearly</b> in N,
+    not quadratically, once only the deviating subset of beams needs local re-checking.</p>
+    <table class="tbl">
+      <tr><th>N beams</th><th>Full problem (no offload)</th><th>Residual (ground-assisted, est.)</th></tr>
+      <tr><td>32</td><td>19.9 &mu;s</td><td>~1.1 &mu;s</td></tr>
+      <tr><td>64</td><td>71.7 &mu;s</td><td>~2.0 &mu;s</td></tr>
+      <tr><td>128</td><td>263.5 &mu;s</td><td>~4.3 &mu;s</td></tr>
+      <tr><td>256</td><td>986.7 &mu;s</td><td>~9.7 &mu;s</td></tr>
+      <tr><td>512</td><td>~3.75 ms</td><td>~23.2 &mu;s</td></tr>
+    </table>
+    <div class="footnote">Illustrative model: ~8% of beams deviating from baseline at any moment,
+    each re-checked against a physically-bounded local neighborhood (~12 beams) rather than the
+    full array. Not measured/sourced figures &mdash; the qualitative conclusion (linear beats
+    quadratic once checking is local) is the robust part; exact crossover depends on real
+    deviation-rate and neighborhood-size data.</div>
+    <div class="footnote" style="margin-top:6px"><b>Honest implication:</b> once the on-satellite
+    problem shrinks this much, the case for a learned (NN) scheduler for this specific piece
+    weakens &mdash; residual rule-based correction may already be fast enough even at high beam
+    counts. Ground offload changes not just problem size but which approach is actually needed.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">How DPD affects achievable beam density</div>
+  <div class="card-body">
+    <p style="line-height:1.9"><b>Primary mechanism &mdash; spectral/frequency density:</b> better
+    DPD linearization reduces ACLR/spectral regrowth, requiring less guard-band between
+    adjacent-frequency beams &mdash; more beams' worth of channel bandwidth fits in the same total
+    spectrum allocation. This is DPD's main, well-grounded beam-density lever.</p>
+    <p style="line-height:1.9"><b>Secondary mechanism &mdash; spatial/co-frequency reuse density:</b>
+    for beams sharing the same frequency, interference is dominated by the antenna pattern's
+    spatial sidelobe level &mdash; primarily an antenna/beamforming design characteristic, not a
+    PA-linearity one. DPD gives a smaller, secondary benefit here (less regrowth energy spilling
+    into the shared channel), but this is not DPD's primary lever.</p>
+    <p style="line-height:1.9">Connecting to the ground/satellite split above: since the baseline
+    frequency-reuse pattern is computed on ground, DPD's ACLR improvement directly benefits
+    <i>that specific computation</i> &mdash; a better-linearized system lets the ground-side
+    optimizer start from a denser baseline pattern, since less interference margin is needed per
+    beam from the outset. DPD's beam-density benefit lands in the slow/ground-computed tier, not
+    the fast/satellite-side residual correction.</p>
+  </div>
+</div>
 </div>
 
 <!-- ══ SEC 8: SUMMARY ════════════════════════════════════════════════════ -->
