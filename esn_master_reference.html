@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESN Master Reference — Everything Consolidated</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--bd:#d0d8e4;
+  --navy:#1e3a5f;--blue:#2C5282;--amber:#C05E00;
+  --green:#1a5c35;--red:#8b1a1a;--purple:#6b21a8;
+  --tx:#111;--sub:#4a5568;--dim:#6b7a99;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--sans);font-size:13px;line-height:1.7;color:var(--tx)}
+.hdr{background:var(--navy);padding:20px 28px;border-top:3px solid var(--amber)}
+.hdr-title{font-size:17px;font-weight:700;color:#fff}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:4px}
+.nav{position:sticky;top:0;background:rgba(248,247,244,.97);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--bd);z-index:100;display:flex;overflow-x:auto}
+.nav a{padding:10px 13px;font-size:10.5px;color:#333;text-decoration:none;font-weight:600;
+  white-space:nowrap;border-bottom:2px solid transparent}
+.nav a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+.main{max-width:1060px;margin:0 auto;padding:0 24px 60px}
+.sec{padding:28px 0 14px;border-bottom:1px solid var(--bd)}
+.sec:last-child{border-bottom:none}
+.sec-lbl{font-size:9.5px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.sec-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.sec-sub{font-size:12.5px;color:#333;max-width:800px;margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.card-hdr{padding:9px 16px;background:#fff8ee;border-bottom:1px solid var(--bd);
+  font-size:9.5px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em}
+.card-body{padding:14px 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th{padding:6px 9px;text-align:left;color:var(--sub);font-weight:600;border-bottom:1px solid var(--bd);background:#faf8f4}
+.tbl td{padding:6px 9px;border-bottom:1px solid #eef2fa}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.hl td{background:#fff8ee;font-weight:700}
+.ok{color:var(--green)!important;font-weight:700}
+.tag{display:inline-block;font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:3px;margin-right:4px}
+.tag-proven{background:#eef8f0;color:var(--green);border:1px solid #b8d9c4}
+.tag-est{background:#fff3e6;color:var(--amber);border:1px solid #f0c896}
+.tag-ask{background:#fdeeee;color:var(--red);border:1px solid #e8b8b8}
+.insight{background:#f6f3fc;border:1px solid #d8c8f0;border-left:4px solid var(--purple);
+  border-radius:4px;padding:10px 14px;font-size:12px;line-height:1.8;margin-top:8px}
+.warn{background:#fdeeee;border:1px solid #e8b8b8;border-left:4px solid var(--red);
+  border-radius:4px;padding:10px 14px;font-size:12px;line-height:1.8;margin-top:8px}
+.mono{font-family:monospace;font-size:11px;background:#f5f7fa;padding:9px 13px;
+  border-radius:4px;border:1px solid var(--bd);white-space:pre;overflow-x:auto;margin-top:6px}
+svg{display:block;width:100%;height:auto}
+.checklist{list-style:none}
+.checklist li{padding:6px 0 6px 24px;position:relative;font-size:12px}
+.checklist li:before{content:"\2713";position:absolute;left:0;color:var(--green);font-weight:700}
+.checklist li.ask:before{content:"?";color:var(--red)}
+p{font-size:12.5px;line-height:1.8;color:#333}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">ESN Master Reference</div>
+  <div class="hdr-sub">Everything consolidated &mdash; architecture, credibility, hardware detail, honest calibration</div>
+</div>
+
+<div class="nav">
+  <a href="#what">What Is ESN</a>
+  <a href="#credibility">Real-World Credibility</a>
+  <a href="#hardware">Hardware Architecture</a>
+  <a href="#n8">Concrete N=8 Example</a>
+  <a href="#params">Key Parameters Q&amp;A</a>
+  <a href="#pruning">Tiered Pruning</a>
+  <a href="#comparison">DPD Options Compared</a>
+  <a href="#checklist">Calibration Checklist</a>
+</div>
+
+<div class="main">
+
+<!-- ═══ WHAT IS ESN ═══ -->
+<div class="sec" id="what">
+<div class="sec-lbl">Foundation</div>
+<div class="sec-title">What ESN Actually Is</div>
+<div class="sec-sub">Echo State Network &mdash; a form of Reservoir Computing. Two parts, only one of which is ever trained.</div>
+
+<div class="warn">
+<b>Important: two variants, not one &mdash; don't conflate them.</b><br>
+<b>General/standard ESN:</b> reservoir has a sparse, RANDOM WEIGHT MATRIX (real numerical values,
+fixed/never trained, but genuine multiply-accumulate cost, reduced by sparsity not eliminated).
+This is almost certainly what the cited academic papers (MIMO-OFDM+PA, satellite equalization) use.<br>
+<b>Integer ESN / cyclic-shift (Kleyko et al.):</b> a further, more aggressive hardware
+simplification that REPLACES the weight matrix with a trivial cyclic shift &mdash; near-zero
+reservoir multiply cost. This is what the diagrams below specifically show &mdash; a real, cited
+technique, but a SPECIFIC variant, not "how ESN works" in general. <b>Which one applies to a real
+implementation is a genuine open question &mdash; ask, don't assume.</b><br><br>
+<b>Performance evidence (found, verified):</b> the paper directly addresses whether cyclic-shift
+costs performance vs. general ESN &mdash; "the use of the cyclic shift in place of a random
+recurrent weight matrix does NOT limit intESN's ability to produce linearly separable
+representations," with a dedicated experimental section comparing storage/memory capability
+between the two. Tested across memorization, time-series classification, and dynamic-process
+learning (including Mackey-Glass prediction): "satisfactory approximation of conventional ESN
+performance," "minimal performance loss." Honestly calibrated by the authors themselves &mdash;
+not claimed identical, but the gap is described as small across tested tasks.
+</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr">Reservoir</div>
+  <div class="card-body">
+    <p>Fixed, never trained on-chip &mdash; either a sparse random weight matrix (general ESN,
+    some real multiply cost) or a cyclic-shift permutation (Integer ESN, near-zero cost). Naturally
+    captures PA memory effects (thermal, bias-circuit dynamics) via its recurrent dynamics. The
+    diagrams in this document show the <b>cyclic-shift variant specifically</b>.</p>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr">Readout</div>
+  <div class="card-body">
+    <p>Simple <b>linear</b> layer &mdash; the <b>only</b> trained part, via cheap least-squares
+    regression, feasible on a small Cortex-M core. Identical in both variants &mdash; this is
+    reliably where the trained arithmetic lives either way.</p>
+  </div>
+</div>
+</div>
+
+<div class="mono">Input x[n] &rarr; [FIXED reservoir, EITHER sparse-random-matrix OR cyclic-shift] &rarr; state vector
+             &rarr; [LINEAR readout, TRAINED] &rarr; predistorted output</div>
+
+<div class="insight">
+<b>Why this architecture exists at all:</b> standard recurrent neural networks are expensive to
+train (backpropagation-through-time) &mdash; doesn't fit a real-time, power-constrained satellite
+payload. Reservoir computing sidesteps this: make the recurrent part big and RANDOM (never needs
+training), make only a tiny LINEAR output layer trainable. Fitting a linear layer is just
+least-squares regression.
+</div>
+</div>
+
+<!-- ═══ CREDIBILITY ═══ -->
+<div class="sec" id="credibility">
+<div class="sec-lbl">Section 1</div>
+<div class="sec-title">Real-World Credibility &mdash; Not a Fringe Idea</div>
+<div class="sec-sub">ESN/reservoir computing originated ~2001 (Jaeger). Substantial, serious literature since,
+across multiple domains.</div>
+
+<div class="card">
+  <div class="card-hdr">Directly on-point <span class="tag tag-proven">VERIFIED</span></div>
+  <div class="card-body">
+    <p><b>"Where Reservoir Computing Meets MIMO-OFDM"</b> &mdash; IEEE Transactions on Neural
+    Networks and Learning Systems, 2018. Keywords explicitly include: echo state network, MIMO,
+    nonlinear channel, OFDM, <b>power amplifier</b>, reservoir. Simulation results: ESN-based
+    scheme outperforms conventional symbol detection for nonlinear MIMO-OFDM.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Satellite-specific precedent <span class="tag tag-proven">VERIFIED</span></div>
+  <div class="card-body">
+    <p><b>"Equalization of the Non-Linear Satellite Communication Channel with an Echo State
+    Network"</b> &mdash; ESN applied specifically to satellite channel nonlinearity. Real
+    precedent in the satellite domain, not just terrestrial.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Hardware-efficiency engineering <span class="tag tag-proven">VERIFIED</span></div>
+  <div class="card-body">
+    <p><b>"Integer Echo State Networks: Efficient Reservoir Computing for Digital Hardware"</b>
+    &mdash; IEEE TNNLS 2022, UC Berkeley-affiliated. Proposes &lt;8-bit integer reservoir state
+    (vs. 32-bit float), replacing matrix-multiply update with an efficient <b>cyclic-shift</b>
+    operation. This is the direct basis for the hardware architecture in this document.</p>
+  </div>
+</div>
+
+<div class="warn">
+<b>What remains unconfirmed:</b> the original "heard it from a 3GPP debrief, Samsung, Rel-20"
+claim &mdash; searched directly, found no confirmation. What's above is different and, if
+anything, stronger: real peer-reviewed literature directly on PA/OFDM/satellite topics, not a
+specific 3GPP contribution. Don't cite the 3GPP/Samsung claim specifically; cite the papers above instead.
+</div>
+</div>
+
+<!-- ═══ HARDWARE ARCHITECTURE ═══ -->
+<div class="sec" id="hardware">
+<div class="sec-lbl">Section 2</div>
+<div class="sec-title">Detailed Hardware Architecture</div>
+<div class="sec-sub">Two clock domains &mdash; fast signal path, slow training path.</div>
+
+<div class="card"><div class="card-body">
+<svg viewBox="0 0 940 480">
+  <text x="10" y="20" font-size="12" font-weight="700" fill="#111">SIGNAL PATH — full sample rate, inline with PA drive</text>
+
+  <!-- Input -->
+  <rect x="10" y="40" width="90" height="50" rx="5" fill="#eef4ff" stroke="#2C5282"/>
+  <text x="55" y="60" font-size="10" text-anchor="middle">x[n]</text>
+  <text x="55" y="74" font-size="8.5" text-anchor="middle" fill="#666">PA input</text>
+  <text x="55" y="102" font-size="8" text-anchor="middle" fill="#999">~14-16 bit</text>
+
+  <line x1="100" y1="65" x2="140" y2="65" stroke="#111" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- Reservoir: cyclic shift + integer state -->
+  <rect x="140" y="30" width="220" height="130" rx="6" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+  <text x="250" y="50" font-size="11" text-anchor="middle" font-weight="700" fill="#6b21a8">RESERVOIR</text>
+  <text x="250" y="66" font-size="9" text-anchor="middle" fill="#6b21a8">N=32-128 integer neurons</text>
+
+  <rect x="155" y="76" width="90" height="30" rx="4" fill="#fff" stroke="#6b21a8"/>
+  <text x="200" y="95" font-size="8.5" text-anchor="middle">Cyclic shift /</text>
+  <text x="200" y="105" font-size="7.5" text-anchor="middle" fill="#666">(barrel shifter)</text>
+
+  <rect x="255" y="76" width="90" height="30" rx="4" fill="#fff" stroke="#6b21a8"/>
+  <text x="300" y="92" font-size="8.5" text-anchor="middle">Thresholded</text>
+  <text x="300" y="102" font-size="8.5" text-anchor="middle">add (nonlin.)</text>
+
+  <text x="250" y="122" font-size="8" text-anchor="middle" fill="#666">state: &lt;8-bit integers/neuron</text>
+  <text x="250" y="134" font-size="8" text-anchor="middle" fill="#666">NOT a full N&times;N matrix multiply</text>
+  <text x="250" y="148" font-size="8.5" text-anchor="middle" fill="#8b1a1a" font-weight="600">FIXED — never trained on-chip</text>
+
+  <line x1="360" y1="95" x2="400" y2="95" stroke="#111" stroke-width="1.5" marker-end="url(#a)"/>
+  <text x="380" y="85" font-size="7.5" fill="#666" text-anchor="middle">state vec</text>
+
+  <!-- Readout MAC array -->
+  <rect x="400" y="55" width="150" height="80" rx="6" fill="#eef8f0" stroke="#1a5c35" stroke-width="1.5"/>
+  <text x="475" y="75" font-size="11" text-anchor="middle" font-weight="700" fill="#1a5c35">READOUT</text>
+  <text x="475" y="90" font-size="9" text-anchor="middle" fill="#1a5c35">N-tap MAC array</text>
+  <text x="475" y="104" font-size="8" text-anchor="middle" fill="#666">y[n] = &Sigma; w_i &middot; state_i</text>
+  <text x="475" y="120" font-size="8" text-anchor="middle" fill="#8b1a1a" font-weight="600">weights: TRAINED</text>
+
+  <line x1="550" y1="95" x2="590" y2="95" stroke="#111" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- Output -->
+  <rect x="590" y="65" width="100" height="60" rx="5" fill="#fff3e6" stroke="#C05E00"/>
+  <text x="640" y="88" font-size="10" text-anchor="middle">predistorted</text>
+  <text x="640" y="102" font-size="10" text-anchor="middle">drive signal</text>
+  <text x="640" y="116" font-size="8" text-anchor="middle" fill="#666">&rarr; PA input</text>
+
+  <!-- Training path, separate -->
+  <text x="10" y="220" font-size="12" font-weight="700" fill="#111">TRAINING PATH — periodic (~100ms), separate cadence</text>
+
+  <rect x="140" y="240" width="150" height="70" rx="6" fill="#fdeeee" stroke="#8b1a1a" stroke-width="1.5"/>
+  <text x="215" y="262" font-size="10" text-anchor="middle" font-weight="700" fill="#8b1a1a">Feedback capture</text>
+  <text x="215" y="278" font-size="8.5" text-anchor="middle">low-rate ADC, actual PA output</text>
+  <text x="215" y="292" font-size="8" text-anchor="middle" fill="#666">lighter than continuous GMP obs. RX</text>
+
+  <line x1="290" y1="275" x2="330" y2="275" stroke="#111" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="330" y="240" width="180" height="70" rx="6" fill="#fdeeee" stroke="#8b1a1a" stroke-width="1.5"/>
+  <text x="420" y="262" font-size="10" text-anchor="middle" font-weight="700" fill="#8b1a1a">Least-squares solve</text>
+  <text x="420" y="278" font-size="8.5" text-anchor="middle">accumulate correlation, solve N&times;N</text>
+  <text x="420" y="292" font-size="8" text-anchor="middle" fill="#666">runs on Cortex-M, NOT custom silicon</text>
+
+  <line x1="510" y1="275" x2="550" y2="275" stroke="#111" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="550" y="240" width="140" height="70" rx="6" fill="#eef8f0" stroke="#1a5c35" stroke-width="1.5"/>
+  <text x="620" y="270" font-size="10" text-anchor="middle" font-weight="700" fill="#1a5c35">Update readout</text>
+  <text x="620" y="286" font-size="9" text-anchor="middle">weights w_i, ~100ms</text>
+
+  <path d="M 620 240 C 620 200, 475 200, 475 135" fill="none" stroke="#1a5c35" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#ag)"/>
+  <text x="540" y="195" font-size="8" fill="#1a5c35" text-anchor="middle">writes new weights into readout MACs</text>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#111" stroke-width="1.5"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#1a5c35" stroke-width="1.5"/></marker>
+  </defs>
+
+  <text x="10" y="360" font-size="10.5" fill="#666">Two clock domains: signal path runs at full RF sample rate (100s of MHz),</text>
+  <text x="10" y="374" font-size="10.5" fill="#666">training path runs at ~10Hz (every 100ms) — orders of magnitude cheaper.</text>
+</svg>
+</div></div>
+
+<table class="tbl">
+<tr><th>Component</th><th>ESN</th><th>Classical GMP</th></tr>
+<tr><td>Inline signal-path compute</td><td>Cyclic shift (~free) + N-tap MAC</td><td>N-tap MAC (comparable, 50-100 coeff)</td></tr>
+<tr><td>Adaptation engine</td><td>Small linear solve, shared Cortex-M</td><td>Adaptive filter fitting, typically per-unit</td></tr>
+<tr class="hl"><td>Feedback hardware</td><td>Low-rate capture, ~100ms cadence</td><td>Dedicated observation RX <b>per sub-array</b></td></tr>
+<tr><td>Scaling to 100s of sub-arrays</td><td>Feedback cost amortized</td><td>Feedback RX cost <b>multiplies per sub-array</b></td></tr>
+</table>
+<div class="insight">
+<b>The real advantage isn't better linearization in isolation</b> &mdash; it's avoiding the
+per-unit feedback-receiver cost that makes classical GMP expensive specifically at
+large sub-array counts. Scaling economics, not a "GMP doesn't work" claim.
+</div>
+</div>
+
+<!-- ═══ N=8 CONCRETE ═══ -->
+<div class="sec" id="n8">
+<div class="sec-lbl">Section 3</div>
+<div class="sec-title">Concrete N=8 Example &mdash; Every Operation Countable</div>
+<div class="sec-sub">Small enough to count literally every multiply and add.</div>
+
+<div class="card"><div class="card-body">
+<svg viewBox="0 0 900 480">
+  <text x="10" y="20" font-size="12" font-weight="700" fill="#111">RESERVOIR — 8 states, arranged as a ring (cyclic shift)</text>
+
+  <!-- 8 registers in a ring -->
+  <!-- center 300,180, radius 110 -->
+  <g id="ring">
+    <!-- positions computed for 8 points around circle -->
+  </g>
+
+  <!-- state boxes at 8 positions -->
+  <!-- angle 0=top, going clockwise -->
+  <g font-size="9" text-anchor="middle">
+    <rect x="270" y="40" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="300" y="60" font-weight="700">s0</text>
+
+    <rect x="370" y="65" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="400" y="85" font-weight="700">s1</text>
+
+    <rect x="405" y="150" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="435" y="170" font-weight="700">s2</text>
+
+    <rect x="370" y="235" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="400" y="255" font-weight="700">s3</text>
+
+    <rect x="270" y="260" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="300" y="280" font-weight="700">s4</text>
+
+    <rect x="170" y="235" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="200" y="255" font-weight="700">s5</text>
+
+    <rect x="135" y="150" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="165" y="170" font-weight="700">s6</text>
+
+    <rect x="170" y="65" width="60" height="34" rx="4" fill="#f6f3fc" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="200" y="85" font-weight="700">s7</text>
+  </g>
+
+  <!-- arrows showing cyclic shift direction, ring, clockwise -->
+  <g stroke="#6b21a8" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+    <path d="M330 57 L370 78"/>
+    <path d="M415 99 L425 148"/>
+    <path d="M430 184 L415 233"/>
+    <path d="M370 252 L330 268"/>
+    <path d="M270 271 L230 252"/>
+    <path d="M175 233 L170 184"/>
+    <path d="M165 148 L175 99"/>
+    <path d="M230 68 L270 57"/>
+  </g>
+  <text x="300" y="175" font-size="9.5" text-anchor="middle" fill="#6b21a8" font-weight="600">cyclic shift:</text>
+  <text x="300" y="188" font-size="9.5" text-anchor="middle" fill="#6b21a8" font-weight="600">s_i &larr; s_(i-1)</text>
+  <text x="300" y="200" font-size="8.5" text-anchor="middle" fill="#666">(rewiring only, ~0 gates)</text>
+
+  <!-- input injection -->
+  <rect x="20" y="30" width="90" height="40" rx="5" fill="#eef4ff" stroke="#2C5282"/>
+  <text x="65" y="50" font-size="10" text-anchor="middle">x[n] input</text>
+  <text x="65" y="63" font-size="8" text-anchor="middle" fill="#666">injected at s0</text>
+  <line x1="110" y1="50" x2="265" y2="50" stroke="#2C5282" stroke-width="1.3" marker-end="url(#ab)"/>
+
+  <!-- threshold note -->
+  <rect x="20" y="380" width="220" height="60" rx="5" fill="#fff3e6" stroke="#C05E00"/>
+  <text x="130" y="400" font-size="9.5" text-anchor="middle" font-weight="700" fill="#7a4000">Nonlinearity: saturating add</text>
+  <text x="130" y="414" font-size="8.5" text-anchor="middle" fill="#7a4000">each s_i clamped to 4-bit range</text>
+  <text x="130" y="427" font-size="8.5" text-anchor="middle" fill="#666">(e.g. -8 to +7) — a few gates/neuron</text>
+
+  <text x="300" y="330" font-size="9.5" text-anchor="middle" fill="#111" font-weight="600">All 8 states: FIXED, never trained on-chip</text>
+  <text x="300" y="345" font-size="8.5" text-anchor="middle" fill="#666">Total reservoir storage: 8 &times; 4-bit = 32 bits</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#6b21a8" stroke-width="1.5"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#2C5282" stroke-width="1.5"/></marker>
+  </defs>
+</svg>
+</div></div>
+<div class="card"><div class="card-body">
+<svg viewBox="0 0 900 320">
+  <text x="10" y="20" font-size="12" font-weight="700" fill="#111">READOUT — 8 real multiplies, this is where actual arithmetic cost lives</text>
+
+  <!-- 8 states feeding 8 multipliers -->
+  <g font-size="9">
+  <!-- state inputs on left -->
+  <text x="30" y="45" text-anchor="middle">s0</text>
+  <text x="30" y="75" text-anchor="middle">s1</text>
+  <text x="30" y="105" text-anchor="middle">s2</text>
+  <text x="30" y="135" text-anchor="middle">s3</text>
+  <text x="30" y="165" text-anchor="middle">s4</text>
+  <text x="30" y="195" text-anchor="middle">s5</text>
+  <text x="30" y="225" text-anchor="middle">s6</text>
+  <text x="30" y="255" text-anchor="middle">s7</text>
+  </g>
+
+  <!-- 8 multiply boxes -->
+  <g font-size="8">
+  <!-- generate 8 multiplier boxes with weight labels -->
+  </g>
+  <g id="mults"></g>
+  <script>
+  </script>
+
+  <!-- Manually place 8 multiplier boxes -->
+  <g stroke="#1a5c35" stroke-width="1.3" fill="#eef8f0">
+    <rect x="70" y="28" width="70" height="26" rx="3"/>
+    <rect x="70" y="58" width="70" height="26" rx="3"/>
+    <rect x="70" y="88" width="70" height="26" rx="3"/>
+    <rect x="70" y="118" width="70" height="26" rx="3"/>
+    <rect x="70" y="148" width="70" height="26" rx="3"/>
+    <rect x="70" y="178" width="70" height="26" rx="3"/>
+    <rect x="70" y="208" width="70" height="26" rx="3"/>
+    <rect x="70" y="238" width="70" height="26" rx="3"/>
+  </g>
+  <g font-size="8.5" text-anchor="middle" fill="#1a5c35">
+    <text x="105" y="45">&times; w0 (TRAINED)</text>
+    <text x="105" y="75">&times; w1 (TRAINED)</text>
+    <text x="105" y="105">&times; w2 (TRAINED)</text>
+    <text x="105" y="135">&times; w3 (TRAINED)</text>
+    <text x="105" y="165">&times; w4 (TRAINED)</text>
+    <text x="105" y="195">&times; w5 (TRAINED)</text>
+    <text x="105" y="225">&times; w6 (TRAINED)</text>
+    <text x="105" y="255">&times; w7 (TRAINED)</text>
+  </g>
+
+  <!-- connecting lines from state to mult -->
+  <g stroke="#999" stroke-width="1">
+    <line x1="40" y1="41" x2="70" y2="41"/>
+    <line x1="40" y1="71" x2="70" y2="71"/>
+    <line x1="40" y1="101" x2="70" y2="101"/>
+    <line x1="40" y1="131" x2="70" y2="131"/>
+    <line x1="40" y1="161" x2="70" y2="161"/>
+    <line x1="40" y1="191" x2="70" y2="191"/>
+    <line x1="40" y1="221" x2="70" y2="221"/>
+    <line x1="40" y1="251" x2="70" y2="251"/>
+  </g>
+
+  <!-- adder tree: 8->4->2->1 -->
+  <g stroke="#1a5c35" stroke-width="1.3">
+    <!-- level 1: 4 adders -->
+    <rect x="200" y="35" width="50" height="24" rx="3" fill="#fff"/>
+    <rect x="200" y="95" width="50" height="24" rx="3" fill="#fff"/>
+    <rect x="200" y="155" width="50" height="24" rx="3" fill="#fff"/>
+    <rect x="200" y="215" width="50" height="24" rx="3" fill="#fff"/>
+  </g>
+  <g font-size="8.5" text-anchor="middle" fill="#1a5c35">
+    <text x="225" y="50">+</text><text x="225" y="110">+</text>
+    <text x="225" y="170">+</text><text x="225" y="230">+</text>
+  </g>
+  <g stroke="#999" stroke-width="1">
+    <line x1="140" y1="41" x2="200" y2="45"/>
+    <line x1="140" y1="71" x2="200" y2="50"/>
+    <line x1="140" y1="101" x2="200" y2="105"/>
+    <line x1="140" y1="131" x2="200" y2="110"/>
+    <line x1="140" y1="161" x2="200" y2="165"/>
+    <line x1="140" y1="191" x2="200" y2="170"/>
+    <line x1="140" y1="221" x2="200" y2="225"/>
+    <line x1="140" y1="251" x2="200" y2="230"/>
+  </g>
+
+  <!-- level 2: 2 adders -->
+  <g stroke="#1a5c35" stroke-width="1.3">
+    <rect x="320" y="65" width="50" height="24" rx="3" fill="#fff"/>
+    <rect x="320" y="185" width="50" height="24" rx="3" fill="#fff"/>
+  </g>
+  <g font-size="8.5" text-anchor="middle" fill="#1a5c35">
+    <text x="345" y="80">+</text><text x="345" y="200">+</text>
+  </g>
+  <g stroke="#999" stroke-width="1">
+    <line x1="250" y1="47" x2="320" y2="72"/>
+    <line x1="250" y1="107" x2="320" y2="82"/>
+    <line x1="250" y1="167" x2="320" y2="192"/>
+    <line x1="250" y1="227" x2="320" y2="202"/>
+  </g>
+
+  <!-- level 3: final adder -->
+  <g stroke="#1a5c35" stroke-width="1.5">
+    <rect x="440" y="125" width="50" height="26" rx="3" fill="#eef8f0"/>
+  </g>
+  <text x="465" y="142" font-size="9.5" text-anchor="middle" fill="#1a5c35" font-weight="700">+</text>
+  <g stroke="#999" stroke-width="1">
+    <line x1="370" y1="77" x2="440" y2="130"/>
+    <line x1="370" y1="197" x2="440" y2="146"/>
+  </g>
+
+  <line x1="490" y1="138" x2="540" y2="138" stroke="#111" stroke-width="1.5" marker-end="url(#ac)"/>
+  <rect x="540" y="115" width="90" height="46" rx="5" fill="#fff3e6" stroke="#C05E00"/>
+  <text x="585" y="135" font-size="10" text-anchor="middle">y[n]</text>
+  <text x="585" y="150" font-size="8" text-anchor="middle" fill="#666">predistorted out</text>
+
+  <text x="700" y="60" font-size="9.5" fill="#111" font-weight="700">Tally, N=8:</text>
+  <text x="700" y="78" font-size="9" fill="#333">8 multipliers (4-bit &times; 8-bit)</text>
+  <text x="700" y="94" font-size="9" fill="#333">7 adders (balanced tree)</text>
+  <text x="700" y="110" font-size="9" fill="#333">Comparable to an 8-tap FIR filter</text>
+  <text x="700" y="126" font-size="9" fill="#8b1a1a" font-weight="600">This is the ONLY real arithmetic</text>
+  <text x="700" y="140" font-size="9" fill="#8b1a1a" font-weight="600">cost in the whole ESN</text>
+
+  <defs>
+    <marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#111" stroke-width="1.5"/></marker>
+  </defs>
+</svg>
+</div></div>
+
+<table class="tbl">
+<tr><th>Block</th><th>Operations</th><th>Comparable to</th></tr>
+<tr><td>Reservoir state storage</td><td>8&times;4-bit registers = 32 bits</td><td>Smaller than one 32-bit accumulator</td></tr>
+<tr><td>Reservoir update (cyclic shift)</td><td>~0 multiplies &mdash; rewiring/mux only</td><td>Essentially free</td></tr>
+<tr><td>Readout multiply</td><td>8 multipliers (4-bit&times;8-bit)</td><td>An 8-tap FIR filter</td></tr>
+<tr><td>Readout adder tree</td><td>7 adders, 3 levels</td><td>Standard balanced tree</td></tr>
+</table>
+<div class="insight">
+<b>The intuition to keep:</b> at N=8, almost the entire hardware cost is the readout &mdash;
+essentially an 8-tap FIR filter. The reservoir (cyclic-shift-based) contributes almost nothing.
+Scaling N up grows readout cost <b>linearly</b> (like a longer FIR), NOT quadratically the way a
+full reservoir matrix-multiply would.
+</div>
+</div>
+
+<!-- ═══ KEY PARAMETERS Q&A ═══ -->
+<div class="sec" id="params">
+<div class="sec-lbl">Section 4</div>
+<div class="sec-title">Key Parameters &mdash; What's Confirmed vs. Estimated vs. Unknown</div>
+
+<div class="card">
+  <div class="card-hdr">The real math &mdash; normal equations</div>
+  <div class="card-body">
+    <div class="mono">S = M&times;N matrix (M time samples &times; N reservoir neurons, each ROW = one sample's state)
+y = M&times;1 vector (target output at each of those same samples)
+
+Minimize ||S&middot;w - y||^2  &rarr;  w = (S^T S)^-1 S^T y   (normal equations)
+Ridge (standard in ESN practice): w = (S^T S + &lambda;I)^-1 S^T y</div>
+    <p style="margin-top:8px"><b>Which x, which target y &mdash; depends on learning architecture:</b>
+    standard DPD practice (Indirect Learning Architecture, ILA) trains using the OBSERVED PA
+    OUTPUT as input and the ORIGINAL desired signal as target, then reuses those weights directly
+    as the pre-distorter. Very likely applies here, but not independently confirmed for this
+    specific system &mdash; <span class="tag tag-ask">ASK YUAN</span>.</p>
+    <p style="margin-top:6px"><b>How many samples (M):</b> needs M &gt;&gt; N for a well-conditioned
+    fit &mdash; rule of thumb 5-10&times; N or more. For N in the tens-to-hundreds range, likely
+    several hundred to a few thousand samples per 100ms window, not the full sample-rate stream.
+    Exact M <span class="tag tag-ask">ASK YUAN</span>.</p>
+    <p style="margin-top:6px"><b>Time alignment (a real prerequisite, not optional):</b> pairing
+    x[n] with the correct y[n] requires knowing the feedback-path delay precisely &mdash; standard
+    solution is cross-correlation: R(&tau;)=&Sigma;x[n]&middot;y[n&minus;&tau;], delay estimate =
+    argmax<sub>&tau;</sub>(R(&tau;)). Coarse (integer-sample) alignment this way, then fine
+    (fractional-sample) alignment via the same Farrow/polyphase interpolator used elsewhere in the
+    DFE chain. Delay can drift with temperature/aging (same physical drivers as other periodic
+    recalibration needs), so likely needs periodic re-verification &mdash; exact cadence
+    <span class="tag tag-ask">ASK YUAN</span>.</p>
+  </div>
+</div>
+
+<table class="tbl">
+<tr><th>Parameter</th><th>Answer</th><th>Status</th></tr>
+<tr><td>Weight (w) update cadence</td><td>~100ms, Cortex-M linear regression</td><td><span class="tag tag-proven">CONFIRMED</span></td></tr>
+<tr><td>Weight computed by onboard controller</td><td>Yes, shared Cortex-M, not custom silicon</td><td><span class="tag tag-proven">CONFIRMED</span></td></tr>
+<tr><td>Weight bit-width</td><td>~8-bit is a reasonable DSP-typical assumption</td><td><span class="tag tag-est">ESTIMATE</span></td></tr>
+<tr><td>Reservoir size (N)</td><td>General RC range 50-2000; DPD-specific reasoned estimate: tens-to-low-hundreds</td><td><span class="tag tag-ask">ASK YUAN</span></td></tr>
+<tr><td>Memory depth = N (this architecture)</td><td>Yes &mdash; cyclic-shift ring makes this a direct, near-exact relationship</td><td><span class="tag tag-proven">CONFIRMED (for this design)</span></td></tr>
+<tr><td>Weight magnitude decreases with index</td><td>Physically reasonable (PA memory effects decay), matches GMP coefficient behavior too &mdash; not strictly guaranteed for every PA</td><td><span class="tag tag-est">REASONABLE, not guaranteed</span></td></tr>
+<tr><td>PA input sample rate</td><td>Illustrative 300-1000MHz (3-5&times; our own 100-200MHz signal BW options) &mdash; not confirmed for real chip</td><td><span class="tag tag-ask">ASK YUAN</span></td></tr>
+<tr><td>Physical multiplier count vs. clock</td><td>mults &asymp; N / (clock_freq / sample_rate) &mdash; real time-multiplexing trade-off</td><td><span class="tag tag-proven">PRINCIPLE CONFIRMED</span>, real chip clock <span class="tag tag-ask">ASK YUAN</span></td></tr>
+</table>
+
+<div class="mono">Physical multipliers needed &asymp; N / (clock_freq / sample_rate)
+
+  Clock = sample rate (1x):    all N multipliers, parallel
+  Clock = 2x sample rate:      N/2 multipliers, time-shared
+  Clock = 4x sample rate:      N/4 multipliers, time-shared</div>
+</div>
+
+<!-- ═══ TIERED PRUNING ═══ -->
+<div class="sec" id="pruning">
+<div class="sec-lbl">Section 5</div>
+<div class="sec-title">Advanced: Tiered Decimation for Further HW Savings</div>
+<div class="sec-sub">Direct consequence of weight magnitude decreasing with index.</div>
+
+<table class="tbl">
+<tr><th>Tier (index range)</th><th>Decimation</th><th>Effective multipliers</th></tr>
+<tr><td>0-8 (full resolution)</td><td>1-of-1</td><td>8</td></tr>
+<tr><td>8-16 (every other)</td><td>1-of-2</td><td>4</td></tr>
+<tr class="hl"><td>16-32 (every 4th)</td><td>1-of-4</td><td>4</td></tr>
+</table>
+<p style="margin-top:8px"><b>Total: 16 vs. 32 naive uniform &mdash; a 2&times; reduction</b>, N=32 example.</p>
+<div class="warn">
+<b>Honest trade-off:</b> this works BECAUSE weight magnitude typically decreases with index &mdash;
+a reasonable expectation, not a guarantee. Real cutoff points need tuning against actual fitted
+weights for the specific PA, not assumed a priori. Real precedent exists in "pruned" memory-
+polynomial/Volterra DPD literature (general concept &mdash; not independently verified as a named
+citation in this session).
+</div>
+</div>
+
+<!-- ═══ COMPARISON ═══ -->
+<div class="sec" id="comparison">
+<div class="sec-lbl">Section 6</div>
+<div class="sec-title">Full DPD Option Comparison</div>
+
+<table class="tbl">
+<tr><th>Option</th><th>Mechanism</th><th>Calibration</th><th>PA EVM</th></tr>
+<tr><td>No DPD</td><td>Full backoff (8dB), no correction</td><td>&mdash;</td><td>~3.2% (at 6dB user backoff)</td></tr>
+<tr><td>Shaper/PAPR</td><td>Clip+filter pre-PA (2022 Kuiper approach)</td><td>Zero feedback HW</td><td>reduces peak, not core linearity</td></tr>
+<tr><td>GMP (Memory poly)</td><td>50-100 coeff/sub-array</td><td>Standard adaptive fitting, needs feedback RX</td><td>baseline standard</td></tr>
+<tr class="hl"><td>Sub-array ESN</td><td>Generic random reservoir + linear readout</td><td><b>No cal needed</b>, Cortex-M every 100ms</td><td class="ok">~1.8%</td></tr>
+<tr class="hl"><td>ESN well-tuned</td><td>GRU-NN-informed reservoir, burned at tape-out</td><td>Offline GRU characterization, once</td><td class="ok">~1.2%</td></tr>
+<tr><td>GRU-NN DPD</td><td>Fully trained recurrent network</td><td>Full retraining &mdash; too expensive real-time</td><td>offline design tool only</td></tr>
+</table>
+</div>
+
+<!-- ═══ CHECKLIST ═══ -->
+<div class="sec" id="checklist">
+<div class="sec-lbl">Section 7</div>
+<div class="sec-title">Honest Calibration Checklist</div>
+
+<div class="grid2">
+<div class="card">
+  <div class="card-hdr" style="background:#eef8f0;color:var(--green)">Speak directly &mdash; well-grounded</div>
+  <div class="card-body">
+    <ul class="checklist">
+      <li>Reservoir + readout architecture, why it's structured this way</li>
+      <li>Why calibration-free matters at scale (real cited papers)</li>
+      <li>GMP vs ESN cost story (per-unit feedback RX vs shared Cortex-M)</li>
+      <li>Cyclic-shift hardware efficiency (real, cited paper)</li>
+      <li>N=8 concrete cost tally (fully derived, countable)</li>
+      <li>Memory depth = N, for this specific architecture</li>
+      <li>Multiplier-count-vs-clock-frequency principle</li>
+      <li>Cyclic-shift achieves "satisfactory approximation" of general ESN &mdash; directly stated and tested in the source paper</li>
+    </ul>
+  </div>
+</div>
+<div class="card">
+  <div class="card-hdr" style="background:#fdeeee;color:var(--red)">Ask, don't assert &mdash; genuinely uncertain</div>
+  <div class="card-body">
+    <ul class="checklist">
+      <li class="ask">Exact reservoir size (N) for their real system</li>
+      <li class="ask">Which variant (general sparse-matrix or cyclic-shift) they actually use &mdash; though evidence supports cyclic-shift being a low-cost approximation either way</li>
+      <li class="ask">Exact PA input / feedback sample rate</li>
+      <li class="ask">Real digital clock frequency (for multiplier count)</li>
+      <li class="ask">Exact weight bit-width used</li>
+      <li class="ask">Whether weight magnitude actually decays with index for their PA</li>
+      <li class="ask">Whether tiered pruning is already used, or worth proposing</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<div class="insight">
+<b>The one-sentence technical case, worth having ready verbatim:</b> "ESN's real advantage isn't
+better linearization in isolation &mdash; it's that the reservoir is fixed and needs no per-unit
+feedback receiver, while only a small linear readout, trained via cheap least-squares on a shared
+low-power core, needs updating. That's what breaks the observation-receiver-per-sub-array cost
+that makes classical GMP expensive at scale."
+</div>
+</div>
+
+</div>
+</body>
+</html>
