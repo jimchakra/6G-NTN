@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SDR + Digital-Twin SoC — Architecture Methodology</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--bd:#d0d8e4;
+  --navy:#1e3a5f;--blue:#2C5282;--amber:#C05E00;
+  --green:#1a5c35;--red:#8b1a1a;--purple:#6b21a8;
+  --tx:#111;--sub:#4a5568;--dim:#6b7a99;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--sans);font-size:13px;line-height:1.7;color:var(--tx)}
+.hdr{background:var(--navy);padding:20px 28px;border-top:3px solid var(--amber)}
+.hdr-title{font-size:17px;font-weight:700;color:#fff}
+.hdr-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:4px}
+.nav{position:sticky;top:0;background:rgba(248,247,244,.97);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--bd);z-index:100;display:flex;overflow-x:auto}
+.nav a{padding:10px 13px;font-size:10.5px;color:#333;text-decoration:none;font-weight:600;
+  white-space:nowrap;border-bottom:2px solid transparent}
+.nav a:hover{color:var(--amber);border-bottom-color:var(--amber)}
+.main{max-width:1060px;margin:0 auto;padding:0 24px 60px}
+.sec{padding:28px 0 14px;border-bottom:1px solid var(--bd)}
+.sec:last-child{border-bottom:none}
+.sec-lbl{font-size:9.5px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.sec-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.sec-sub{font-size:12.5px;color:#333;max-width:820px;margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.card-hdr{padding:9px 16px;background:#fff8ee;border-bottom:1px solid var(--bd);
+  font-size:9.5px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em}
+.card-body{padding:14px 16px}
+.ctitle{font-size:14px;font-weight:800;margin-bottom:5px;color:var(--navy)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th{padding:6px 9px;text-align:left;color:var(--sub);font-weight:600;border-bottom:1px solid var(--bd);background:#faf8f4}
+.tbl td{padding:6px 9px;border-bottom:1px solid #eef2fa;vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td.k{font-weight:700;color:var(--navy);white-space:nowrap}
+.insight{background:#f6f3fc;border:1px solid #d8c8f0;border-left:4px solid var(--purple);
+  border-radius:4px;padding:10px 14px;font-size:12px;line-height:1.8;margin-top:8px}
+.note{background:#eef4fb;border:1px solid #cfe0f2;border-left:4px solid var(--blue);
+  border-radius:4px;padding:10px 14px;font-size:11.5px;line-height:1.7;margin-top:8px;color:#333}
+.mono{font-family:monospace;font-size:11px;background:#f5f7fa;padding:2px 6px;
+  border-radius:3px;border:1px solid var(--bd)}
+.bullets{list-style:none;margin-top:8px}
+.bullets li{padding:5px 0 5px 20px;position:relative;font-size:12px;line-height:1.7;color:#333}
+.bullets li:before{content:"\25B8";position:absolute;left:0;color:var(--amber);font-weight:700}
+p{font-size:12.5px;line-height:1.8;color:#333;margin-bottom:8px}
+p:last-child{margin-bottom:0}
+.em{color:var(--amber);font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">SDR + Digital-Twin SoC &mdash; Architecture Methodology</div>
+  <div class="hdr-sub">How a small senior team closes a complex, multi-mode wireless SoC &mdash; without a 300-person ASIC organization</div>
+</div>
+
+<div class="nav">
+  <a href="#thesis">Core Thesis</a>
+  <a href="#pillars">Four Pillars</a>
+  <a href="#ai">AI Leverage</a>
+  <a href="#twins">Digital Twins</a>
+  <a href="#space">SDR for Space</a>
+  <a href="#ofdm">OFDM Architecture</a>
+  <a href="#power">Low Power</a>
+  <a href="#ip">Core IPs</a>
+</div>
+
+<div class="main">
+
+<!-- ═══ CORE THESIS ═══ -->
+<div class="sec" id="thesis">
+<div class="sec-lbl">Methodology</div>
+<div class="sec-title">The methodology always worked. AI made it affordable.</div>
+<div class="sec-sub">The digital-twin flow for silicon was never the problem &mdash; its cost was.</div>
+
+<div class="card"><div class="card-body">
+  <p><b class="em">The opening.</b> The digital-twin methodology for silicon has always worked. It was simply too expensive to build and keep in sync, demanding a modeling organization most programs could never justify. AI collapses exactly that cost &mdash; a small senior team can now execute a program that traditionally required a roughly 300-person organization.</p>
+  <p><b class="em">The catch.</b> AI alone does not do it. Modeling and simulation are the work AI accelerates best, but without senior architects who know how to stand up and sustain the flow, it only accelerates the path to a silicon re-spin. The judgment is the part AI does not commoditize.</p>
+  <p>So the bottleneck moves &mdash; from headcount and budget to architectural judgment and flow expertise. That is the opportunity, and the risk when a team is staffed wrong.</p>
+</div></div>
+
+<div class="insight">
+  <b>Concrete target.</b> Close a multi-mode wireless SoC &mdash; for example Ka-band broadband plus S-band direct-to-device &mdash; in <b>2&ndash;3 tape-outs</b>, with mass production within <b>18 months</b> of first tape-out.
+</div>
+</div>
+
+<!-- ═══ FOUR PILLARS ═══ -->
+<div class="sec" id="pillars">
+<div class="sec-lbl">Architecture</div>
+<div class="sec-title">Four reinforcing pillars</div>
+<div class="sec-sub">Each reinforces the others; none carries the design alone.</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-hdr">Pillar 1 &middot; SDR</div>
+    <div class="card-body">
+      <div class="ctitle">Flexible, serviceable silicon</div>
+      <p>A waveform-agnostic architecture with programmability only where it matters. It supports concurrent multi-mode operation and post-launch upgrades &mdash; decisive for silicon with no field serviceability &mdash; and flexes to a changing roadmap instead of freezing at tape-out.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">Pillar 2 &middot; Digital Twins</div>
+    <div class="card-body">
+      <div class="ctitle">De-risked delivery</div>
+      <p>High-level (tail, contention, DVFS) and low-level (cycle-accurate, firmware from day one) simulators make first bring-up a <span class="em">confirmation</span> rather than a discovery &mdash; the single largest lever against the re-spin.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">Pillar 3 &middot; Core IPs</div>
+    <div class="card-body">
+      <div class="ctitle">A reusable cornerstone</div>
+      <p>Proven blocks reused across product lines on one tool chain: the large (MAC/L2) core, the small (PHY/L1) core, the vector engine, the SDR coprocessors. The investment compounds with every program.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">Pillar 4 &middot; Low Power</div>
+    <div class="card-body">
+      <div class="ctitle">Efficiency by design</div>
+      <p>Treated as a first-class axis: digital pre-distortion on an Echo State Network (ESN), DVFS gears sized by the high-level simulator, low-power IPs across the datapath, and DRX / WUS for idle-time savings.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ AI LEVERAGE ═══ -->
+<div class="sec" id="ai">
+<div class="sec-lbl">The Key Lever</div>
+<div class="sec-title">AI as a force multiplier &mdash; done right</div>
+<div class="sec-sub">Why the modeling flow that was always too expensive is suddenly within reach of a small team.</div>
+
+<div class="card"><div class="card-body">
+  <p>The high- and low-level modeling methodology has been respected for years and rarely practiced, because only well-funded teams could afford the 30&ndash;40-person effort it required, and only for high-value, high-volume production.</p>
+  <p>What changed is the economics. Modeling and simulation are low-risk, low-stakes code where the bar is <span class="em">correctness</span> &mdash; not synthesizability, area efficiency, or timing closure, as RTL demands. That is precisely the work AI accelerates best, and it collapses a 30&ndash;40-person modeling team to three to five senior engineers.</p>
+  <p>Re-spin economics follow directly: a program's cost is roughly <span class="mono">heads &times; time &times; rate</span>. Keeping the tape-out count low by making first bring-up a confirmation, not a discovery, is the whole game.</p>
+</div></div>
+
+<div class="insight">
+  <b>Where trust bottoms out.</b> The verification specification is the true golden reference. Models and RTL must be checked against it <span class="em">independently</span> &mdash; because a correlated error produces a silent false pass, the most dangerous outcome in the flow. AI raises the premium on that independence, since it makes it cheap to generate two implementations that are wrong in the same way. Senior judgment steering the AI is the single most effective lever a silicon team can invest in for long-term stability.
+</div>
+</div>
+
+<!-- ═══ DIGITAL TWINS ═══ -->
+<div class="sec" id="twins">
+<div class="sec-lbl">The Digital Twin</div>
+<div class="sec-title">Two simulators</div>
+<div class="sec-sub">One finds the tail; the other brings up the firmware before silicon exists.</div>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-hdr">High-Level Simulator</div>
+    <div class="card-body">
+      <p><b>What:</b> lightweight Python/C models capturing SW/HW dependency and shared-resource contention &mdash; processors, memories, buses, concurrent modes &mdash; to drive the design into its tail.</p>
+      <ul class="bullets">
+        <li>RTL simulation is far too slow to reach beyond-P99 tail events; the high-level model runs over 1,000,000&times; faster and catches them.</li>
+        <li>Right-sizes the design &mdash; avoiding both under- and over-provisioning.</li>
+        <li>Surfaces the escape hatches rare tail events need (NACK handling, priority inversion).</li>
+        <li>The indispensable tool for choosing DVFS gears.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">Low-Level Simulator</div>
+    <div class="card-body">
+      <p><b>What:</b> a bit-true, approximately cycle-accurate C++/SystemC model of real hardware behavior.</p>
+      <ul class="bullets">
+        <li>Gives software and firmware teams the hardware months before tape-out.</li>
+        <li>Lets verification run real firmware to stress the system 10&ndash;100&times; harder than RTL simulation alone.</li>
+        <li>Turns integration from a post-silicon scramble into a pre-silicon exercise.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="note"><b>Note &mdash;</b> P99 is the 99th-percentile (tail) metric. "P99" is used throughout to avoid collision with the 3GPP Release-99 meaning of "R99".</div>
+</div>
+
+<!-- ═══ SDR FOR SPACE ═══ -->
+<div class="sec" id="space">
+<div class="sec-lbl">Why SDR, Specifically</div>
+<div class="sec-title">SDR for silicon in orbit</div>
+<div class="sec-sub">Bugs surface after tape-out, and some only in production. Silicon in orbit has no field serviceability, which turns an ordinary bug into a long-term program risk. A waveform-agnostic SDR architecture changes that exposure.</div>
+
+<div class="card"><div class="card-body">
+<table class="tbl">
+  <tr><td class="k">Circumvent</td><td>Work around bugs in already-deployed silicon.</td></tr>
+  <tr><td class="k">Upgrade</td><td>Enable post-launch feature and standards upgrades.</td></tr>
+  <tr><td class="k">Extend</td><td>Deliver services that weren't in the original plan.</td></tr>
+  <tr><td class="k">Concurrent</td><td>Support multiple waveforms &mdash; at the same time &mdash; on one silicon architecture.</td></tr>
+</table>
+</div></div>
+</div>
+
+<!-- ═══ OFDM ARCHITECTURE ═══ -->
+<div class="sec" id="ofdm">
+<div class="sec-lbl">The Deep Architecture</div>
+<div class="sec-title">Making SDR practical for OFDM</div>
+<div class="sec-sub">Pure CPU/DSP SDR is impractical for high-throughput, low-latency, low-cost silicon. The discipline is to keep programmability <span class="em">only where it matters</span>. In OFDM, "flexibility" means two distinct things: how the resource grid is <b>allocated</b> (the scalar plane, on the CPU) and how it is <b>used</b> (the vector plane, on the DSP).</div>
+
+<div class="card">
+  <div class="card-hdr">Scalar Plane &middot; Resource-Grid Allocation</div>
+  <div class="card-body">
+    <p>3GPP signals PDSCH locations with a bitmap (Type 0, in both LTE and NR), and the pattern generalizes to resource-grid allocation across channels. General-purpose processors are poor at bit manipulation, so the move is to find the operations common across waveforms and build custom instructions or coprocessors for them:</p>
+    <table class="tbl">
+      <tr><th>Operation</th><th>Function</th></tr>
+      <tr><td class="k">Expand</td><td>1&rarr;2, 1&rarr;4, 1&rarr;8 by AL or RBG size</td></tr>
+      <tr><td class="k">Shift</td><td>per BWP (NR) or sub-beam (satellite)</td></tr>
+      <tr><td class="k">Puncture</td><td>remove pilot and reserved locations</td></tr>
+      <tr><td class="k">Merge</td><td>combine pilot and data bitmaps</td></tr>
+      <tr><td class="k">Pack / Unpack</td><td>control-plane fields</td></tr>
+      <tr><td class="k">Addr Gen</td><td>the bitmap drives fetches into IQ / LLR buffers</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Vector Plane &middot; Resource-Grid Usage</div>
+  <div class="card-body">
+    <p>Not every datapath should be programmable; some sit deep in negative PPA territory if forced into a DSP. Partition by strength. Most of the map is consensus &mdash; hardware accelerators for DFE, FFT, and the decoder; DSP for channel/noise estimation, channel selection, and channel mixing.</p>
+    <div class="insight">
+      <b>The architecture lives in the two non-obvious calls.</b><br>
+      <b>Demod &rarr; HW:</b> demodulation belongs in a hardware accelerator, <span class="em">resisting the pull toward a DSP</span>.<br>
+      <b>Sync &rarr; DSP:</b> synchronization belongs in a DSP, <span class="em">resisting the pull to hard-wire it</span>.<br>
+      The rest is settled; those two are the ones worth defending.
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hdr">Multi-Cluster Control Plane &middot; Two Core Types</div>
+  <div class="card-body">
+    <p>Modem control planes serve two very different workload profiles, and mixing them compromises performance and stability. The answer is two core types on the same ISA and tool chain, with different micro-architectures.</p>
+    <table class="tbl">
+      <tr><th>&nbsp;</th><th>MAC / L2 &mdash; large</th><th>PHY / L1 &mdash; small</th></tr>
+      <tr><td class="k">Working set</td><td>multi-MB (scheduler, RRC)</td><td>~10 KB (TTI / slot / beam mgmt, RF control)</td></tr>
+      <tr><td class="k">Latency tolerance</td><td>~10 ms &mdash; tolerant</td><td>~10 &micro;s &mdash; intolerant</td></tr>
+      <tr><td class="k">Memory</td><td>DDR-backed, large cache</td><td>tightly-coupled memory, <span class="em">cacheless</span></td></tr>
+      <tr><td class="k">Measured on</td><td>total MIPS</td><td>responsiveness</td></tr>
+      <tr><td class="k">Deployment</td><td>a handful of large cores at 70&ndash;80% utilization</td><td>a large farm of small cores below ~30% utilization</td></tr>
+    </table>
+    <p style="margin-top:10px">Separating them protects modem performance and stability, and it right-sizes PPA: small working sets run on small cores, while the scheduler's loose-latency decision-making runs on the large cores. High-capacity scheduling across beams &times; panels may call for NN on the large cores.</p>
+  </div>
+</div>
+
+<div class="insight">
+  <b>One architecture, all product lines.</b> The same architecture serves multiple concurrent modes; with different instance counts &mdash; processors, DSPs, decoders &mdash; it serves both base-station and satellite modems on a single tool chain.
+</div>
+</div>
+
+<!-- ═══ LOW POWER ═══ -->
+<div class="sec" id="power">
+<div class="sec-lbl">Efficiency by Design</div>
+<div class="sec-title">Low power as a first-class axis</div>
+
+<div class="card"><div class="card-body">
+<table class="tbl">
+  <tr><th>Lever</th><th>Role</th></tr>
+  <tr><td class="k">DPD (ESN)</td><td>Digital pre-distortion built on an Echo State Network &mdash; the primary lever, because power-amplifier efficiency is where the system watts are won. See the <a href="esn_complete_reference.html">ESN DPD reference</a>.</td></tr>
+  <tr><td class="k">DVFS</td><td>Voltage and frequency gears, sized by the high-level simulator &mdash; one of that model's highest-value outputs.</td></tr>
+  <tr><td class="k">Low-power IPs</td><td>Efficiency designed in across the datapath, not bolted on.</td></tr>
+  <tr><td class="k">DRX / WUS</td><td>Discontinuous reception and wake-up signaling for idle-time savings. See the <a href="ntn_drx_nn.html">NTN DRX study</a>.</td></tr>
+</table>
+</div></div>
+</div>
+
+<!-- ═══ CORE IPS ═══ -->
+<div class="sec" id="ip">
+<div class="sec-lbl">The Reusable Cornerstone</div>
+<div class="sec-title">Core IPs, and a tiny fast-ISR core</div>
+<div class="sec-sub">The reusable blocks &mdash; the large and small cores, the vector engine, and the SDR coprocessors (bitmap engine, DCI parser) &mdash; are the cornerstone whose investment compounds across product lines. The responsive end of the PHY farm is served by a minimal fast-interrupt core.</div>
+
+<div class="card">
+  <div class="card-hdr">Tiny Fast-ISR RISC-V Core</div>
+  <div class="card-body">
+    <table class="tbl">
+      <tr><td class="k">ISA</td><td>RV32E (16 registers), area-minimized</td></tr>
+      <tr><td class="k">Pipeline</td><td>5-stage, with dual-stream fetch for fast interrupt response</td></tr>
+      <tr><td class="k">Extensions</td><td>Zilsd (load/store pair) and CLIC (fast, vectored interrupts)</td></tr>
+      <tr><td class="k">Area</td><td>~10&ndash;15K gate-equivalents</td></tr>
+      <tr><td class="k">Target</td><td>4&nbsp;nm UHD library, ~1.2&nbsp;GHz</td></tr>
+      <tr><td class="k">Role</td><td>the cacheless, TCM-backed small core in the PHY farm</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="insight">
+  <b>In one line.</b> Four reinforcing pillars &mdash; SDR, digital twins, reusable core IPs, and low power &mdash; made practical by AI steered with senior judgment and by programmability only where it matters: stable, flexible, serviceable silicon for long-term LEO and space programs, without a 300-person ASIC organization.
+</div>
+</div>
+
+</div><!-- main -->
+
+<div class="hdr" style="border-top:none;padding:18px 28px;text-align:center">
+  <div class="hdr-sub" style="margin:0">
+    Opens in any modern browser &middot; No install required &middot;
+    Part of the <a href="index.html" style="color:#fff">6G NTN architecture studies</a>
+  </div>
+</div>
+
+</body>
+</html>
