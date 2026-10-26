@@ -64,15 +64,70 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
 <div class="main">
 
 <p class="intro">
-  Seven self-contained browser tools and references covering LEO satellite system design across
+  Nine self-contained browser tools and references covering LEO satellite system design across
   Ka-band and S-band — RF link budget, GNSS-free acquisition, SoC co-design
   methodology, NTN power saving, direct-to-device link budgets,
-  GNSS-independent positioning, and ESN-based PA linearization. Each opens directly — no install, no server,
+  GNSS-independent positioning, ESN-based PA linearization, and two methodology
+  pieces — an SDR + digital-twin SoC architecture and the AI economics of silicon re-spins. Each opens directly — no install, no server,
   no dependencies. Built as a technical portfolio for 6G UE silicon
   architecture work.
 </p>
 
 <div class="grid">
+
+  <!-- Methodology — capstone -->
+  <a class="card" href="sdr_digital_twin_soc.html">
+    <div class="card-stripe" style="background:#1e3a5f"></div>
+    <div class="card-body">
+      <div class="card-tag">Methodology · SDR SoC Architecture
+        <span class="new-badge">New</span>
+      </div>
+      <div class="card-title">SDR + Digital-Twin SoC Methodology</div>
+      <div class="card-desc">
+        How a small senior team closes a complex multi-mode wireless SoC —
+        Ka broadband + S-band D2D — without a 300-person ASIC organization:
+        software-defined radio architecture, a two-level digital-twin flow AI
+        finally made affordable, reusable core IPs, and low power by design.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">Core Thesis</span>
+        <span class="tab-chip">Four Pillars</span>
+        <span class="tab-chip">AI Leverage</span>
+        <span class="tab-chip">Digital Twins</span>
+        <span class="tab-chip">OFDM Architecture</span>
+        <span class="tab-chip">Multi-Core PHY</span>
+        <span class="tab-chip">Low Power</span>
+      </div>
+      <span class="card-link">Open reference →</span>
+    </div>
+  </a>
+
+  <!-- Methodology — AI & re-spin economics -->
+  <a class="card" href="digital_twin_economics.html">
+    <div class="card-stripe" style="background:#2C5282"></div>
+    <div class="card-body">
+      <div class="card-tag">Methodology · AI &amp; Re-Spin Economics
+        <span class="new-badge">New</span>
+      </div>
+      <div class="card-title">The Digital Twin, Finally Affordable</div>
+      <div class="card-desc">
+        A silicon program's cost is heads × time, and time is dominated by
+        re-spins. The re-spin-avoiding digital-twin methodology always worked —
+        it was just too expensive to always build. AI coding agents collapse that
+        plumbing cost. Includes the receipts: a solo, AI-assisted datapath taken
+        to a filed patent.
+      </div>
+      <div class="card-tabs">
+        <span class="tab-chip">Re-Spin Economics</span>
+        <span class="tab-chip">What AI Changes</span>
+        <span class="tab-chip">Two Payoffs</span>
+        <span class="tab-chip">The Flow</span>
+        <span class="tab-chip">Golden &amp; Trust</span>
+        <span class="tab-chip">The Receipts</span>
+      </div>
+      <span class="card-link">Open essay →</span>
+    </div>
+  </a>
 
   <!-- Tool 1 -->
   <a class="card" href="ka_link_budget.html">
