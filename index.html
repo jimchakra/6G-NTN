@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>6G NTN · Ka-Band RF & SoC Architecture Studies</title>
+<title>6G NTN · RF & SoC Architecture Studies</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
@@ -55,8 +55,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
 <body>
 
 <div class="hdr">
-  <h1>6G NTN · Ka-Band RF &amp; SoC Architecture Studies</h1>
-  <p>Interactive simulation tools — Ka-band LEO link budget, GNSS-free acquisition,
+  <h1>6G NTN · RF &amp; SoC Architecture Studies</h1>
+  <p>Interactive simulation tools — satellite link budget, GNSS-free acquisition,
      RAN DU hardware acceleration, and NTN DRX power saving</p>
   <div class="badge">SESSION FINDINGS · AUG 2026 · PATENT PENDING</div>
 </div>
@@ -64,8 +64,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
 <div class="main">
 
 <p class="intro">
-  Nine self-contained browser tools and references covering LEO satellite system design across
-  Ka-band and S-band — RF link budget, GNSS-free acquisition, SoC co-design
+  Nine self-contained browser tools and references covering non-terrestrial (NTN) system design across
+  multiple RF bands — RF link budget, GNSS-free acquisition, SoC co-design
   methodology, NTN power saving, direct-to-device link budgets,
   GNSS-independent positioning, ESN-based PA linearization, and two methodology
   pieces — an SDR + digital-twin SoC architecture and the AI economics of silicon re-spins. Each opens directly — no install, no server,
@@ -85,7 +85,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
       <div class="card-title">SDR + Digital-Twin SoC Methodology</div>
       <div class="card-desc">
         How a small senior team closes a complex multi-mode wireless SoC —
-        Ka broadband + S-band D2D — without a 300-person ASIC organization:
+        broadband + direct-to-device — without a 300-person ASIC organization:
         software-defined radio architecture, a two-level digital-twin flow AI
         finally made affordable, reusable core IPs, and low power by design.
       </div>
@@ -133,12 +133,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
   <a class="card" href="ka_link_budget.html">
     <div class="card-stripe" style="background:#C05E00"></div>
     <div class="card-body">
-      <div class="card-tag">Ka-Band · DL Link Budget</div>
-      <div class="card-title">Ka-Band Link Budget &amp; DPD/Shaper</div>
+      <div class="card-tag">Satellite · DL Link Budget</div>
+      <div class="card-title">Phased-Array Link Budget &amp; DPD/Shaper</div>
       <div class="card-desc">
-        MCS ceiling for Ka LEO phased arrays. Sub-array ESN DPD architecture,
+        MCS ceiling for satellite phased arrays. Sub-array ESN DPD architecture,
         OBO recovery, DC power savings at 16/64/256/1024-QAM.
-        2025–2030 battery CT roadmap. Kuiper &amp; Starlink presets.
+        2025–2030 battery CT roadmap.
       </div>
       <div class="card-tabs">
         <span class="tab-chip">EVM Budget</span>
@@ -156,10 +156,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
   <a class="card" href="ka_pnt_acquisition.html">
     <div class="card-stripe" style="background:#1e3a5f"></div>
     <div class="card-body">
-      <div class="card-tag">Ka-Band · GPS-Free Acquisition</div>
+      <div class="card-tag">Satellite · GPS-Free Acquisition</div>
       <div class="card-title">GNSS-Free Acquisition · M1–M5 Framework</div>
       <div class="card-desc">
-        GPS-free initial access for Ka proprietary waveform. Wide-beam SSB +
+        GPS-free initial access for a proprietary satellite waveform. Wide-beam SSB +
         CW Doppler pre-cal + ephemeris-in-PBCH → ~400ms cold-start TTFF.
         Cross-shell CW collision simulation. Rain &amp; downpour cold-start analysis.
       </div>
@@ -280,7 +280,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
   <a class="card" href="esn_complete_reference.html">
     <div class="card-stripe" style="background:#1a5c35"></div>
     <div class="card-body">
-      <div class="card-tag">Ka/S-Band · PA Linearization
+      <div class="card-tag">Satellite · PA Linearization
         <span class="new-badge">New</span>
       </div>
       <div class="card-title">ESN DPD · Complete Reference for Satellite PA Linearization</div>
